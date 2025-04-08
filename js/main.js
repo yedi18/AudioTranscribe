@@ -70,7 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('חלק מהמודולים הדרושים לא נטענו. אנא רענן את הדף או פנה לתמיכה.');
         return;
     }
-    
+    console.log('select-file-btn:', document.getElementById('select-file-btn'));
+
     // אתחול ממשק המשתמש
     const ui = new UI();
     console.log('ממשק משתמש אותחל בהצלחה');
@@ -100,43 +101,41 @@ document.addEventListener('DOMContentLoaded', function() {
             this.errorMessage.style.display = 'none';
             
             // בדיקה האם יש לפצל את האודיו או לא
-            // אם הקובץ גדול מ-30 שניות והאופציה מסומנת, נפצל
+            // פיצול אוטומטי ללא התראות
             let shouldSplit = false;
             const segmentLength = parseInt(this.segmentLengthInput.value) || 25;
-            
+
             // עדכון המצב הראשוני
             this.updateProgress({ status: 'decoding', progress: 5 });
-            
+
             // בדיקת אורך הקובץ
             let audioDuration = 0;
             try {
                 audioDuration = await getAudioDuration(this.selectedFile);
                 console.log(`אורך קובץ האודיו: ${audioDuration.toFixed(2)} שניות`);
                 
-                // קובעים אם לפצל רק לפי אורך הקובץ - אם הוא מעל 30 שניות
-                shouldSplit = audioDuration > 30 && this.splitAudioCheckbox.checked;
+                // החלטה על פיצול באופן אוטומטי ללא התראות
+                // אם הקובץ מעל 30 שניות, מפצלים אוטומטית
+                shouldSplit = audioDuration > 30;
                 
-                // אם הקובץ קצר מ-30 שניות וסומן לפצל, נודיע למשתמש שאין צורך
-                if (audioDuration <= 30 && this.splitAudioCheckbox.checked) {
-                    console.log("קובץ האודיו קצר מ-30 שניות, אין צורך בפיצול");
-                    alert("קובץ האודיו קצר מ-30 שניות. אין צורך בפיצול, מתמלל באופן רגיל.");
-                    shouldSplit = false;
+                // רק לוג פנימי, ללא התראות למשתמש
+                if (audioDuration > 30) {
+                    console.log(`הקובץ ארוך (${audioDuration.toFixed(2)} שניות), מפצל אוטומטית לקטעים של ${segmentLength} שניות`);
+                } else {
+                    console.log(`הקובץ קצר (${audioDuration.toFixed(2)} שניות), אין צורך בפיצול`);
                 }
                 
-                // אם הקובץ ארוך מ-30 שניות ולא סומן לפצל, נמליץ לפצל
-                if (audioDuration > 30 && !this.splitAudioCheckbox.checked) {
-                    console.log("קובץ האודיו ארוך מ-30 שניות, מומלץ לפצל");
-                    
-                    // שואל אם המשתמש רוצה לפצל את הקובץ
-                    if (confirm("קובץ האודיו ארוך מ-30 שניות. מומלץ לפצל לקטעים קצרים כדי להצליח בתמלול. האם לפצל?")) {
-                        shouldSplit = true;
-                        this.splitAudioCheckbox.checked = true;
-                    }
+                // מעדכן את הצ'קבוקס (אם קיים) לפי ההחלטה
+                if (this.splitAudioCheckbox) {
+                    this.splitAudioCheckbox.checked = shouldSplit;
                 }
             } catch (durationError) {
                 console.error("שגיאה בבדיקת אורך הקובץ:", durationError);
-                // אם לא הצלחנו לבדוק את אורך הקובץ, נשתמש בהגדרה של המשתמש
-                shouldSplit = this.splitAudioCheckbox.checked;
+                // אם לא הצלחנו לבדוק את אורך הקובץ, ננסה לפצל על הבטוח
+                shouldSplit = true;
+                if (this.splitAudioCheckbox) {
+                    this.splitAudioCheckbox.checked = true;
+                }
             }
             
             let transcription = '';
@@ -179,18 +178,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // בודק אם זו שגיאת תמלול מה-API
                     if (splitError.message && splitError.message.includes('API')) {
-                        // ננסה לתמלל ללא פיצול
-                        if (confirm("אירעה שגיאה בתמלול הקטעים. האם לנסות לתמלל את הקובץ המלא ללא פיצול?")) {
-                            shouldSplit = false;
-                        } else {
-                            this.showError('אירעה שגיאה בפיצול האודיו: ' + splitError.message);
-                            throw splitError;
-                        }
+                        // ננסה לתמלל שוב ללא פיצול אוטומטית במקום לשאול את המשתמש
+                        console.warn("אירעה שגיאה בתמלול הקטעים. מנסה שוב ללא פיצול.");
+                        shouldSplit = false;
                     } else {
                         this.showError('אירעה שגיאה בפיצול האודיו: ' + splitError.message);
                         throw splitError;
                     }
-                }
+                } 
             }
             
             // אם לא מפצלים או אם הפיצול נכשל וניסינו שוב

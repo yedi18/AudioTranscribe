@@ -3,97 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>שירות תמלול אודיו MP3</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <!-- ודא שהנתיב לקובץ CSS נכון -->
+    <title>שירות תמלול אודיו MP3 | המרת קול לטקסט מדויק</title>
+    <meta name="description" content="המר קבצי MP3 לטקסט בעברית בקלות. שירות תמלול אודיו מהיר ומדויק.">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/utilities.css">    <!-- קישור לפונטים של Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- אייקונים של Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>שירות תמלול אודיו MP3</h1>
-            <p class="subtitle">העלה קובץ MP3 ותוך רגעים בודדים תקבל תמלול מדויק</p>
+            <h1><i class="fas fa-microphone-alt"></i> שירות תמלול אודיו MP3</h1>
+            <p class="subtitle">העלה קובץ MP3 ותוך רגעים בודדים תקבל תמלול מדויק בעברית או בשפות נוספות</p>
         </header>
 
         <div class="card">
             <div id="api-settings" class="api-settings">
-                <details open>
-                    <summary>הגדרות API</summary>
+                <details>
+                    <summary>הגדרות API <i class="fas fa-cog"></i></summary>
                     <div class="api-settings-content">
                         <label for="api-key-input">מפתח API של Huggingface:</label>
                         <div class="api-input-group">
                             <input type="password" id="api-key-input" placeholder="הדבק את מפתח ה-API שלך כאן">
-                            <button id="save-api-key" class="btn">שמור</button>
+                            <button id="save-api-key" class="btn"><i class="fas fa-save"></i> שמור</button>
                         </div>
-                        <div>
-                            <label><input type="checkbox" id="show-api-key"> הצג/הסתר מפתח API</label>
-                        </div>
+                        <div style="margin-top: 10px;">
+                            <input type="checkbox" id="show-api-key" style="margin-left: 8px;">
+                            <label for="show-api-key">הצג/הסתר מפתח API</label>
+                          </div>
                         <div id="api-key-status" class="api-key-status"></div>
+                        <div class="api-help-icon" id="api-help-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
                     </div>
                 </details>
             </div>
-
-            <div id="upload-container">
-                <div id="upload-area" class="upload-area">
-                    <div class="upload-icon">🎤</div>
-                    <h3>גרור לכאן קובץ אודיו MP3</h3>
-                    <p>או לחץ כדי לבחור קובץ</p>
-                    <input type="file" id="file-input" accept="audio/mp3,.mp3" style="display: none;">
-                    <button class="btn" id="select-file-btn">בחר קובץ MP3</button>
+                        <!-- לשוניות אפשרויות העלאה -->
+            <div class="upload-tabs">
+                <div class="tabs-header">
+                    <button class="tab-btn active" data-tab="upload-file">
+                        <i class="fas fa-file-audio"></i> העלאת קובץ
+                    </button>
+                    <button class="tab-btn" data-tab="youtube-link">
+                        <i class="fab fa-youtube"></i> סרטון יוטיוב
+                    </button>
+                    <button class="tab-btn" data-tab="record-audio">
+                        <i class="fas fa-microphone"></i> הקלטה ישירה
+                    </button>
                 </div>
                 
-                <div id="file-info" class="file-info">
-                    <p>הקובץ שנבחר: <span id="file-name" class="file-name"></span></p>
-                    <p id="file-size"></p>
-                    <div class="settings">
-                        <label>
-                            <input type="checkbox" id="split-audio" checked>
-                            פצל אודיו לקטעים (נדרש עבור קבצים ארוכים מ-30 שניות)
-                        </label>
-                        <div id="split-settings" class="split-settings">
-                            <label for="segment-length">אורך כל קטע בשניות:</label>
-                            <input type="number" id="segment-length" value="25" min="5" max="30">
-                            <p class="note">הערה: מומלץ לקבוע ערך נמוך מ-30 שניות</p>
+                <div class="tabs-content">
+                    <!-- תוכן לשונית העלאת קובץ יהיה האזור הקיים -->
+                    <div class="tab-content active" id="upload-file-content">
+                        <div id="upload-container">
+                            <div id="upload-area" class="upload-area">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h3>גרור לכאן קובץ אודיו MP3</h3>
+                                <p>או לחץ כדי לבחור קובץ</p>
+                                <input type="file" id="file-input" accept="audio/mp3,.mp3" style="display: none;">
+                                <button class="btn" id="select-file-btn"><i class="fas fa-file-audio"></i> בחר קובץ MP3</button>
+                            </div>
+                            
+                            <div id="file-info" class="file-info">
+                                <p><i class="fas fa-file-audio"></i> הקובץ שנבחר: <span id="file-name" class="file-name"></span></p>
+                                <p id="file-size"></p>
+                                <div class="settings">
+                                    <!-- צ'קבוקס מוסתר לפיצול אוטומטי -->
+                                    <div class="checkbox-wrapper" style="display: none;">
+                                        <input type="checkbox" id="split-audio" checked>
+                                        <label for="split-audio">פיצול לקטעים קצרים</label>
+                                        <span class="checkmark"></span>
+                                    </div>
+                                    
+                                   <!-- הגדרות פיצול מתקדמות -->
+                                <details class="split-settings-details">
+                                    <summary>הגדרות פיצול מתקדמות <i class="fas fa-cog"></i></summary>
+                                    <div class="split-settings">
+                                        <label for="segment-length">אורך כל קטע בשניות:</label>
+                                        <input type="number" id="segment-length" value="25" min="5" max="30">
+                                        <span class="badge badge-secondary">מומלץ: 25 שניות</span>
+                                        <p class="note"><i class="fas fa-info-circle"></i> הערה: מומלץ לקבוע ערך נמוך מ-30 שניות לתוצאות מדויקות יותר</p>
+                                    </div>
+                                </details>
+                                </div>
+                                <div id="estimated-time" class="estimated-time">
+                                    <p><i class="fas fa-clock"></i> זמן משוער לתמלול: <span id="time-estimate">כדקה</span></p>
+                                </div>
+                                <button class="btn" id="transcribe-btn"><i class="fas fa-magic"></i> התחל תמלול MP3</button>
+                            </div>
+            
+                            <div id="progress-container" class="progress-container">
+                                <h4 id="progress-status">מעבד את קובץ האודיו...</h4>
+                                <div id="progress-bar-container" class="progress-bar-container">
+                                    <div id="progress-bar" class="progress-bar"></div>
+                                </div>
+                                <p id="progress-text" class="progress-text">0%</p>
+                                <div class="loading-spinner"></div>
+                                <p class="note">תהליך התמלול עשוי להימשך מספר דקות בהתאם לאורך הקובץ</p>
+                            </div>
+                            
+                            <div id="loading-spinner" class="loading-spinner"></div>
+                            <div id="error-message" class="error-message"></div>
+                        </div>            
+                    </div>
+                    
+                    <!-- תוכן לשונית יוטיוב -->
+                    <div class="tab-content" id="youtube-link-content">
+                        <div class="youtube-input-area">
+                            <h3>הזן קישור לסרטון יוטיוב</h3>
+                            <p>המערכת תמלל את השמע מהסרטון</p>
+                            <div class="youtube-input-group">
+                                <input type="text" id="youtube-url" placeholder="הדבק כאן קישור YouTube" />
+                                <button class="btn" id="process-youtube-btn">
+                                    <i class="fas fa-magic"></i> תמלל סרטון
+                                </button>
+                            </div>
+                            <p class="note"><i class="fas fa-info-circle"></i> הערה: יש להשתמש בקישור ישיר לסרטון YouTube</p>
                         </div>
                     </div>
-                    <button class="btn" id="transcribe-btn">התחל תמלול MP3</button>
-                </div>
-
-                <div id="progress-container" class="progress-container">
-                    <h4 id="progress-status">מעבד את קובץ האודיו...</h4>
-                    <div id="progress-bar-container" class="progress-bar-container">
-                        <div id="progress-bar" class="progress-bar"></div>
+                    
+                    <!-- תוכן לשונית הקלטה ישירה -->
+                    <div class="tab-content" id="record-audio-content">
+                        <div class="record-area">
+                            <h3>הקלט אודיו ישירות</h3>
+                            <p>לחץ על הכפתור כדי להתחיל בהקלטה</p>
+                            <div class="record-buttons">
+                                <button class="btn btn-record" id="start-record-btn">
+                                    <i class="fas fa-microphone"></i> התחל הקלטה
+                                </button>
+                                <button class="btn btn-stop" id="stop-record-btn" disabled>
+                                    <i class="fas fa-stop-circle"></i> עצור הקלטה
+                                </button>
+                            </div>
+                            <div class="record-status">
+                                <div id="record-timer">00:00</div>
+                                <div class="record-wave" id="record-wave"></div>
+                            </div>
+                            <p class="note"><i class="fas fa-info-circle"></i> לאחר סיום ההקלטה תוכל לתמלל את האודיו</p>
+                        </div>
                     </div>
-                    <p id="progress-text" class="progress-text">0%</p>
+                </div>
+            </div>    
+            <div id="result-container" class="result-container">
+                <h3 class="decorated">תוצאת התמלול <span class="badge badge-success">הושלם!</span></h3>
+                
+                <!-- לשוניות הגהה/AI -->
+                <div class="result-tabs">
+                    <button class="result-tab-btn active" data-result-tab="original">תמלול מקורי</button>
+                    <button class="result-tab-btn" data-result-tab="enhanced">הגהה חכמה</button>
+                    <button class="result-tab-btn" data-result-tab="summary">סיכום AI</button>
                 </div>
                 
-                <div id="loading-spinner" class="loading-spinner"></div>
-                <div id="error-message" class="error-message"></div>
-            </div>
-
-            <div id="result-container" class="result-container">
-                <h3>תוצאת התמלול:</h3>
-                <textarea id="transcription-result" readonly></textarea>
-                <div class="actions">
-                    <button class="btn copy-btn" id="copy-btn">העתק תמלול</button>
-                    <button class="btn new-btn" id="new-btn">תמלול חדש</button>
-                    <button class="btn download-btn" id="download-btn">הורד כקובץ טקסט</button>
+                <!-- תוכן לשוניות -->
+                <div class="result-tabs-content">
+                    <!-- תמלול מקורי -->
+                    <div class="result-tab-content active" id="original-content">
+                        <textarea id="transcription-result" readonly></textarea>
+                    </div>
+                    
+                    <!-- הגהה חכמה -->
+                    <div class="result-tab-content" id="enhanced-content">
+                        <textarea id="enhanced-result" readonly></textarea>
+                    </div>
+                    
+                    <!-- סיכום AI -->
+                    <div class="result-tab-content" id="summary-content">
+                        <textarea id="summary-result" readonly></textarea>
+                    </div>
                 </div>
+                
+                <div class="actions">
+                    <div class="action-group">
+                        <button class="btn new-btn" id="new-btn"><i class="fas fa-plus"></i> תמלול חדש</button>
+                    </div>
+                    
+                    <div class="action-group">
+                        <button class="btn copy-btn small-btn" id="copy-btn"><i class="fas fa-copy"></i> העתק</button>
+                        
+                        <div class="dropdown">
+                            <button class="btn download-btn dropdown-toggle" id="download-dropdown-btn">
+                                <i class="fas fa-download"></i> הורד כ-
+                            </button>
+                            <div class="dropdown-menu" id="download-options">
+                                <button class="dropdown-item" data-format="txt"><i class="fas fa-file-alt"></i> קובץ טקסט (TXT)</button>
+                                <button class="dropdown-item" data-format="srt"><i class="fas fa-closed-captioning"></i> כתוביות (SRT)</button>
+                                <button class="dropdown-item" data-format="word"><i class="fas fa-file-word"></i> מסמך Word</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="floating-card" style="display: none;" id="tips-card">
+                <h4><i class="fas fa-lightbulb"></i> טיפים לתמלול מוצלח</h4>
+                <ul>
+                    <li>וודא שהקובץ באיכות טובה עם רעש רקע מינימלי</li>
+                    <li>עבור קבצים ארוכים, הפיצול לקטעים קצרים משפר את איכות התמלול</li>
+                    <li>מומלץ לבדוק את התמלול ולתקן שגיאות במידת הצורך</li>
+                </ul>
             </div>
         </div>
     </div>
-
+    <div id="api-guide-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>איך להשיג מפתח API של Huggingface</h3>
+            <div class="guide-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>היכנס לאתר Huggingface</h4>
+                        <p>פתח את האתר <a href="https://huggingface.co/" target="_blank">huggingface.co</a></p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>צור חשבון או התחבר</h4>
+                        <p>לחץ על "Sign Up" בפינה הימנית העליונה ליצירת חשבון חדש, או התחבר לחשבון קיים</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>פתח את הגדרות המשתמש</h4>
+                        <p>לאחר ההתחברות, לחץ על תמונת הפרופיל שלך בפינה הימנית העליונה ובחר ב-"Settings"</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>צור מפתח API חדש</h4>
+                        <p>בתפריט הצדדי, בחר ב-"Access Tokens", ואז לחץ על כפתור "New token"</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>הגדר את המפתח</h4>
+                        <p>תן שם למפתח (לדוגמה "Audio Transcription"), בחר הרשאות "Read" ולחץ על "Generate token"</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <h4>העתק את המפתח</h4>
+                        <p>העתק את המפתח שנוצר והדבק אותו בשדה "מפתח API של Huggingface" בעמוד זה</p>
+                    </div>
+                </div>
+            </div>
+            <div class="guide-note">
+                <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר מלבד Huggingface.</p>
+            </div>
+        </div>
+    </div>
     <footer>
-        <p>© 2025 שירות תמלול אודיו - פשוט, מהיר ומדויק.</p>
+        <p>© 2025 שירות תמלול אודיו - פשוט, מהיר ומדויק. <a href="#" id="show-tips">טיפים לשימוש</a></p>
     </footer>
 
     <!-- נגדיר סקריפט קצר לבדיקת שגיאות -->
     <script>
         window.onerror = function(message, source, lineno, colno, error) {
-            console.error('שגיאת JavaScript:', message, 'בקובץ:', source, 'שורה:', lineno);
-            alert('אירעה שגיאה בטעינת המערכת: ' + message);
-            return true;
+            console.error('--- שגיאת JavaScript מלאה ---');
+            console.error('הודעה:', message);
+            console.error('קובץ:', source);
+            console.error('שורה:', lineno, 'עמודה:', colno);
+            console.error('אובייקט שגיאה:', error);
+            if (error && error.stack) console.error('Stack:', error.stack);
+            return false; // כדי לא לחסום שגיאות מהדפדפן
         };
     </script>
+    
+    
 
     <!-- טעינת קבצי JavaScript בסדר הנכון -->
     <script src="js/audioSplitter.js"></script>
@@ -104,25 +292,72 @@
     <!-- סקריפט בדיקה נוסף -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    // בדיקה אם כל המודולים נטענו כראוי
-    if (typeof window.AudioSplitter === 'undefined') {
-        console.error('AudioSplitter לא נטען!');
-    } else {
-        console.log('AudioSplitter נטען בהצלחה');
-    }
-    
-    if (typeof window.Transcription === 'undefined') {
-        console.error('Transcription לא נטען!');
-    } else {
-        console.log('Transcription נטען בהצלחה');
-    }
-    
-    if (typeof window.UI === 'undefined') {
-        console.error('UI לא נטען!');
-    } else {
-        console.log('UI נטען בהצלחה');
-    }
-});
+            // בדיקה אם כל המודולים נטענו כראוי
+            if (typeof window.AudioSplitter === 'undefined') {
+                console.error('AudioSplitter לא נטען!');
+            } else {
+                console.log('AudioSplitter נטען בהצלחה');
+            }
+            
+            if (typeof window.Transcription === 'undefined') {
+                console.error('Transcription לא נטען!');
+            } else {
+                console.log('Transcription נטען בהצלחה');
+            }
+            
+            if (typeof window.UI === 'undefined') {
+                console.error('UI לא נטען!');
+            } else {
+                console.log('UI נטען בהצלחה');
+            }
+            
+            // הוספת פונקציונליות להצגת טיפים
+            document.getElementById('show-tips').addEventListener('click', function(e) {
+                e.preventDefault();
+                const tipsCard = document.getElementById('tips-card');
+                tipsCard.style.display = tipsCard.style.display === 'none' ? 'block' : 'none';
+            });
+        });
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const helpIcon = document.getElementById("api-help-icon");
+            const modal = document.getElementById("api-guide-modal");
+            const closeModal = document.querySelector(".close-modal");
+        
+            if (helpIcon && modal && closeModal) {
+                helpIcon.addEventListener("click", () => {
+                    modal.style.display = "block";
+                });
+        
+                closeModal.addEventListener("click", () => {
+                    modal.style.display = "none";
+                });
+        
+                window.addEventListener("click", (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = "none";
+                    }
+                });
+            } else {
+                console.error("אחד הרכיבים לא נטען כראוי (modal, helpIcon או closeModal)");
+            }
+        });
+        </script>      
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const checkbox = document.getElementById('show-api-key');
+              const apiKeyInput = document.getElementById('api-key-input');
+              
+              if (checkbox && apiKeyInput) {
+                checkbox.addEventListener('change', function() {
+                  apiKeyInput.type = this.checked ? 'text' : 'password';
+                  console.log("Changed type to:", apiKeyInput.type);
+                });
+              } else {
+                console.error("Elements not found:", !checkbox ? "checkbox" : "", !apiKeyInput ? "apiKeyInput" : "");
+              }
+            });
+          </script>  
 </body>
 </html>

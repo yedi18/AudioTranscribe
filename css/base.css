@@ -1,0 +1,169 @@
+/* ================================================
+   base.css - קובץ בסיס
+   ================================================
+   תוכן:
+   1. משתנים (צבעים, גופנים, מרווחים)
+   2. איפוס וכללים בסיסיים
+   3. מבנה דף ומיכלים
+   4. טיפוגרפיה בסיסית
+   5. כותרת ראשית
+   6. התאמה לנייד
+   ================================================ */
+
+/* ================================================
+   1. משתנים (צבעים, גופנים, מרווחים)
+   ================================================ */
+:root {
+    /* צבעים ראשיים */
+    --primary-color: #4c6ef5;       /* כחול משודרג */
+    --secondary-color: #3b5bdb;     /* כחול כהה יותר */
+    --accent-color: #ff922b;        /* כתום משלים */
+    
+    /* צבעי מצב */
+    --success-color: #37b24d;       /* ירוק */
+    --error-color: #f03e3e;         /* אדום */
+    
+    /* צבעי רקע וטקסט */
+    --background-color: #f8f9fa;    /* רקע בהיר */
+    --card-color: #ffffff;          /* כרטיסיה לבנה */
+    --text-color: #343a40;          /* טקסט כהה */
+    --text-light: #868e96;          /* טקסט בהיר */
+    
+    /* עיצוב */
+    --border-radius: 12px;          /* עיגול פינות מוגדל */
+    --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);  /* צל עדין */
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* אנימציה חלקה */
+}
+
+/* ================================================
+   2. איפוס וכללים בסיסיים
+   ================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, 'Heebo', 'Rubik', sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    background-image: linear-gradient(135deg, #f5f7fa 0%, #e4eaf5 100%);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+}
+
+/* ================================================
+   3. מבנה דף ומיכלים
+   ================================================ */
+.container {
+    width: 100%;
+    max-width: 850px;
+}
+
+.card {
+    background-color: var(--card-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+}
+
+.card:hover {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+/* ================================================
+   4. טיפוגרפיה בסיסית
+   ================================================ */
+h1 {
+    color: var(--primary-color);
+    margin-bottom: 0.8rem;
+    font-size: 2.4rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.subtitle {
+    color: var(--text-light);
+    font-size: 1.2rem;
+    line-height: 1.5;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* ================================================
+   5. כותרת ראשית
+   ================================================ */
+header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    animation: fadeIn 0.8s ease-out;
+}
+
+footer {
+    margin-top: auto;
+    text-align: center;
+    color: var(--text-light);
+    font-size: 0.95rem;
+    padding: 1.5rem;
+    width: 100%;
+}
+
+footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+footer a:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+/* ================================================
+   6. התאמה לנייד
+   ================================================ */
+@media (max-width: 768px) {
+    .card {
+        padding: 1.5rem;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-top: 0.8rem;
+    }
+    
+    .api-input-group {
+        flex-direction: column;
+    }
+    
+    .api-input-group input {
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+    
+    .api-input-group button {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+    
+    .split-settings {
+        padding-right: 0;
+    }
+}
