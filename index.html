@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שירות תמלול אודיו MP3</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- ודא שהנתיב לקובץ CSS נכון -->
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>שירות תמלול אודיו MP3</h1>
+            <p class="subtitle">העלה קובץ MP3 ותוך רגעים בודדים תקבל תמלול מדויק</p>
+        </header>
+
+        <div class="card">
+            <div id="api-settings" class="api-settings">
+                <details open>
+                    <summary>הגדרות API</summary>
+                    <div class="api-settings-content">
+                        <label for="api-key-input">מפתח API של Huggingface:</label>
+                        <div class="api-input-group">
+                            <input type="password" id="api-key-input" placeholder="הדבק את מפתח ה-API שלך כאן">
+                            <button id="save-api-key" class="btn">שמור</button>
+                        </div>
+                        <div>
+                            <label><input type="checkbox" id="show-api-key"> הצג/הסתר מפתח API</label>
+                        </div>
+                        <div id="api-key-status" class="api-key-status"></div>
+                    </div>
+                </details>
+            </div>
+
+            <div id="upload-container">
+                <div id="upload-area" class="upload-area">
+                    <div class="upload-icon">🎤</div>
+                    <h3>גרור לכאן קובץ אודיו MP3</h3>
+                    <p>או לחץ כדי לבחור קובץ</p>
+                    <input type="file" id="file-input" accept="audio/mp3,.mp3" style="display: none;">
+                    <button class="btn" id="select-file-btn">בחר קובץ MP3</button>
+                </div>
+                
+                <div id="file-info" class="file-info">
+                    <p>הקובץ שנבחר: <span id="file-name" class="file-name"></span></p>
+                    <p id="file-size"></p>
+                    <div class="settings">
+                        <label>
+                            <input type="checkbox" id="split-audio" checked>
+                            פצל אודיו לקטעים (נדרש עבור קבצים ארוכים מ-30 שניות)
+                        </label>
+                        <div id="split-settings" class="split-settings">
+                            <label for="segment-length">אורך כל קטע בשניות:</label>
+                            <input type="number" id="segment-length" value="25" min="5" max="30">
+                            <p class="note">הערה: מומלץ לקבוע ערך נמוך מ-30 שניות</p>
+                        </div>
+                    </div>
+                    <button class="btn" id="transcribe-btn">התחל תמלול MP3</button>
+                </div>
+
+                <div id="progress-container" class="progress-container">
+                    <h4 id="progress-status">מעבד את קובץ האודיו...</h4>
+                    <div id="progress-bar-container" class="progress-bar-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+                    <p id="progress-text" class="progress-text">0%</p>
+                </div>
+                
+                <div id="loading-spinner" class="loading-spinner"></div>
+                <div id="error-message" class="error-message"></div>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>תוצאת התמלול:</h3>
+                <textarea id="transcription-result" readonly></textarea>
+                <div class="actions">
+                    <button class="btn copy-btn" id="copy-btn">העתק תמלול</button>
+                    <button class="btn new-btn" id="new-btn">תמלול חדש</button>
+                    <button class="btn download-btn" id="download-btn">הורד כקובץ טקסט</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 שירות תמלול אודיו - פשוט, מהיר ומדויק.</p>
+    </footer>
+
+    <!-- נגדיר סקריפט קצר לבדיקת שגיאות -->
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('שגיאת JavaScript:', message, 'בקובץ:', source, 'שורה:', lineno);
+            alert('אירעה שגיאה בטעינת המערכת: ' + message);
+            return true;
+        };
+    </script>
+
+    <!-- טעינת קבצי JavaScript בסדר הנכון -->
+    <script src="js/audioSplitter.js"></script>
+    <script src="js/transcription.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- סקריפט בדיקה נוסף -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // בדיקה אם כל המודולים נטענו כראוי
+    if (typeof window.AudioSplitter === 'undefined') {
+        console.error('AudioSplitter לא נטען!');
+    } else {
+        console.log('AudioSplitter נטען בהצלחה');
+    }
+    
+    if (typeof window.Transcription === 'undefined') {
+        console.error('Transcription לא נטען!');
+    } else {
+        console.log('Transcription נטען בהצלחה');
+    }
+    
+    if (typeof window.UI === 'undefined') {
+        console.error('UI לא נטען!');
+    } else {
+        console.log('UI נטען בהצלחה');
+    }
+});
+    </script>
+</body>
+</html>
