@@ -36,7 +36,7 @@
         <div class="card">
             <div id="api-settings" class="api-settings">
                 <details>
-                    <summary>הגדרות API <i class="fas fa-cog"></i></summary>
+                    <summary>   הגדרות API  <i class="fas fa-cog"></i></summary>
                     <div class="api-settings-content">
                         <!-- חלק חובה - Huggingface -->
                         <div class="api-section required">
@@ -380,6 +380,76 @@
                         מלבד Groq.</p>
                 </div>
             </div>
+        </div>
+        <!-- כפתור עזרה צף -->
+        <button id="help-btn" title="עזרה">i</button>
+
+        <!-- תיבת עזרה -->
+        <div id="help-popup">
+            <h2>מדריך שימוש מהיר</h2>
+
+            <div class="help-step">
+                <h3>
+                    <span class="step-number">1</span>
+                    הכנסת מפתח API ✔️
+                </h3>
+                <p>כדי שהתמלול יעבוד, עליך להזין מפתח API של Hugging Face.</p>
+                <div class="help-links">
+                    <a href="https://huggingface.co/join" target="_blank">
+                        <i class="fas fa-sign-in-alt"></i> אין לך חשבון? הרשם ל-Hugging Face
+                    </a>
+                    <a href="https://huggingface.co/settings/tokens" target="_blank">
+                        <i class="fas fa-key"></i> צפה במפתחות שלך
+                    </a>
+                </div>
+                <button id="scroll-to-api" class="inline-btn">
+                    <i class="fas fa-cog"></i> להסבר נרחב - עבור להגדרות API
+                </button>
+            </div>
+            <div class="help-step">
+                <h3>
+                    <span class="step-number">2</span>
+                    העלאת קובץ MP3 ✔️
+                </h3>
+                <p>כרגע האתר תומך רק בקבצי MP3.</p>
+                <div class="help-links">
+                    <a href="https://cloudconvert.com/audio-converter" target="_blank">
+                        <i class="fas fa-exchange-alt"></i> המר קצבי אודיו אחרים ל-MP3
+                    </a>
+                </div>
+            </div>
+
+            <div class="help-step">
+                <h3>
+                    <span class="step-number">3</span>
+                    התחלת תמלול ✔️
+                </h3>
+                <p>לחץ על "בחר קובץ MP3" ואז על "תמלול".</p>
+            </div>
+
+
+            <div class="developer-toggle">
+                <details>
+                    <summary>על יוצר האתר <span class="profile-emoji">👨‍💻</span></summary>
+                    <h4>ידידיה שאולי - מתכנת חובב</h4>
+                    אני ידידיה שאולי, מפתח האתר הזה.
+
+                    הקמתי אותו כדי להנגיש תמלול קולי איכותי במיוחד לדוברי עברית, בצורה פשוטה, חינמית וללא צורך בהרשמה.
+                    אשמח לפידבק והצעות לשיפור!
+
+                    <div class="developer-links">
+                        <a href="https://github.com/yedi18" target="_blank">
+                            <i class="fab fa-github"></i> GitHub
+                        </a>
+                        <a href="https://www.linkedin.com/in/yedidya-shauli-6084a928a/" target="_blank">
+                            <i class="fab fa-linkedin"></i> LinkedIn
+                        </a>
+                    </div>
+                </details>
+
+            </div>
+
+            <button id="close-help-popup" class="close-btn">סגור</button>
         </div>
         <footer>
             <p>© 2025 שירות תמלול אודיו - פשוט, מהיר ומדויק. <a href="#" id="show-tips">טיפים לשימוש</a></p>

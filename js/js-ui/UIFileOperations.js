@@ -11,12 +11,15 @@ class UIFileOperations extends UIHandlers {
         if (files.length > 0) {
             this.selectedFile = files[0];
 
-            // בדיקה אם הקובץ הוא mp3
-            if (!this.selectedFile.type.includes('mp3') &&
-                !this.selectedFile.name.toLowerCase().endsWith('.mp3')) {
-                this.showError('נא להעלות קובץ MP3 בלבד. פורמטים אחרים אינם נתמכים כרגע.');
+            const fileName = this.selectedFile.name.toLowerCase();
+            if (!fileName.endsWith('.mp3')) {
+                this.showErrorWithLink(
+                    'הקובץ אינו קובץ MP3 תקני. אנא המר אותו ל־MP3 לפני התמלול.',
+                    'https://cloudconvert.com/audio-converter'
+                );
                 return;
             }
+
 
             this.fileName.textContent = this.selectedFile.name;
             this.fileSize.textContent = `גודל: ${this.formatFileSize(this.selectedFile.size)}`;
@@ -226,6 +229,30 @@ class UIFileOperations extends UIHandlers {
 
         return `${hours}:${minutes}:${secs},${ms}`;
     }
+
+    /**
+     * הצגת הודעת שגיאה עם קישור חיצוני
+     * @param {string} message - טקסט ההודעה
+     * @param {string} url - קישור להמרה
+     */
+    showErrorWithLink(message, url) {
+        this.errorMessage.innerHTML = `
+    ${message}<br>
+    <a href="${url}" target="_blank" style="color: #007bff; text-decoration: underline;">
+      לחץ כאן להמרת הקובץ ל־MP3
+    </a>
+  `;
+        this.errorMessage.style.display = 'block';
+        this.errorMessage.style.animation = 'shake 0.5s';
+
+        setTimeout(() => {
+            this.errorMessage.style.animation = '';
+        }, 500);
+
+        this.loadingSpinner.style.display = 'none';
+        this.errorMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
 }
 
 // ייצוא המחלקה
