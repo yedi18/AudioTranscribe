@@ -31,7 +31,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px; /* רווח בין האלמנטים בכפתור */
+    gap: 10px;
+    /* רווח בין האלמנטים בכפתור */
 }
 
 .btn::after {
@@ -70,7 +71,8 @@
     box-shadow: none;
 }
 
-.btn i, .btn svg {
+.btn i,
+.btn svg {
     margin-left: 8px;
 }
 
@@ -109,14 +111,17 @@
 .new-btn:hover {
     background-color: #343a40;
 }
+
 /* סגנון לכפתור הגהה */
 .enhance-btn {
-    background-color: #9c36b5; /* סגול - צבע שונה משאר הכפתורים */
+    background-color: #9c36b5;
+    /* סגול - צבע שונה משאר הכפתורים */
 }
 
 .enhance-btn:hover {
     background-color: #862e9c;
 }
+
 /* ================================================
    2. שדות קלט ותיבות
    ================================================ */
@@ -288,7 +293,8 @@ textarea:read-only {
     margin-bottom: 1.5rem;
 }
 
-.upload-area:hover, .upload-area.dragover {
+.upload-area:hover,
+.upload-area.dragover {
     border-color: var(--primary-color);
     background-color: rgba(76, 110, 245, 0.05);
     transform: scale(1.01);
@@ -476,10 +482,12 @@ textarea:read-only {
     position: absolute;
     right: 0;
     top: 0;
-    z-index: 1; /* להבטיח שהאירועים מגיעים לצ'קבוקס */
+    z-index: 1;
+    /* להבטיח שהאירועים מגיעים לצ'קבוקס */
     width: 20px;
     height: 20px;
-    opacity: 0.01; /* כמעט שקוף אבל לא לגמרי */
+    opacity: 0.01;
+    /* כמעט שקוף אבל לא לגמרי */
 }
 
 .checkmark {
@@ -492,14 +500,15 @@ textarea:read-only {
     border: 2px solid #dee2e6;
     border-radius: 4px;
     transition: var(--transition);
-    pointer-events: none; /* לאפשר אירועים לעבור לצ'קבוקס מתחת */
+    pointer-events: none;
+    /* לאפשר אירועים לעבור לצ'קבוקס מתחת */
 }
 
-.checkbox-wrapper:hover input ~ .checkmark {
+.checkbox-wrapper:hover input~.checkmark {
     border-color: var(--primary-color);
 }
 
-.checkbox-wrapper input:checked ~ .checkmark {
+.checkbox-wrapper input:checked~.checkmark {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
 }
@@ -510,7 +519,7 @@ textarea:read-only {
     display: none;
 }
 
-.checkbox-wrapper input:checked ~ .checkmark:after {
+.checkbox-wrapper input:checked~.checkmark:after {
     display: block;
 }
 
@@ -549,10 +558,11 @@ textarea:read-only {
 .badge-secondary {
     background-color: #6c757d;
 }
+
 /* ================================================
    9. לשוניות (Tabs)
    ================================================ */
-   .upload-tabs {
+.upload-tabs {
     margin-bottom: 2rem;
 }
 
@@ -728,15 +738,20 @@ textarea:read-only {
 }
 
 @keyframes waveAnimation {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0) scaleY(1);
     }
+
     25% {
         transform: translateY(-10px) scaleY(3);
     }
+
     50% {
         transform: translateY(0) scaleY(1);
     }
+
     75% {
         transform: translateY(10px) scaleY(3);
     }
@@ -809,7 +824,8 @@ textarea:read-only {
 }
 
 .dropdown-toggle::after {
-    content: "\\f0d7"; /* חץ למטה */
+    content: "\\f0d7";
+    /* חץ למטה */
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     position: absolute;
@@ -865,6 +881,7 @@ textarea:read-only {
     background-color: rgba(76, 110, 245, 0.1);
     color: var(--primary-color);
 }
+
 .dropdown-toggle {
     background-color: var(--primary-color);
     color: white;
@@ -875,8 +892,10 @@ textarea:read-only {
     font-weight: bold;
     position: relative;
 }
+
 .dropdown-toggle::after {
-    content: "\\f0da"; /* FontAwesome חץ ימינה */
+    content: "\\f0da";
+    /* FontAwesome חץ ימינה */
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     position: absolute;
@@ -911,4 +930,253 @@ textarea:read-only {
 .new-btn {
     padding: 1rem 2rem;
     font-size: 1.1rem;
+}
+
+/* סגנון משופר לבחירת אורך סיכום */
+.summary-length-options {
+    margin: 15px 0;
+    direction: rtl;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: rgba(76, 110, 245, 0.05);
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    border-right: 3px solid var(--primary-color);
+}
+
+.summary-length-options label {
+    margin-left: 10px;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.95rem;
+}
+
+.summary-length-options select {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    background-color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    outline: none;
+}
+
+.summary-length-options select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
+}
+
+/* סגנון מותאם לאפשרויות בתפריט */
+.summary-length-options select option {
+    padding: 8px;
+}
+
+/* אייקון לצד התווית */
+.summary-length-options label::before {
+    content: "\f05a";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    margin-left: 5px;
+    color: var(--primary-color);
+}
+
+/* סגנון בעת hover */
+.summary-length-options:hover {
+    background-color: rgba(76, 110, 245, 0.08);
+}
+
+.primary-btn {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 1rem;
+}
+
+.primary-btn:hover {
+    background-color: #3957f0;
+}
+
+/* עיצוב משופר לבורר אורך סיכום - להוסיף לקובץ components.css */
+
+/* עיצוב לאזור הכולל של אפשרויות הסיכום */
+.summary-options-container {
+    margin-bottom: 15px;
+    background-color: rgba(240, 242, 245, 0.6);
+    border-radius: var(--border-radius);
+    padding: 5px;
+}
+
+/* עיצוב משופר לבורר אורך סיכום ולפרומפט חופשי */
+.summary-length-options {
+    margin: 15px 0;
+    direction: rtl;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: rgba(76, 110, 245, 0.05);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    border-right: 3px solid var(--primary-color);
+}
+
+.summary-length-options .select-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.summary-length-options label {
+    margin-left: 12px;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.95rem;
+    position: relative;
+    padding-right: 22px;
+    white-space: nowrap;
+}
+
+.summary-length-options label::before {
+    content: "\f05a";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+}
+
+.summary-length-options select {
+    padding: 10px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    background-color: white;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    outline: none;
+    min-width: 140px;
+    flex-grow: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.summary-length-options select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
+}
+
+/* סגנונות לאזור פרומפט חופשי */
+#custom-prompt-container {
+    width: 100%;
+    animation: fadeIn 0.3s;
+}
+
+#custom-prompt {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 100px;
+    transition: var(--transition);
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+#custom-prompt:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
+}
+
+/* עיצוב כפתור יצירת סיכום */
+#generate-summary-btn {
+    margin-top: 12px;
+    align-self: flex-start;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 18px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(76, 110, 245, 0.2);
+}
+
+#generate-summary-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(76, 110, 245, 0.3);
+}
+
+#generate-summary-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 3px rgba(76, 110, 245, 0.2);
+}
+
+#generate-summary-btn:disabled {
+    background-color: #adb5bd;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#generate-summary-btn i {
+    margin-left: 5px;
+}
+
+/* סגנונות לאזורים בהגדרות API */
+.api-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    background-color: rgba(248, 249, 250, 0.5);
+}
+
+.api-section.required {
+    border-right: 4px solid var(--primary-color);
+}
+
+.api-section.optional {
+    border-right: 4px solid var(--accent-color);
+}
+
+.api-section h4 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.api-section.optional h4 {
+    color: var(--accent-color);
+}
+
+.api-description {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.api-description a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.api-description a:hover {
+    text-decoration: underline;
+    color: var(--secondary-color);
 }

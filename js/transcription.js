@@ -70,6 +70,7 @@ class Transcription {
             throw new Error('מפתח API חסר');
         }
         
+        
         if (!audioSegments || audioSegments.length === 0) {
             return '';
         }
