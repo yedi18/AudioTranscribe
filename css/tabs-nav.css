@@ -1,0 +1,200 @@
+/* ================================================
+   tabs-nav.css - מערכת הלשוניות והניווט
+   ================================================ */
+
+   .upload-tabs {
+    margin-bottom: 2rem;
+}
+
+.tabs-header {
+    display: flex;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 2px 2px 0 0;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.5s;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* לשוניות תוצאה */
+.result-tabs {
+    display: flex;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 1rem;
+}
+
+.result-tab-btn {
+    background: none;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.result-tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.result-tab-btn.active {
+    color: var(--primary-color);
+}
+
+.result-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 2px 2px 0 0;
+}
+
+.result-tab-content {
+    display: none;
+    animation: fadeIn 0.5s;
+}
+
+.result-tab-content.active {
+    display: block;
+}
+
+/* סגנון לתפריט נפתח */
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    position: relative;
+    padding-left: 2.5rem;
+}
+
+.dropdown-toggle::after {
+    content: "\\f0d7";
+    /* חץ למטה */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.3s;
+}
+
+.dropdown.open .dropdown-toggle::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.dropdown-menu {
+    bottom: 100%;
+    top: auto;
+    right: 0;
+    left: auto;
+    margin-bottom: 0.25rem;
+    position: absolute;
+    z-index: 999;
+    display: none;
+    min-width: 220px;
+    padding: 0.5rem 0;
+    background-color: var(--card-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+
+
+.dropdown.open .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 1rem;
+    width: 100%;
+    text-align: right;
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(76, 110, 245, 0.1);
+    color: var(--primary-color);
+}
+
+.dropdown-toggle {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    position: relative;
+}
+
+.dropdown-toggle::after {
+    content: "\\f0da";
+    /* FontAwesome חץ ימינה */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.3s;
+}

@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // אתחול ממשק המשתמש
     const ui = new UI();
     console.log('ממשק משתמש אותחל בהצלחה');
+    ui.init();
     
     /**
      * הפעלת תמלול כאשר לוחצים על כפתור "התחל תמלול"

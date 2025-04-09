@@ -1,0 +1,27 @@
+/* ================================================
+   badges.css - תגיות
+   ================================================ */
+
+/* תגיות (badges) */
+.badge {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: 0.85em;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    background-color: var(--primary-color);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 20px;
+    margin-right: 0.5rem;
+}
+
+.badge-success {
+    background-color: var(--success-color);
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+}

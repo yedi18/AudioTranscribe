@@ -1,0 +1,149 @@
+/* ================================================
+   api-settings.css - הגדרות API והודעות
+   ================================================ */
+
+   .api-settings {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.api-settings summary {
+    cursor: pointer;
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 0.5rem 0;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    outline: none;
+}
+
+.api-settings summary:hover {
+    color: var(--secondary-color);
+}
+
+.api-settings summary::before {
+    content: '▸';
+    display: inline-block;
+    margin-left: 0.5rem;
+    transition: transform 0.3s;
+}
+
+.api-settings[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.api-settings-content {
+    margin-top: 1.2rem;
+    animation: expandDown 0.3s ease-out;
+}
+
+.api-settings label {
+    display: block;
+    margin-bottom: 0.7rem;
+    font-weight: 500;
+}
+
+.api-input-group {
+    display: flex;
+    margin-bottom: 0.8rem;
+}
+
+.api-input-group input {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.api-input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
+}
+
+.api-input-group button {
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    margin-top: 0;
+    padding: 0 1.5rem;
+}
+
+.api-key-status {
+    margin-top: 0.8rem;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.api-help-icon {
+    display: inline-block;
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.api-help-icon:hover {
+    color: var(--secondary-color);
+    transform: scale(1.1);
+}
+
+/* הודעת שגיאה */
+.error-message {
+    color: var(--error-color);
+    text-align: center;
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    background-color: rgba(240, 62, 62, 0.1);
+    font-weight: 500;
+    display: none;
+    animation: shake 0.5s;
+}
+
+/* סגנונות לאזורים בהגדרות API */
+.api-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    background-color: rgba(248, 249, 250, 0.5);
+}
+
+.api-section.required {
+    border-right: 4px solid var(--primary-color);
+}
+
+.api-section.optional {
+    border-right: 4px solid var(--accent-color);
+}
+
+.api-section h4 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.api-section.optional h4 {
+    color: var(--accent-color);
+}
+
+.api-description {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.api-description a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.api-description a:hover {
+    text-decoration: underline;
+    color: var(--secondary-color);
+}

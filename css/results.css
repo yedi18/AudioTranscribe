@@ -1,0 +1,98 @@
+/* ================================================
+   results.css - אזורי תוצאות ותצוגת תמלול
+   ================================================ */
+
+   .result-container {
+    display: none;
+    animation: fadeIn 0.5s;
+}
+
+.result-container h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.action-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    align-items: center;
+  }
+  
+  .actions .download-btn,
+  .actions .copy-btn {
+    order: 2; /* יציב אותם שמאלה */
+  }
+  
+  .actions .new-btn {
+    order: 1; /* יציב אותו בצד ימין */
+    margin-left: auto; /* ידחף אותו לשמאל */
+    padding: 1rem 2rem; /* יגדיל אותו */
+    font-size: 1.1rem;
+  }
+  
+
+/* עיצוב משופר לבורר אורך סיכום */
+.summary-length-options {
+    margin: 15px 0;
+    direction: rtl;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: rgba(76, 110, 245, 0.05);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    border-right: 3px solid var(--primary-color);
+}
+
+.summary-length-options .select-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.summary-length-options label {
+    margin-left: 10px;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.95rem;
+    position: relative;
+    padding-right: 22px;
+    white-space: nowrap;
+}
+
+.summary-length-options label::before {
+    content: "\f05a";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+}
+
+/* סגנונות לאזור פרומפט חופשי */
+#custom-prompt-container {
+    width: 100%;
+    animation: fadeIn 0.3s;
+}
+
+/* עיצוב משופר לבורר אורך סיכום - להוסיף לקובץ components.css */
+
+/* עיצוב לאזור הכולל של אפשרויות הסיכום */
+.summary-options-container {
+    margin-bottom: 15px;
+    background-color: rgba(240, 242, 245, 0.6);
+    border-radius: var(--border-radius);
+    padding: 5px;
+}

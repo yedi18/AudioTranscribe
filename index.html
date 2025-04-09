@@ -6,11 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>שירות תמלול אודיו MP3 | המרת קול לטקסט מדויק</title>
     <meta name="description" content="המר קבצי MP3 לטקסט בעברית בקלות. שירות תמלול אודיו מהיר ומדויק.">
+    <!-- קבצי CSS המפוצלים במקום קובץ components.css -->
     <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/utilities.css"> <!-- קישור לפונטים של Google -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/api-settings.css">
+    <link rel="stylesheet" href="css/upload.css">
+    <link rel="stylesheet" href="css/progress.css">
+    <link rel="stylesheet" href="css/tabs-nav.css">
+    <link rel="stylesheet" href="css/results.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/badges.css">
+    <link rel="stylesheet" href="css/utilities.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap"
         rel="stylesheet">
@@ -399,7 +406,14 @@
         <script src="js/enhancementHandler.js"></script>
         <script src="js/recordingHandler.js"></script>
         <script src="js/youtubeHandler.js"></script>
-        <script src="js/ui.js"></script>
+        <!-- מודולי ממשק משתמש -->
+        <script src="js/js-ui/UICore.js"></script>
+        <script src="js/js-ui/UIHandlers.js"></script>
+        <script src="js/js-ui/UIFileOperations.js"></script>
+        <script src="js/js-ui/UIAPIManagement.js"></script>
+        <script src="js/js-ui/UIProgressDisplay.js"></script>
+        <script src="js/js-ui/UIResultsDisplay.js"></script>
+        <script src="js/js-ui/UI.js"></script>
         <script src="js/main.js"></script>
 
         <!-- סקריפט בדיקה נוסף -->
