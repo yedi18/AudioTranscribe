@@ -16,14 +16,28 @@ class AudioSplitter {
         try {
             // תחילה, בדוק את אורך הקובץ
             const audioDuration = await AudioSplitter.getAudioDuration(audioFile);
+            if (!audioDuration || !isFinite(audioDuration) || isNaN(audioDuration)) {
+                throw new Error('⛔ זמן אודיו לא תקני: ' + audioDuration);
+            }
+            
             console.log(`אורך האודיו המקורי: ${audioDuration} שניות`);
             
             // אם הקובץ קצר מהזמן המבוקש, פשוט נחזיר אותו כמו שהוא
             if (audioDuration <= segmentDuration) {
-                console.log("הקובץ קצר מספיק - מחזיר את הקובץ המקורי");
+                console.log("הקובץ קצר מספיק - מחזיר אותו כמו שהוא, לא נחתך");
+                
+                // אם MP3 → מחזיר כמו שהוא
+                if (audioFile.type === 'audio/mp3' || audioFile.name.endsWith('.mp3')) {
+                    if (onProgress) onProgress({ status: 'complete', progress: 100 });
+                    return [audioFile];
+                }
+            
+                // אחרת, ממיר ל־MP3 תקני
+                const convertedFile = await AudioSplitter.convertToValidMp3(audioFile);
                 if (onProgress) onProgress({ status: 'complete', progress: 100 });
-                return [audioFile];
+                return [convertedFile];
             }
+            
             
             // אחרת, נפצל את הקובץ לחלקים
             if (onProgress) onProgress({ 
@@ -42,29 +56,9 @@ class AudioSplitter {
         }
     }
     
-    /**
-     * קבלת אורך הקובץ בשניות
-     * @param {File} audioFile - קובץ האודיו
-     * @returns {Promise<number>} - אורך הקובץ בשניות
-     */
-    static async getAudioDuration(audioFile) {
-        return new Promise((resolve, reject) => {
-            const audio = document.createElement('audio');
-            audio.preload = 'metadata';
-            
-            audio.onloadedmetadata = () => {
-                URL.revokeObjectURL(audio.src);
-                resolve(audio.duration);
-            };
-            
-            audio.onerror = (err) => {
-                URL.revokeObjectURL(audio.src);
-                reject(new Error('Failed to load audio metadata'));
-            };
-            
-            audio.src = URL.createObjectURL(audioFile);
-        });
-    }
+    
+    
+    
     
     /**
      * חיתוך קובץ האודיו המקורי לחלקים ללא המרה לפורמט אחר
