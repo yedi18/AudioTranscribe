@@ -2,7 +2,7 @@
    upload.css - אזור העלאת קבצים
    ================================================ */
 
-   .upload-area {
+.upload-area {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -163,7 +163,7 @@
     margin-top: 0;
 }
 
-/* סגנונות לאזור הקלטה */
+/* סגנונות לאזור הקלטה - עדכון */
 .record-area {
     display: flex;
     flex-direction: column;
@@ -202,43 +202,14 @@
     margin-bottom: 0.5rem;
 }
 
-.record-wave {
-    width: 300px;
-    height: 60px;
-    background-color: rgba(76, 110, 245, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
-}
+.record-wave-canvas {
+    border-radius: 12px;
+    background: #eef3ff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    max-width: 800px;
+    height: 70px;
+    margin-top: 1rem;
+  }
 
-/* כאשר מקליטים, נוסיף אנימציה */
-.recording .record-wave::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--primary-color);
-    animation: waveAnimation 2s ease-in-out infinite;
-}
-
-@keyframes waveAnimation {
-
-    0%,
-    100% {
-        transform: translateY(0) scaleY(1);
-    }
-
-    25% {
-        transform: translateY(-10px) scaleY(3);
-    }
-
-    50% {
-        transform: translateY(0) scaleY(1);
-    }
-
-    75% {
-        transform: translateY(10px) scaleY(3);
-    }
-}
+  

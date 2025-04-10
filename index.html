@@ -24,6 +24,8 @@
     <!-- אייקונים של Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
+
 </head>
 
 <body>
@@ -36,7 +38,7 @@
         <div class="card">
             <div id="api-settings" class="api-settings">
                 <details>
-                    <summary>   הגדרות API  <i class="fas fa-cog"></i></summary>
+                    <summary> הגדרות API <i class="fas fa-cog"></i></summary>
                     <div class="api-settings-content">
                         <!-- חלק חובה - Huggingface -->
                         <div class="api-section required">
@@ -189,7 +191,9 @@
                             </div>
                             <div class="record-status">
                                 <div id="record-timer">00:00</div>
-                                <div class="record-wave" id="record-wave"></div>
+                                <div id="record-wave" class="record-wave">
+                                    <canvas id="waveform" width="800" height="200" class="record-wave-canvas"></canvas>
+                                </div>
                             </div>
                             <p class="note"><i class="fas fa-info-circle"></i> לאחר סיום ההקלטה תוכל לתמלל את האודיו</p>
                         </div>
