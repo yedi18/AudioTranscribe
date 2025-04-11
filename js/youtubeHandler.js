@@ -410,52 +410,39 @@ class YouTubeHandler {
      */
     async convertToAudio(videoId) {
         try {
-            // עדכון התקדמות - מתחיל המרה
             this.updateYouTubeProgress({
                 status: 'converting',
                 progress: 20,
-                message: 'מתחיל להמיר את הסרטון לאודיו...'
+                message: 'מוריד את האודיו מהיוטיוב...'
             });
 
-            // בסביבת הדגמה - יצירת קובץ אודיו לבדיקה
-            // במימוש אמיתי - כאן יהיה חיבור לשירות המרה אמיתי
+            const fullUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-            // דימוי שלב עיבוד
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // עדכון התקדמות - המרה מתקדמת
-            this.updateYouTubeProgress({
-                status: 'converting',
-                progress: 50,
-                message: 'ממיר את הסרטון לפורמט אודיו...'
+            const response = await fetch('https://audiotranscribe-27kc.onrender.com/youtube', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: fullUrl })
             });
 
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            if (!response.ok) throw new Error("השרת לא הצליח להוריד את האודיו");
 
-            // בסביבת הדגמה - נייצר קובץ אודיו דמה
-            // יצירת מערך בינארי לקובץ דמה
-            const dummyData = new Uint8Array(100000);
-            for (let i = 0; i < dummyData.length; i++) {
-                dummyData[i] = Math.floor(Math.random() * 256);
-            }
+            const audioBlob = await response.blob();
 
-            // יצירת Blob מהמערך
-            const audioBlob = new Blob([dummyData], { type: 'audio/mp3' });
-
-            // עדכון התקדמות - המרה הושלמה
             this.updateYouTubeProgress({
                 status: 'converting',
                 progress: 65,
-                message: 'המרת אודיו הושלמה!'
+                message: 'ההמרה הושלמה'
             });
 
             return audioBlob;
-
         } catch (error) {
-            console.error('Error converting YouTube video to audio:', error);
-            throw new Error('לא ניתן להמיר את סרטון היוטיוב לאודיו: ' + error.message);
+            console.error('שגיאה בהמרת יוטיוב:', error);
+            throw new Error('שגיאה בהמרת הסרטון לאודיו: ' + error.message);
         }
     }
+
     // להוסיף למחלקת YouTubeHandler
     resetYoutubeUI() {
         // איפוס שדה הקלט
