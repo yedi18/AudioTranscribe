@@ -1,87 +1,42 @@
 const express = require('express');
-const ytdl = require('ytdl-core');
-const fs = require('fs');
 const cors = require('cors');
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const ffmpeg = require('fluent-ffmpeg');
+const bodyParser = require('body-parser');
+require('dotenv').config(); // טוען משתני סביבה מקובץ .env
 
-ffmpeg.setFfmpegPath(ffmpegPath); // קובע את הנתיב ל־ffmpeg
+const { getYoutubeMp3Link } = require('./youtubeHandler');
 
 const app = express();
-const port = process.env.PORT || 5000;
+const PORT = 10000;
 
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
-}));
+// Middlewares
+app.use(cors());
+app.use(bodyParser.json());
 
-app.use(express.json());
+// בדיקת בריאות
+app.get('/', (req, res) => {
+    res.send('🎉 YouTube MP3 Server is running!');
+});
 
+// API: קבלת קובץ MP3 מ־YouTube
 app.post('/youtube', async (req, res) => {
     const { url } = req.body;
-    if (!url) return res.status(400).send("Missing YouTube URL");
 
-    const timestamp = Date.now();
-    const filename = `audio_${timestamp}.mp3`;
-    const tempFile = `temp_${timestamp}.mp4`;
+    if (!url || !url.includes('youtube.com')) {
+        return res.status(400).json({ error: 'Missing or invalid YouTube URL' });
+    }
 
     try {
-        const info = await ytdl.getInfo(url);
-        console.log(`📥 מוריד: ${info.videoDetails.title}`);
-
-        const stream = ytdl(url, {
-            quality: 'highestaudio',
-            filter: 'audioonly'
-        });
-
-        const writeStream = fs.createWriteStream(tempFile);
-        stream.pipe(writeStream);
-
-        writeStream.on('finish', () => {
-            ffmpeg(tempFile)
-                .audioBitrate(128)
-                .audioChannels(1)
-                .audioFrequency(16000)
-                .format('mp3')
-                .output(filename)
-                .on('end', () => {
-                    console.log('✅ ההמרה הושלמה');
-
-                    fs.unlinkSync(tempFile); // מוחק קובץ זמני
-
-                    const fileStream = fs.createReadStream(filename);
-                    res.setHeader('Content-Type', 'audio/mpeg');
-                    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-                    fileStream.pipe(res);
-
-                    fileStream.on('close', () => {
-                        fs.unlinkSync(filename); // מוחק את קובץ ה־MP3 אחרי שליחה
-                    });
-                })
-                .on('error', (err) => {
-                    console.error('❌ שגיאת ffmpeg:', err);
-                    if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
-                    res.status(500).send('שגיאה בהמרת הקובץ');
-                })
-                .run();
-        });
-
-        stream.on('error', (err) => {
-            console.error('❌ שגיאת הורדה:', err);
-            res.status(500).send('שגיאה בהורדת הסרטון');
-        });
+        const videoId = new URL(url).searchParams.get("v");
+        const { link, title } = await getYoutubeMp3Link(videoId);
+        res.json({ mp3Link: link, title });
 
     } catch (err) {
-        console.error('❌ שגיאה כללית:', err);
-        res.status(500).send(`שגיאה בהורדה: ${err.message}`);
+        console.error('שגיאה ב־/youtube:', err.message);
+        res.status(500).json({ error: 'שגיאה בקבלת קובץ MP3 מהשרת החיצוני' });
     }
 });
 
-app.get('/', (req, res) => {
-    res.send('🎵 שרת תמלול יוטיוב פעיל!');
-});
-
-app.listen(port, () => {
-    console.log(`✅ YouTube Server running on port ${port}`);
+// הפעלת השרת
+app.listen(PORT, () => {
+    console.log(`✅ YouTube Server running on port ${PORT}`);
 });
