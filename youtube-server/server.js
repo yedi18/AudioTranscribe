@@ -41,12 +41,13 @@ app.post('/youtube', async (req, res) => {
             output: filename,
             extractAudio: true,
             audioFormat: 'mp3',
-            // במקום postProcessorArgs להשתמש באופציות ישירות
-            audioQuality: 0, // הכי גבוה
-            audioBitrate: '128K',
-            audioChannels: 1, // מונו
-            audioRate: 16000 // דגימה ב-16KHz
-        });
+            postProcessorArgs: [
+              '-ar', '16000',  // דגימת קול: 16kHz
+              '-ac', '1',      // ערוץ אחד (מונו)
+              '-b:a', '128k'   // קצב דגימה: 128kbps
+            ]
+          });
+          
         await waitForFile(filename); // המתנה לקובץ להיווצר
 
         const fileStream = fs.createReadStream(filename);
