@@ -41,12 +41,11 @@ app.post('/youtube', async (req, res) => {
             output: filename,
             extractAudio: true,
             audioFormat: 'mp3',
-            postProcessorArgs: [
-              '-ar', '16000',  // דגימת קול: 16kHz
-              '-ac', '1',      // ערוץ אחד (מונו)
-              '-b:a', '128k'   // קצב דגימה: 128kbps
-            ]
+            postprocessorArgs: {
+              'ffmpeg': ['-ar', '16000', '-ac', '1', '-b:a', '128k']
+            }
           });
+          
           
         await waitForFile(filename); // המתנה לקובץ להיווצר
 
