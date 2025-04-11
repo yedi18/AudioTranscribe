@@ -445,36 +445,48 @@ class YouTubeHandler {
     }
 
     /**
-     * המרת סרטון YouTube לקובץ אודיו באמצעות שירות חיצוני
-     * @param {string} videoId - מזהה הסרטון
-     * @returns {Promise<Blob>} - קובץ האודיו
-     */
+ * המרת סרטון YouTube לקובץ אודיו באמצעות שרת ה-Render (RapidAPI)
+ * @param {string} videoId - מזהה הסרטון
+ * @returns {Promise<Blob>} - קובץ האודיו כ-Blob
+ */
     async convertToAudio(videoId) {
         try {
             this.updateYouTubeProgress({
                 status: 'converting',
                 progress: 20,
-                message: 'מוריד את האודיו מהיוטיוב...'
+                message: 'מקבל את קובץ ה-MP3 מהשרת...'
             });
-
-            const fullUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
             const response = await fetch('https://audiotranscribe-27kc.onrender.com/youtube', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ url: fullUrl })
+                body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${videoId}` })
             });
 
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`השרת לא הצליח להוריד את האודיו (${response.status}): ${errorText}`);
+                throw new Error(`שגיאה בשרת: ${response.status} - ${errorText}`);
             }
 
-            const audioBlob = await response.blob();
+            const data = await response.json();
+            if (!data.mp3Link) {
+                throw new Error('לא התקבל קישור לקובץ MP3');
+            }
+
+            this.updateYouTubeProgress({
+                status: 'converting',
+                progress: 50,
+                message: 'מוריד את קובץ ה-MP3...'
+            });
+
+            // הורדת הקובץ כ-Blob
+            const audioResp = await fetch(data.mp3Link);
+            const audioBlob = await audioResp.blob();
+
             if (audioBlob.size < 1000) {
-                throw new Error(`הקובץ שהתקבל קטן מדי (${audioBlob.size} בייטים). יתכן שהיוטיוב חוסם את ההורדה.`);
+                throw new Error('הקובץ שהתקבל קטן מדי או ריק');
             }
 
             this.updateYouTubeProgress({
@@ -484,11 +496,13 @@ class YouTubeHandler {
             });
 
             return audioBlob;
+
         } catch (error) {
-            console.error('שגיאה בהמרת יוטיוב:', error);
+            console.error('❌ שגיאה בהמרת סרטון YouTube:', error);
             throw new Error('שגיאה בהמרת הסרטון לאודיו: ' + error.message);
         }
     }
+
     // להוסיף למחלקת YouTubeHandler
     resetYoutubeUI() {
         // איפוס שדה הקלט
