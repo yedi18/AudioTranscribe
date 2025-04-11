@@ -1,7 +1,8 @@
 const express = require('express');
-const ytdlp = require('yt-dlp-exec');
+const ytdl = require('ytdl-core');
 const fs = require('fs');
 const cors = require('cors');
+const ffmpeg = require('fluent-ffmpeg');
 
 const app = express();
 
@@ -10,23 +11,9 @@ app.use(cors({
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type']
 }));
-// פונקציה שמוודאת שהקובץ נוצר בדיסק
-const waitForFile = (path, timeout = 5000) =>
-    new Promise((resolve, reject) => {
-        const start = Date.now();
-        const check = () => {
-            fs.access(path, fs.constants.F_OK, (err) => {
-                if (!err) return resolve(true);
-                if (Date.now() - start > timeout) return reject(new Error('File did not appear in time'));
-                setTimeout(check, 200);
-            });
-        };
-        check();
-    });
 
 const port = process.env.PORT || 5000;
 
-app.use(cors());
 app.use(express.json());
 
 app.post('/youtube', async (req, res) => {
@@ -34,33 +21,66 @@ app.post('/youtube', async (req, res) => {
     if (!url) return res.status(400).send("Missing YouTube URL");
 
     const filename = `audio_${Date.now()}.mp3`;
+    const tempFile = `temp_${Date.now()}.mp4`;
 
     try {
-        // שינוי הפרמטרים שמועברים ל-yt-dlp
-        await ytdlp(url, {
-            output: filename,
-            extractAudio: true,
-            audioFormat: 'mp3',
-            postprocessorArgs: {
-              'ffmpeg': ['-ar', '16000', '-ac', '1', '-b:a', '128k']
-            }
-          });
-          
-          
-        await waitForFile(filename); // המתנה לקובץ להיווצר
+        // בדיקה שהסרטון קיים וניתן להוריד
+        const info = await ytdl.getInfo(url);
+        console.log(`מוריד: ${info.videoDetails.title}`);
 
-        const fileStream = fs.createReadStream(filename);
-        res.setHeader('Content-Type', 'audio/mpeg');
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        fileStream.pipe(res);
+        // יצירת stream הורדה
+        const stream = ytdl(url, {
+            quality: 'highestaudio',
+            filter: 'audioonly'
+        });
 
-        fileStream.on('close', () => {
-            fs.unlinkSync(filename);
+        // שמירת הקובץ המקורי כקובץ זמני ואז המרה ל-MP3
+        const writeStream = fs.createWriteStream(tempFile);
+
+        stream.pipe(writeStream);
+
+        writeStream.on('finish', () => {
+            // המרה ל-MP3 עם הגדרות ספציפיות
+            ffmpeg(tempFile)
+                .audioBitrate(128)
+                .audioChannels(1)
+                .audioFrequency(16000)
+                .format('mp3')
+                .output(filename)
+                .on('end', () => {
+                    console.log('המרה הושלמה');
+
+                    // מחיקת הקובץ הזמני
+                    fs.unlinkSync(tempFile);
+
+                    // שליחת הקובץ לקליינט
+                    const fileStream = fs.createReadStream(filename);
+                    res.setHeader('Content-Type', 'audio/mpeg');
+                    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+                    fileStream.pipe(res);
+
+                    fileStream.on('close', () => {
+                        fs.unlinkSync(filename);
+                    });
+                })
+                .on('error', (err) => {
+                    console.error('שגיאת ffmpeg:', err);
+                    if (fs.existsSync(tempFile)) {
+                        fs.unlinkSync(tempFile);
+                    }
+                    res.status(500).send('שגיאה בהמרת הקובץ');
+                })
+                .run();
+        });
+
+        stream.on('error', (err) => {
+            console.error('שגיאת הורדה:', err);
+            res.status(500).send('שגיאה בהורדת הסרטון');
         });
 
     } catch (err) {
-        console.error(err);
-        res.status(500).send("שגיאה בהורדה או המרה");
+        console.error('שגיאה:', err);
+        res.status(500).send(`שגיאה בהורדה: ${err.message}`);
     }
 });
 
