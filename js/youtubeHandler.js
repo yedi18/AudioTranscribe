@@ -340,11 +340,11 @@ class YouTubeHandler {
     }
 
     /**
-     * המרת סרטון יוטיוב לטקסט מתומלל
-     * @param {string} videoUrl - קישור YouTube
-     * @param {string} apiKey - מפתח API של Huggingface
-     * @returns {Promise<string>} - טקסט התמלול
-     */
+ * המרת סרטון יוטיוב לטקסט מתומלל
+ * @param {string} videoUrl - קישור YouTube
+ * @param {string} apiKey - מפתח API של Huggingface
+ * @returns {Promise<string>} - טקסט התמלול
+ */
     async transcribeYouTubeVideo(videoUrl, apiKey) {
         try {
             // חילוץ מזהה הסרטון
@@ -365,10 +365,25 @@ class YouTubeHandler {
                 message: 'מתחיל לעבד את הסרטון...'
             });
 
-            // המרת הסרטון לאודיו
-            const audioBlob = await this.convertToAudio(videoId);
+            // ניסיון המרת הסרטון לאודיו עם טיפול בשגיאות
+            let audioBlob;
+            try {
+                audioBlob = await this.convertToAudio(videoId);
+            } catch (conversionError) {
+                console.error('שגיאה בהמרת סרטון יוטיוב:', conversionError);
 
-            // בדיקה אם יש תוכן אודיו
+                // עדכון המשתמש על השגיאה עם מידע שימושי
+                this.updateYouTubeProgress({
+                    status: 'error',
+                    progress: 40,
+                    message: 'שגיאה בהורדת האודיו מיוטיוב. נסו שיטה אחרת.'
+                });
+
+                // שגיאה ממוקדת למשתמש עם הצעות לפתרון
+                throw new Error('לא ניתן להוריד את האודיו מיוטיוב. ייתכן שיש הגבלות על הסרטון או בעיה זמנית בשרת. אנא נסה: (1) העלאת קובץ אודיו ישירות (2) הקלטת האודיו מהמסך או (3) ניסיון סרטון אחר.');
+            }
+
+            // בדיקה שהקובץ אכן קיים ותקין לפני המשך עיבוד
             const hasAudio = await this.hasAudioContent(audioBlob);
 
             if (!hasAudio) {
@@ -385,8 +400,34 @@ class YouTubeHandler {
             // יצירת קובץ מה-blob
             const audioFile = new File([audioBlob], `youtube_${videoId}.mp3`, { type: 'audio/mp3' });
 
-            // תמלול הקובץ באמצעות שירות התמלול הקיים
-            const transcription = await Transcription.transcribeSingle(audioFile, apiKey);
+            // מנגנון ניסיונות חוזרים לתמלול
+            let transcription = '';
+            let attempts = 0;
+            const maxAttempts = 2;
+
+            while (attempts < maxAttempts) {
+                try {
+                    // תמלול הקובץ באמצעות שירות התמלול הקיים
+                    transcription = await Transcription.transcribeSingle(audioFile, apiKey);
+                    break; // אם הצליח, יוצאים מהלולאה
+                } catch (transcriptionError) {
+                    attempts++;
+                    console.warn(`ניסיון תמלול ${attempts} נכשל:`, transcriptionError);
+
+                    if (attempts >= maxAttempts) {
+                        throw transcriptionError; // אם כל הניסיונות נכשלו, מעבירים את השגיאה
+                    }
+
+                    // המתנה לפני ניסיון נוסף
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    this.updateYouTubeProgress({
+                        status: 'transcribing',
+                        progress: 75,
+                        message: `מנסה שוב לתמלל (ניסיון ${attempts + 1})...`
+                    });
+                }
+            }
 
             // עדכון התקדמות - תמלול הושלם
             this.updateYouTubeProgress({
@@ -426,9 +467,15 @@ class YouTubeHandler {
                 body: JSON.stringify({ url: fullUrl })
             });
 
-            if (!response.ok) throw new Error("השרת לא הצליח להוריד את האודיו");
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`השרת לא הצליח להוריד את האודיו (${response.status}): ${errorText}`);
+            }
 
             const audioBlob = await response.blob();
+            if (audioBlob.size < 1000) {
+                throw new Error(`הקובץ שהתקבל קטן מדי (${audioBlob.size} בייטים). יתכן שהיוטיוב חוסם את ההורדה.`);
+            }
 
             this.updateYouTubeProgress({
                 status: 'converting',
@@ -442,7 +489,6 @@ class YouTubeHandler {
             throw new Error('שגיאה בהמרת הסרטון לאודיו: ' + error.message);
         }
     }
-
     // להוסיף למחלקת YouTubeHandler
     resetYoutubeUI() {
         // איפוס שדה הקלט
@@ -467,9 +513,46 @@ class YouTubeHandler {
      * @returns {Promise<boolean>} - האם יש תוכן אודיו
      */
     async hasAudioContent(audioBlob) {
-        // בסביבת הדגמה - תמיד להחזיר true
-        // במימוש אמיתי - לבדוק אם הקובץ מכיל תוכן אודיו בר תמלול
-        return true;
+        // אם אין נתונים או קובץ קטן מדי
+        if (!audioBlob || audioBlob.size < 1000) {
+            return false;
+        }
+
+        // בדיקת הקובץ
+        return new Promise((resolve) => {
+            try {
+                const audio = new Audio();
+                const objectUrl = URL.createObjectURL(audioBlob);
+
+                audio.oncanplay = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(true);
+                };
+
+                audio.onerror = () => {
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(false);
+                };
+
+                // טיימאאוט למקרה שאין תגובה
+                const timeout = setTimeout(() => {
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(false);
+                }, 5000);
+
+                audio.oncanplay = () => {
+                    clearTimeout(timeout);
+                    URL.revokeObjectURL(objectUrl);
+                    resolve(true);
+                };
+
+                audio.src = objectUrl;
+                audio.load();
+            } catch (error) {
+                console.error('Error checking audio content:', error);
+                resolve(false);
+            }
+        });
     }
 }
 

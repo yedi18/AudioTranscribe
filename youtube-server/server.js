@@ -36,16 +36,18 @@ app.post('/youtube', async (req, res) => {
     const filename = `audio_${Date.now()}.mp3`;
 
     try {
+        // שינוי הפרמטרים שמועברים ל-yt-dlp
         await ytdlp(url, {
             output: filename,
             extractAudio: true,
             audioFormat: 'mp3',
-            postProcessorArgs: ['-ar', '16000', '-ac', '1']
+            // במקום postProcessorArgs להשתמש באופציות ישירות
+            audioQuality: 0, // הכי גבוה
+            audioBitrate: '128K',
+            audioChannels: 1, // מונו
+            audioRate: 16000 // דגימה ב-16KHz
         });
         await waitForFile(filename); // המתנה לקובץ להיווצר
-
-
-
 
         const fileStream = fs.createReadStream(filename);
         res.setHeader('Content-Type', 'audio/mpeg');
