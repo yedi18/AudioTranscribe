@@ -19,8 +19,9 @@ app.post('/youtube', async (req, res) => {
             output: filename,
             extractAudio: true,
             audioFormat: 'mp3',
-            audioQuality: 0
+            postProcessorArgs: ['-ar', '16000', '-ac', '1']
         });
+
 
         const fileStream = fs.createReadStream(filename);
         res.setHeader('Content-Type', 'audio/mpeg');
