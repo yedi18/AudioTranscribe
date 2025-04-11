@@ -2,21 +2,27 @@ const express = require('express');
 const ytdlp = require('yt-dlp-exec');
 const fs = require('fs');
 const cors = require('cors');
+
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+}));
 const app = express();
 // פונקציה שמוודאת שהקובץ נוצר בדיסק
 const waitForFile = (path, timeout = 5000) =>
     new Promise((resolve, reject) => {
-      const start = Date.now();
-      const check = () => {
-        fs.access(path, fs.constants.F_OK, (err) => {
-          if (!err) return resolve(true);
-          if (Date.now() - start > timeout) return reject(new Error('File did not appear in time'));
-          setTimeout(check, 200);
-        });
-      };
-      check();
+        const start = Date.now();
+        const check = () => {
+            fs.access(path, fs.constants.F_OK, (err) => {
+                if (!err) return resolve(true);
+                if (Date.now() - start > timeout) return reject(new Error('File did not appear in time'));
+                setTimeout(check, 200);
+            });
+        };
+        check();
     });
-  
+
 const port = process.env.PORT || 5000;
 
 app.use(cors());
