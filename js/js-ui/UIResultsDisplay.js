@@ -21,6 +21,7 @@ class UIResultsDisplay extends UIProgressDisplay {
         if (this.enhancementHandler) {
             this.enhancementHandler.resetState();
         }
+        this.updateRestartButton();
 
         // החזרת הלשונית הראשונה למצב פעיל
         const resultTabButtons = document.querySelectorAll('.result-tab-btn');
@@ -54,6 +55,51 @@ class UIResultsDisplay extends UIProgressDisplay {
     onTranscribeClick() {
         // פונקציה זו תמולא בקובץ main.js
         console.log("פונקציית onTranscribeClick צריכה להיות מוגדרת בקובץ main.js");
+    }
+
+    updateRestartButton() {
+        const restartBtn = document.getElementById('new-btn');
+        if (!restartBtn || !this.selectedFile?.source) return;
+
+        console.log('מקור הקובץ:', this.selectedFile?.source);
+
+        // איפוס כל הקלאסים הקיימים ושמירה רק על btn
+        restartBtn.className = 'btn new-btn';
+
+        switch (this.selectedFile.source) {
+            case 'upload':
+                restartBtn.innerHTML = '<i class="fas fa-file-audio"></i> העלה קובץ חדש';
+                restartBtn.onclick = () => {
+                    this.resetUI();
+                    const uploadTab = document.querySelector('[data-tab="upload-file"]');
+                    if (uploadTab) uploadTab.click();
+                };
+                break;
+            case 'recording':
+                restartBtn.innerHTML = '<i class="fas fa-microphone"></i>הקלט הקלטה חדשה';
+                restartBtn.className = 'btn new-btn btn-record';
+                restartBtn.onclick = () => {
+                    this.resetUI();
+                    const recordTab = document.querySelector('[data-tab="record-audio"]');
+                    if (recordTab) recordTab.click();
+                };
+                break;
+            case 'youtube':
+                restartBtn.innerHTML = '<i class="fab fa-youtube"></i> קישור חדש';
+                restartBtn.onclick = () => {
+                    this.resetUI();
+                    const youtubeTab = document.querySelector('[data-tab="youtube-link"]');
+                    if (youtubeTab) youtubeTab.click();
+                };
+                break;
+            default:
+                // ברירת מחדל - איפוס רגיל
+                restartBtn.innerHTML = '<i class="fas fa-plus"></i> תמלול חדש';
+                restartBtn.onclick = () => {
+                    this.resetUI();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+        }
     }
 }
 

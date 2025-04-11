@@ -295,7 +295,7 @@ class RecordingHandler {
                 // טיפול בקובץ כאילו הועלה
                 console.log("📝 שולח לתמלול");
                 this.handleRecordedFile(recordedFile);
-                const blobUrl = URL.createObjectURL(recordedFile);
+                //const blobUrl = URL.createObjectURL(recordedFile);
 
             } catch (error) {
                 console.error("🔴 שגיאה בעיבוד ההקלטה:", error);
@@ -595,37 +595,101 @@ class RecordingHandler {
     }
 
     /**
-     * טיפול בקובץ הקלטה לאחר סיום ההקלטה
-     * @param {File} recordedFile - קובץ ההקלטה
+    * טיפול בקובץ הקלטה לאחר סיום ההקלטה
+    * @param {File} recordedFile - קובץ ההקלטה
      */
     handleRecordedFile(recordedFile) {
-        console.log('✅ הגעתי לכאן');
+        console.log('✅ מתחיל טיפול בקובץ הקלטה:', recordedFile.name, recordedFile.size, "bytes");
 
-        this.ui.selectedFile = recordedFile;
-        // הצגת פרטי הקובץ בממשק
-        this.ui.fileName.textContent = "הקלטה חדשה";
-        this.ui.fileSize.textContent = `גודל: ${this.ui.formatFileSize(recordedFile.size)}`;
-        document.querySelector('[data-tab="upload-file"]').click();
+        try {
+            // שמירת התייחסות לקובץ המוקלט ומקורו
+            const audioFile = recordedFile;
 
-        // הצגת אזור מידע הקובץ עם אנימציה
-        this.ui.fileInfo.style.display = 'block';
-        this.ui.uploadArea.style.display = 'none';
+            // מעבר ללשונית העלאת קובץ ראשית
+            console.log('מעבר ללשונית העלאת קובץ');
+            const uploadTab = document.querySelector('[data-tab="upload-file"]');
+            if (uploadTab) {
+                uploadTab.click();
+            } else {
+                console.error('לא נמצאה לשונית "העלאת קובץ"');
+            }
 
-        // עדכון זמן משוער לתמלול
-        this.getRecordingDuration(recordedFile)
-            .then(duration => {
-                console.log("📏 זמן שנמדד:", duration, "שניות");
-                this.ui.updateEstimatedTime(duration);
-            })
-            .catch(err => {
-                console.error("⛔ שגיאה בזמן:", err);
-                this.ui.updateEstimatedTime(15); // ברירת מחדל
-            });
+            // המתנה קצרה לאחר המעבר ללשונית
+            setTimeout(() => {
+                try {
+                    // קריאה לפונקציה האחידה
+                    if (!this.ui) {
+                        throw new Error('this.ui לא מוגדר בתוך handleRecordedFile');
+                    }
 
-        // הסתרת שגיאות קודמות
-        this.ui.errorMessage.style.display = 'none';
+                    console.log('קריאה ל-handleNewFile עם מקור:', 'recording');
+                    this.ui.handleNewFile(audioFile, 'recording');
 
-        // במקום לקרוא ל-cleanupRecording, נבצע את הפעולות הנדרשות כאן
+                    // וידוא תצוגת אזורים
+                    if (this.ui.uploadArea) {
+                        console.log('מצב תצוגה של uploadArea לפני:',
+                            window.getComputedStyle(this.ui.uploadArea).display);
+                        this.ui.uploadArea.style.display = 'none';
+                    }
+
+                    if (this.ui.fileInfo) {
+                        console.log('מצב תצוגה של fileInfo לפני:',
+                            window.getComputedStyle(this.ui.fileInfo).display);
+                        this.ui.fileInfo.style.display = 'block';
+                    }
+
+                    // עדכון זמן משוער לתמלול
+                    this.getRecordingDuration(audioFile)
+                        .then(duration => {
+                            console.log("📏 זמן שנמדד:", duration, "שניות");
+                            this.ui.updateEstimatedTime(duration);
+                        })
+                        .catch(err => {
+                            console.error("⛔ שגיאה בזמן:", err);
+                            this.ui.updateEstimatedTime(15); // ברירת מחדל
+                        });
+
+                    // גלילה עדינה למטה ומיקוד על כפתור התמלול
+                    setTimeout(() => {
+                        if (this.ui.fileInfo) {
+                            this.ui.fileInfo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                        if (this.ui.transcribeBtn) {
+                            this.ui.transcribeBtn.focus();
+                        }
+
+                        // וידוא סופי שהאזורים מוצגים כראוי
+                        console.log('מצב סופי - fileInfo:',
+                            this.ui.fileInfo ? window.getComputedStyle(this.ui.fileInfo).display : 'לא קיים',
+                            'uploadArea:',
+                            this.ui.uploadArea ? window.getComputedStyle(this.ui.uploadArea).display : 'לא קיים');
+                    }, 300);
+
+                } catch (innerError) {
+                    console.error('❌ שגיאה בטיפול בקובץ לאחר מעבר לשונית:', innerError);
+                    if (this.ui && typeof this.ui.showError === 'function') {
+                        this.ui.showError('שגיאה בטיפול בקובץ לאחר מעבר לשונית: ' + innerError.message);
+                    }
+                }
+            }, 100); // המתנה קצרה לאחר מעבר לשונית
+
+            // ניקוי משאבי הקלטה
+            this.cleanupRecordingResources();
+
+            console.log('✅ טיפול ראשוני בקובץ המוקלט הושלם');
+
+        } catch (error) {
+            console.error('❌ שגיאה בטיפול בקובץ ההקלטה:', error);
+            if (this.ui && typeof this.ui.showError === 'function') {
+                this.ui.showError('שגיאה בטיפול בקובץ ההקלטה: ' + error.message);
+            }
+        }
+    }
+
+    /**
+     * ניקוי משאבי הקלטה
+     */
+    cleanupRecordingResources() {
         // עצירת הטיימר
         if (this.recordingInterval) {
             clearInterval(this.recordingInterval);
@@ -658,15 +722,46 @@ class RecordingHandler {
             this.audioContext.close();
             this.audioContext = null;
         }
-
-        // גלילה עדינה למטה כדי להראות את האפשרויות
-        setTimeout(() => {
-            this.ui.fileInfo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            this.ui.transcribeBtn.focus();
-        }, 300);
     }
 
+    // להוסיף למחלקת RecordingHandler
+    resetRecordingUI() {
+        // איפוס מצב ההקלטה
+        this.isRecording = false;
 
+        // איפוס הטיימר
+        this.recordingTime = 0;
+        if (this.recordTimer) {
+            this.recordTimer.textContent = '00:00';
+        }
+
+        // איפוס מצב כפתורים
+        if (this.startRecordBtn) {
+            this.startRecordBtn.disabled = false;
+        }
+        if (this.stopRecordBtn) {
+            this.stopRecordBtn.disabled = true;
+        }
+
+        // איפוס אנימציית הגלים
+        this.stopWaveformAnimation();
+        this.createStaticWaveform();
+
+        // ניקוי חלקי הקלטה
+        this.recordedChunks = [];
+
+        // ניקוי סטרים אם קיים
+        if (this.recordingStream) {
+            this.recordingStream.getTracks().forEach(track => track.stop());
+            this.recordingStream = null;
+        }
+
+        // סגירת AudioContext
+        if (this.audioContext && this.audioContext.state !== 'closed') {
+            this.audioContext.close();
+            this.audioContext = null;
+        }
+    }
     /**
      * קבלת אורך ההקלטה בשניות
      * @param {File} audioFile - קובץ האודיו
@@ -697,6 +792,5 @@ class RecordingHandler {
         });
     }
 }
-
 // ייצוא המחלקה
 window.RecordingHandler = RecordingHandler;

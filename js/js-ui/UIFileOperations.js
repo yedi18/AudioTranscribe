@@ -3,13 +3,19 @@
  * מרחיב את מחלקת UIHandlers
  */
 class UIFileOperations extends UIHandlers {
+    constructor(ui) {
+        super();
+        this.ui = ui; // גישה ל־UI מתוך המחלקה
+    }
+
     /**
-     * טיפול בבחירת קובץ
-     * @param {FileList} files - רשימת הקבצים שנבחרו
-     */
+    * טיפול בבחירת קובץ
+    * @param {FileList} files - רשימת הקבצים שנבחרו
+    */
     handleFileSelect(files) {
         if (files.length > 0) {
-            this.selectedFile = files[0];
+            // שינוי: במקום לטפל בקובץ כאן, קוראים לפונקציה החדשה
+            this.handleNewFile(files[0], 'upload');
 
             const fileName = this.selectedFile.name.toLowerCase();
             if (!fileName.endsWith('.mp3')) {
@@ -20,31 +26,100 @@ class UIFileOperations extends UIHandlers {
                 return;
             }
 
-
-            this.fileName.textContent = this.selectedFile.name;
-            this.fileSize.textContent = `גודל: ${this.formatFileSize(this.selectedFile.size)}`;
-
-            // הצגת אזור מידע הקובץ עם אנימציה
-            this.fileInfo.style.display = 'block';
+            // הצג טיפים רלוונטיים
+            if (this.tipsCard) {
+                this.tipsCard.style.display = 'block';
+            }
 
             // גלילה עדינה למטה כדי להראות את האפשרויות
             setTimeout(() => {
                 this.fileInfo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 this.transcribeBtn.focus();
             }, 300);
-
-            this.errorMessage.style.display = 'none';
-
-            // הצג טיפים רלוונטיים
-            if (this.tipsCard) {
-                this.tipsCard.style.display = 'block';
-            }
-
-            // בדיקת אורך הקובץ ועדכון הזמן המשוער
-            this.checkFileDurationAndUpdateEstimate();
         }
     }
+    /**
+     * טיפול בקובץ מכל מקור
+     * @param {File} file - קובץ האודיו
+     * @param {string} source - מקור הקובץ ('upload', 'recording', 'youtube')
+     */
+    // בדיקה בתוך handleNewFile בקובץ UIFileOperations.js
+    handleNewFile(file, source) {
+        console.log("מתחיל טיפול בקובץ חדש ממקור:", source,
+            "שם:", file.name,
+            "גודל:", file.size, "bytes",
+            "סוג:", file.type);
 
+        try {
+            // שמירת הקובץ והמקור
+            this.selectedFile = file;
+            this.selectedFile.source = source;
+
+            // עדכון פרטי הקובץ בתצוגה
+            if (this.fileName) {
+                this.fileName.textContent = file.name || (source === 'recording' ? 'הקלטה חדשה' :
+                    (source === 'youtube' ? 'אודיו מיוטיוב' : 'קובץ לא מזוהה'));
+            } else {
+                console.error("אלמנט fileName לא נמצא");
+            }
+
+            if (this.fileSize) {
+                this.fileSize.textContent = `גודל: ${this.formatFileSize(file.size)}`;
+            } else {
+                console.error("אלמנט fileSize לא נמצא");
+            }
+
+            // הצגת אזור מידע הקובץ עם אנימציה
+            if (this.fileInfo) {
+                console.log("מציג fileInfo");
+                this.fileInfo.style.display = 'block';
+            } else {
+                console.error("אלמנט fileInfo לא נמצא");
+            }
+
+            if (this.uploadArea) {
+                console.log("מסתיר uploadArea");
+                this.uploadArea.style.display = 'none';
+            } else {
+                console.error("אלמנט uploadArea לא נמצא");
+            }
+
+            if (this.resultContainer) {
+                this.resultContainer.style.display = 'none';
+            }
+            if (this.estimatedTimeContainer) {
+                this.estimatedTimeContainer.style.display = 'block';
+            }
+            
+            // הצגת כפתור הורדה אם מקור הקובץ הוא הקלטה או יוטיוב
+            const downloadBtn = document.getElementById('download-source-btn');
+            if (downloadBtn) {
+                if (source === 'recording' || source === 'youtube') {
+                    console.log("מציג כפתור הורדה עבור קובץ ממקור:", source);
+                    downloadBtn.href = URL.createObjectURL(file);
+                    downloadBtn.download = file.name || 'audio.mp3';
+                    downloadBtn.style.display = 'inline-block';
+                } else {
+                    downloadBtn.style.display = 'none';
+                }
+            } else {
+                console.error("אלמנט download-source-btn לא נמצא");
+            }
+
+            // הסתרת שגיאות קודמות
+            if (this.errorMessage) {
+                this.errorMessage.style.display = 'none';
+            }
+
+            console.log("✅ טיפול בקובץ חדש הושלם בהצלחה");
+
+        } catch (error) {
+            console.error("❌ שגיאה בטיפול בקובץ חדש:", error);
+            if (this.showError) {
+                this.showError('שגיאה בטיפול בקובץ: ' + error.message);
+            }
+        }
+    }
     /**
      * בדיקת משך הקובץ ועדכון הזמן המשוער
      */
@@ -86,7 +161,26 @@ class UIFileOperations extends UIHandlers {
             return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
         }
     }
+    /**
+     * הצגת כפתור הורדה
+     * @param {File} file - קובץ האודיו להורדה
+     */
+    showDownloadButton(file) {
+        const downloadBtn = document.getElementById('download-source-btn');
+        if (!downloadBtn) return;
+        downloadBtn.href = URL.createObjectURL(file);
+        downloadBtn.download = file.name || 'audio.mp3';
+        downloadBtn.style.display = ''; // הצגת הכפתור לפי ה-CSS
+    }
 
+    /**
+     * הסתרת כפתור הורדה
+     */
+    hideDownloadButton() {
+        const downloadBtn = document.getElementById('download-source-btn');
+        if (!downloadBtn) return;
+        downloadBtn.style.display = 'none';
+    }
     /**
      * הורדת התמלול בפורמט הנבחר
      * @param {string} format - פורמט הקובץ (txt, srt, word)

@@ -146,13 +146,15 @@ class UIHandlers extends UICore {
      * קישור אירועים ללשוניות ותפריטים נפתחים
      */
     bindTabsAndDropdowns() {
-        // טיפול בלשוניות
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
 
         if (tabButtons.length > 0) {
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
+                    // איפוס מוחלט של הממשק לפני מעבר ללשונית
+                    this.resetUI();
+
                     // הסרת מחלקת active מכל הלשוניות
                     tabButtons.forEach(btn => btn.classList.remove('active'));
                     tabContents.forEach(content => content.classList.remove('active'));
@@ -160,7 +162,25 @@ class UIHandlers extends UICore {
                     // הוספת מחלקת active ללשונית הנבחרת
                     button.classList.add('active');
                     const tabId = button.getAttribute('data-tab');
-                    document.getElementById(`${tabId}-content`).classList.add('active');
+                    const contentElement = document.getElementById(`${tabId}-content`);
+                    if (contentElement) {
+                        contentElement.classList.add('active');
+                    }
+
+                    // טיפול ספציפי בכל לשונית
+                    if (tabId === 'record-audio') {
+                        // איפוס ממשק ההקלטה
+                        if (this.recordingHandler && typeof this.recordingHandler.resetRecordingUI === 'function') {
+                            this.recordingHandler.resetRecordingUI();
+                        }
+                    } else if (tabId === 'youtube-link') {
+                        // איפוס ממשק היוטיוב
+                        if (this.youtubeHandler) {
+                            // איפוס שדה הקלט של היוטיוב
+                            const youtubeInput = document.getElementById('youtube-url');
+                            if (youtubeInput) youtubeInput.value = '';
+                        }
+                    }
                 });
             });
         }
@@ -247,6 +267,15 @@ class UIHandlers extends UICore {
             this.copyBtn.innerHTML = originalText;
         }, 2000);
     }
+    switchTab(tabId) {
+        const targetTab = document.querySelector(`[data-tab="${tabId}"]`);
+        if (targetTab) {
+            // איפוס UI לפני מעבר ללשונית החדשה
+            this.resetUI();
+            targetTab.click(); // מפעיל את האירוע של המעבר
+        }
+    }
+
 }
 
 // ייצוא המחלקה

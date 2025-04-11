@@ -9,6 +9,7 @@ class UI extends UIResultsDisplay {
     }
 }
 
+
 // הוספת פונקציית דיבוג לבדיקת localStorage
 function debugLocalStorage() {
     console.group('Local Storage Debug');
@@ -30,6 +31,22 @@ function debugLocalStorage() {
 
     console.groupEnd();
 }
+
+
+
+
+function resetUploadUI() {
+    const fileInput = document.getElementById('file-input');
+    if (fileInput) fileInput.value = ''; // איפוס קלט
+
+    this.selectedFile = null;
+    this.fileInfo.style.display = 'none';
+    this.uploadArea.style.display = 'block';
+    this.resultContainer.style.display = 'none';
+    this.errorMessage.style.display = 'none';
+}
+
+
 
 
 // הוספת פונקציית דיבוג לאירועים

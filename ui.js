@@ -726,6 +726,7 @@ window.UI = UI;ישור אירועים
 
         // הצגת התוצאות עם אפקט כניסה
         this.resultContainer.style.animation = 'fadeIn 0.5s';
+        this.updateRestartButton();
     }
     /**
      * המרת טקסט לפורמט SRT

@@ -181,6 +181,11 @@
 .btn-record:hover {
     background-color: #c92a2a;
 }
+.btn.new-btn.btn-record {
+    background-color: #e03131;
+    color: white;
+}
+
 
 .btn-stop {
     background-color: #495057;
@@ -188,4 +193,61 @@
 
 .btn-stop:hover {
     background-color: #343a40;
+}
+/* סגנון לאזור הכפתורים בדף מידע הקובץ */
+#file-info {
+    position: relative;
+}
+
+#file-info .button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    gap: 10px;
+}
+/* סגנון לאזור הכפתורים */
+.button-group {
+    display: flex;
+    justify-content: space-between; /* מרווח מקסימלי בין הכפתורים */
+    margin-top: 15px;
+    gap: 20px; /* מרווח מינימלי בין הכפתורים */
+    width: 100%;
+}
+
+/* סגנון כפתור ההורדה */
+#download-source-btn {
+    flex: 0 0 auto; /* לא מתרחב אוטומטית */
+    width: 200px; /* רוחב קבוע */
+    background-color: #28a745; /* צבע ירוק */
+    color: white;
+    border-radius: var(--border-radius);
+    padding: 0.7rem 1.2rem; /* פחות padding לכפתור קטן יותר */
+    font-size: 0.9rem; /* גופן קטן יותר */
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none; /* חשוב כי זה אלמנט a */
+}
+
+#download-source-btn:hover {
+    background-color: #218838; /* ירוק כהה יותר */
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.2);
+}
+
+/* סגנון כפתור התמלול */
+#transcribe-btn {
+    flex: 0 0 auto; /* לא מתרחב אוטומטית */
+    width: 200px; /* רוחב קבוע */
+    padding: 0.7rem 1.2rem; /* פחות padding לכפתור קטן יותר */
+    font-size: 0.9rem; /* גופן קטן יותר */
+}
+
+/* סידור הכפתורים במרחק זה מזה */
+.button-group {
+    padding: 0 20px; /* מרווח מהצדדים */
 }

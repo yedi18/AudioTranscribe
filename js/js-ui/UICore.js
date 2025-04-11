@@ -59,7 +59,7 @@ class UICore {
         if (this.groqApiKeyInput) {
             this.groqApiKeyInput.value = this.groqApiKey;
         }
-        
+
         // מצב הממשק
         this.selectedFile = null;
 
@@ -75,16 +75,16 @@ class UICore {
     init() {
         // טעינת מפתחות API והגדרות
         this.initAPISettings();
-        
+
         // קישור אירועים להעלאת קבצים
         this.bindFileEvents();
-        
+
         // קישור אירועים לכפתורים
         this.bindButtonEvents();
-        
+
         // טיפול בלשוניות ותפריטים נפתחים
         this.bindTabsAndDropdowns();
-        
+
         // אתחול מופעי מנהלי המודולים השונים
         this.initModules();
     }
@@ -108,7 +108,7 @@ class UICore {
             this.enhancementHandler = new EnhancementHandler(this);
         }
     }
-    
+
     /**
      * הצגת הודעת שגיאה
      * @param {string} message - הודעת השגיאה
@@ -127,23 +127,39 @@ class UICore {
         // גלילה אל הודעת השגיאה
         this.errorMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-    
+
     /**
      * איפוס הממשק
      */
+    // עדכון resetUI במחלקת UICore
     resetUI() {
-        this.selectedFile = null;
-        this.fileInput.value = '';
-        this.fileInfo.style.display = 'none';
-        this.progressContainer.style.display = 'none';
-        this.loadingSpinner.style.display = 'none';
-        this.resultContainer.style.display = 'none';
-        this.uploadContainer.style.display = 'block';
-        this.errorMessage.style.display = 'none';
-        this.transcribeBtn.disabled = false;
-        this.progressBar.style.width = '0%';
-        this.progressText.textContent = '0%';
-        this.progressBar.style.boxShadow = '';
+        // איפוס הממשק
+        if (this.fileInput) this.fileInput.value = '';
+        if (this.fileInfo) this.fileInfo.style.display = 'none';
+        if (this.progressContainer) this.progressContainer.style.display = 'none';
+        if (this.loadingSpinner) this.loadingSpinner.style.display = 'none';
+        if (this.resultContainer) this.resultContainer.style.display = 'none';
+        if (this.errorMessage) this.errorMessage.style.display = 'none';
+
+        // איפוס כפתורים וסרגל התקדמות
+        if (this.transcribeBtn) this.transcribeBtn.disabled = false;
+        if (this.progressBar) {
+            this.progressBar.style.width = '0%';
+            this.progressBar.style.boxShadow = '';
+        }
+        if (this.progressText) this.progressText.textContent = '0%';
+
+        // וידוא שאזור ההעלאה מוצג - חשוב!
+        if (this.uploadArea) {
+            console.log('מציג את uploadArea');
+            this.uploadArea.style.display = 'flex'; // שינוי מ-'block' ל-'flex'
+        } else {
+            console.error('אלמנט uploadArea לא נמצא');
+        }
+
+        if (this.uploadContainer) {
+            this.uploadContainer.style.display = 'block';
+        }
 
         // הסתרת כרטיס הטיפים
         if (this.tipsCard) {
@@ -152,6 +168,9 @@ class UICore {
         if (this.estimatedTimeContainer) {
             this.estimatedTimeContainer.style.display = 'none';
         }
+
+        // איפוס selectedFile
+        this.selectedFile = null;
     }
 }
 

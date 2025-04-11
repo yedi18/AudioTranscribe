@@ -92,27 +92,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function handleTranscriptionResults(transcription) {
     // הצגת התוצאות
     this.showResults(transcription);
+    this.updateRestartButton();
 
     // אם הגענו מהקלטה, מוסיפים כפתור הקלטה חדשה
-    if (this.recordingHandler && this.recordingHandler.isFromRecording) {
-        // וידוא שכפתור תמלול חדש באפור
-        const newBtn = document.getElementById('new-btn');
-        if (newBtn) {
-            newBtn.className = 'btn new-btn';
-        }
 
-        // וידוא שכפתור הקלטה חדשה באדום
-        const recordingBtn = document.querySelector('.new-recording-btn');
-        if (!recordingBtn) {
-            setTimeout(() => {
-                this.addNewRecordingButton();
-                const newRecordingBtn = document.querySelector('.new-recording-btn');
-                if (newRecordingBtn) {
-                    newRecordingBtn.className = 'btn new-recording-btn custom-result-btn';
-                }
-            }, 100);
-        }
-    }
 }
 document.addEventListener('DOMContentLoaded', function () {
     console.log('הדף נטען. בודק מודולים...');
@@ -126,6 +109,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // אתחול ממשק המשתמש
     const ui = new UI();
+    const fileOps = new UIFileOperations(ui);
+
     console.log('ממשק משתמש אותחל בהצלחה');
     ui.init();
 
@@ -263,6 +248,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // הצגת התוצאות
                 this.showResults(transcription);
+                //this.updateRestartButton();
+
 
                 // הוספת כפתורים מיוחדים למצב הקלטה אם צריך
                 if (isFromRecording) {
