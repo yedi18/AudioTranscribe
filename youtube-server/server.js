@@ -3,12 +3,13 @@ const ytdlp = require('yt-dlp-exec');
 const fs = require('fs');
 const cors = require('cors');
 
+const app = express();
+
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type']
 }));
-const app = express();
 // פונקציה שמוודאת שהקובץ נוצר בדיסק
 const waitForFile = (path, timeout = 5000) =>
     new Promise((resolve, reject) => {
