@@ -2,7 +2,7 @@
    forms.css - שדות קלט ותיבות
    ================================================ */
 
-   textarea {
+textarea {
     width: 100%;
     height: 250px;
     padding: 1.2rem;
@@ -161,6 +161,25 @@ textarea:read-only {
 }
 
 #custom-prompt:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
+}
+
+#enhance-custom-prompt {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 100px;
+    transition: var(--transition);
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+#enhance-custom-prompt:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);

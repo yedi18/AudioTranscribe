@@ -137,10 +137,12 @@
                                         </div>
                                     </details>
                                 </div>
-                                <div id="estimated-time" class="estimated-time">
-                                    <p><i class="fas fa-clock"></i> זמן משוער לתמלול: <span
-                                            id="time-estimate">כדקה</span></p>
+                                <div id="estimated-time-container" class="estimated-time-box">
+                                    <i class="fas fa-clock"></i>
+                                    <span class="estimated-label">זמן משוער לתמלול:</span>
+                                    <span id="time-estimate">—</span>
                                 </div>
+
                                 <div class="button-group">
                                     <button class="btn" id="transcribe-btn"><i class="fas fa-magic"></i> התחל תמלול
                                         MP3</button>
@@ -224,6 +226,28 @@
 
                     <!-- הגהה חכמה -->
                     <div class="result-tab-content" id="enhanced-content">
+
+                        <div class="summary-length-options" style="margin-bottom: 1rem;">
+                            <label for="enhance-mode">בחר סוג הגהה:</label>
+                            <select id="enhance-mode">
+                                <option value="default" selected>הגהת ברירת מחדל</option>
+                                <option value="custom">פרומפט חופשי</option>
+                            </select>
+
+                            <div id="enhance-custom-prompt-container"
+                                style="display: none; width: 100%; margin-top: 10px;">
+                                <textarea id="enhance-custom-prompt"
+                                    placeholder="כתוב כאן הוראות מותאמות אישית להגהה..." rows="3" style="width: 100%;"
+                                    class="form-control"></textarea>
+                            </div>
+
+                            <button id="generate-enhancement-btn" class="btn btn-primary">
+                                <i class="fas fa-pen-to-square"></i> בצע הגהה
+                            </button>
+                        </div>
+
+
+
                         <textarea id="enhanced-result" readonly></textarea>
                     </div>
 

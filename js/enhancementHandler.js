@@ -21,6 +21,12 @@ class EnhancementHandler {
         this.customPrompt = document.getElementById('custom-prompt');
         this.generateSummaryBtn = document.getElementById('generate-summary-btn');
 
+        this.enhanceModeSelect = document.getElementById('enhance-mode');
+        this.enhanceCustomPromptContainer = document.getElementById('enhance-custom-prompt-container');
+        this.enhanceCustomPrompt = document.getElementById('enhance-custom-prompt');
+        this.generateEnhancementBtn = document.getElementById('generate-enhancement-btn');
+
+
         // קישור אירועים
         this.bindEvents();
     }
@@ -51,13 +57,6 @@ class EnhancementHandler {
                         contentElement.classList.add('active');
                     }
 
-                    // הפעלת הגהה אוטומטית אם נבחרה לשונית ההגהה
-                    if (tabId === 'enhanced') {
-                        // בדיקה אם כבר יש תוכן או שצריך לבצע הגהה חדשה
-                        if (!this.enhancedResult.value || this.enhancedResult.value.trim() === '') {
-                            this.performEnhancement();
-                        }
-                    }
 
                     // לא מפעילים סיכום אוטומטי - משאירים את זה לכפתור "צור סיכום"
                 });
@@ -94,6 +93,24 @@ class EnhancementHandler {
                 self.performSummary();
             });
         }
+
+        // הצגת אזור פרומפט חופשי לפי בחירה
+        // הצגת אזור פרומפט חופשי אם נבחר
+        if (this.enhanceModeSelect) {
+            this.enhanceModeSelect.addEventListener('change', () => {
+                const isCustom = this.enhanceModeSelect.value === 'custom';
+                this.enhanceCustomPromptContainer.style.display = isCustom ? 'block' : 'none';
+            });
+        }
+
+        // ביצוע הגהה בלחיצה בלבד
+        if (this.generateEnhancementBtn) {
+            this.generateEnhancementBtn.addEventListener('click', () => {
+                this.performEnhancement();
+            });
+        }
+
+
     }
 
     /**
@@ -102,6 +119,10 @@ class EnhancementHandler {
     resetState() {
         this.enhancementPerformed = false;
         this.summaryPerformed = false;
+
+        if (this.enhanceModeSelect) this.enhanceModeSelect.value = 'default';
+        if (this.enhanceCustomPromptContainer) this.enhanceCustomPromptContainer.style.display = 'none';
+        if (this.enhanceCustomPrompt) this.enhanceCustomPrompt.value = '';
 
         if (this.enhancedResult) this.enhancedResult.value = '';
         if (this.summaryResult) this.summaryResult.value = '';
@@ -117,15 +138,43 @@ class EnhancementHandler {
      */
     async performEnhancement() {
         if (!this.GROQ_API_KEY) {
-            alert('נא להזין מפתח API של Groq בהגדרות כדי להשתמש בסיכום AI.');
+            alert('נא להזין מפתח API של Groq בהגדרות כדי להשתמש בהגהה חכמה.');
             return;
         }
-        const text = this.ui.transcriptionResult?.value;
 
+        const text = this.ui.transcriptionResult?.value;
         if (!text || !this.enhancedResult || !this.enhanceTabBtn) return;
 
+        // עדכון ממשק בזמן טיפול
         this.enhanceTabBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> מגיה...';
         this.enhancedResult.value = "ממתין להגיה ...";
+
+        // פרומפט ברירת מחדל
+        const defaultPrompt = `הטקסט הבא הוא תמלול חופשי או טקסט לא ערוך בעברית.
+    
+    אנא בצע עליו עריכה לשונית וארגונית מלאה ("הגהה חכמה") הכוללת את הפעולות הבאות:
+    
+    - תקן שגיאות כתיב, תחביר ופיסוק
+    - הפוך את הטקסט לברור, זורם ונעים לקריאה בעברית תקנית בלבד
+    - סדר את הטקסט בפסקאות ברורות לפי נושאים
+    - הסר חזרות מיותרות וניסוחים מסורבלים
+    - אל תדלג על רעיונות חשובים ולא על חלקים משמעותיים
+    - שמור על משמעות הדברים המקורית כפי שנאמרו
+    - אל תתרגם, אל תכתוב באנגלית, ואל תשתמש בביטויים לועזיים כלל
+    - התוצאה הסופית צריכה להיות טקסט עברי ערוך, רהוט, קריא ומובנה — מוכן לפרסום
+    
+    להלן הטקסט לעריכה:
+    """
+    ${text}
+    """`;
+
+        // בדיקה אם נבחר פרומפט חופשי
+        const useCustomPrompt = this.enhanceModeSelect?.value === 'custom';
+        const userPrompt = this.enhanceCustomPrompt?.value?.trim();
+        const promptText = useCustomPrompt && userPrompt
+            ? `${userPrompt}\n\nהטקסט לעריכה:\n"""\n${text}\n"""`
+            : defaultPrompt;
+
 
         try {
             const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -139,24 +188,7 @@ class EnhancementHandler {
                     messages: [
                         {
                             role: "system",
-                            content: `הטקסט הבא הוא תמלול חופשי או טקסט לא ערוך בעברית.
-  
-  אנא בצע עליו עריכה לשונית וארגונית מלאה ("הגהה חכמה") הכוללת את הפעולות הבאות:
-  
-  - תקן שגיאות כתיב, תחביר ופיסוק
-  - הפוך את הטקסט לברור, זורם ונעים לקריאה בעברית תקנית בלבד
-  - סדר את הטקסט בפסקאות ברורות לפי נושאים
-  - הסר חזרות מיותרות וניסוחים מסורבלים
-  - אל תדלג על רעיונות חשובים ולא על חלקים משמעותיים
-  - שמור על משמעות הדברים המקורית כפי שנאמרו
-  - אל תתרגם, אל תכתוב באנגלית, ואל תשתמש בביטויים לועזיים כלל
-  - התוצאה הסופית צריכה להיות טקסט עברי ערוך, רהוט, קריא ומובנה — מוכן לפרסום
-  
-  להלן הטקסט לעריכה:
-  """
-  ${text}
-  """
-  `
+                            content: promptText
                         }
                     ],
                     temperature: 0.2
@@ -168,6 +200,7 @@ class EnhancementHandler {
 
             this.enhancedResult.value = result || "לא התקבל טקסט מתוקן.";
             this.enhancementPerformed = true;
+
         } catch (err) {
             this.enhancedResult.value = "שגיאה בעת ניסיון ההגהה.";
             console.error(err);
@@ -175,6 +208,7 @@ class EnhancementHandler {
             this.enhanceTabBtn.innerHTML = "הגהה חכמה";
         }
     }
+
 
     async performSummary() {
         if (!this.GROQ_API_KEY) {

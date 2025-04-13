@@ -45,27 +45,22 @@ class UIProgressDisplay extends UIAPIManagement {
     }
 
     /**
-     * מעדכן את הזמן המשוער לתמלול
-     * @param {number} durationInSeconds - אורך הקובץ בשניות
-     */
-    updateEstimatedTime(durationInSeconds) {
+ * מעדכן את הזמן המשוער לתמלול
+ * @param {number} numSegments - מספר חלקי האודיו
+ */
+    updateEstimatedTime(numSegments) {
         if (!this.timeEstimate) return;
 
-        // נחשב לפי פיצול לקטעים של 25 שניות
-        const segmentLength = 25;
-        const secondsPerSegment = 5; // כמה שניות יקח לתמלל כל קטע
-
-        const numSegments = Math.ceil(durationInSeconds / segmentLength);
+        const secondsPerSegment = 5;
         const estimatedSeconds = numSegments * secondsPerSegment;
 
-        // הפוך לשעות:דקות:שניות – או פשוט טקסט נוח
         let estimatedTime;
         if (estimatedSeconds < 60) {
             estimatedTime = `${estimatedSeconds} שניות`;
         } else {
             const minutes = Math.floor(estimatedSeconds / 60);
             const seconds = estimatedSeconds % 60;
-            estimatedTime = `${minutes} דקות ${seconds} שניות`;
+            estimatedTime = `${minutes} דקות${seconds ? ` ו-${seconds} שניות` : ''}`;
         }
 
         this.timeEstimate.textContent = estimatedTime;
@@ -74,6 +69,7 @@ class UIProgressDisplay extends UIAPIManagement {
             this.estimatedTimeContainer.style.display = 'block';
         }
     }
+
 }
 
 // ייצוא המחלקה

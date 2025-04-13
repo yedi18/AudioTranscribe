@@ -184,6 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         segmentLengthValue,
                         (progressData) => this.updateProgress(progressData)
                     );
+                    
 
                     console.log(`נוצרו ${audioSegments.length} קטעי אודיו לתמלול`);
 

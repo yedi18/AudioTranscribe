@@ -105,6 +105,7 @@ class UIFileOperations extends UIHandlers {
             } else {
                 console.error("אלמנט download-source-btn לא נמצא");
             }
+            this.checkFileDurationAndUpdateEstimate();
 
             // הסתרת שגיאות קודמות
             if (this.errorMessage) {

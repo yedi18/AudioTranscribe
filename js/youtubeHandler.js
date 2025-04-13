@@ -12,22 +12,41 @@ class YouTubeHandler {
         // אלמנטי ממשק
         this.youtubeUrlInput = document.getElementById('youtube-url');
         this.processYoutubeBtn = document.getElementById('process-youtube-btn');
-        this.youtubeInfo = document.createElement('div');
-        this.youtubeInfo.className = 'youtube-info';
 
-        // הוספת אלמנט מידע למיכל YouTube אם קיים
-        this.youtubeInfoContainer = document.querySelector('.youtube-input-area');
-        if (this.youtubeInfoContainer) {
-            this.youtubeInfoContainer.appendChild(this.youtubeInfo);
+        // בדיקה שהאלמנטים נמצאו
+        console.log('YouTube Input:', this.youtubeUrlInput);
+        console.log('Process Button:', this.processYoutubeBtn);
+
+        // מוצא את מיכל ה-YouTube
+        const youtubeInputArea = document.querySelector('.youtube-input-area');
+
+        if (!youtubeInputArea) {
+            console.error('לא נמצא מיכל .youtube-input-area');
+            return;
+        }
+
+        // בדיקה אם כבר קיים אלמנט מידע
+        let existingInfo = youtubeInputArea.querySelector('.youtube-info');
+
+        if (existingInfo) {
+            console.log('נמצא אלמנט מידע קיים');
+            this.youtubeInfo = existingInfo;
+        } else {
+            // יצירת אלמנט חדש
+            console.log('יוצר אלמנט מידע חדש');
+            this.youtubeInfo = document.createElement('div');
+            this.youtubeInfo.className = 'youtube-info';
+            this.youtubeInfo.style.margin = '15px 0';
+            this.youtubeInfo.style.width = '100%';
+
+            // הוספה בסוף מיכל הקלט
+            youtubeInputArea.appendChild(this.youtubeInfo);
+            console.log('אלמנט מידע נוסף למיכל .youtube-input-area');
         }
 
         // קישור אירועים
         this.bindEvents();
-
-        // הוספת סגנונות
-        this.addYouTubeStyles();
     }
-
     /**
      * קישור אירועים לאלמנטי YouTube
      */
@@ -44,61 +63,74 @@ class YouTubeHandler {
                 this.processYouTubeVideo();
             }
         });
-    }
 
+        // ** הוסף את זה ** - האזנה לשינויים בשדה הקלט של YouTube
+        this.youtubeUrlInput.addEventListener('input', () => {
+            this.previewYoutubeVideo();
+        });
+
+        this.youtubeUrlInput.addEventListener('paste', () => {
+            // המתנה קצרה כדי לוודא שהערך מתעדכן אחרי ההדבקה
+            setTimeout(() => {
+                this.previewYoutubeVideo();
+            }, 100);
+        });
+    }
     /**
-     * הוספת סגנונות CSS לתצוגת YouTube
-     */
-    addYouTubeStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
-            .youtube-video-info {
-                display: flex;
-                margin-top: 15px;
-                background-color: rgba(248, 249, 250, 0.7);
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+ * תצוגה מקדימה של סרטון יוטיוב כאשר מדביקים/מזינים קישור
+ */
+    previewYoutubeVideo() {
+        console.log('בדיקת תצוגה מקדימה לקישור יוטיוב');
+
+        const youtubeUrl = this.youtubeUrlInput.value.trim();
+        console.log('URL:', youtubeUrl);
+
+        if (!youtubeUrl) {
+            console.log('URL ריק, ניקוי תצוגה');
+            if (this.youtubeInfo) {
+                this.youtubeInfo.innerHTML = '';
+                this.youtubeInfo.style.display = 'none';
             }
-            
-            .video-thumbnail {
-                width: 120px;
-                height: 90px;
-                overflow: hidden;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            
-            .video-thumbnail img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-            
-            .video-details {
-                flex: 1;
-                padding: 10px 15px;
-            }
-            
-            .video-details h4 {
-                margin: 0 0 8px;
-                font-size: 1rem;
-                color: var(--primary-color);
-            }
-            
-            .video-details p {
-                margin: 4px 0;
-                font-size: 0.9rem;
-                color: var(--text-color);
-            }
-        `;
-        document.head.appendChild(style);
+            return;
+        }
+
+        if (!youtubeUrl.includes('youtube.com/') && !youtubeUrl.includes('youtu.be/')) {
+            console.log('לא קישור יוטיוב תקין');
+            return;
+        }
+
+        const videoId = this.extractVideoId(youtubeUrl);
+        console.log('מזהה סרטון:', videoId);
+
+        if (!videoId) {
+            console.log('לא ניתן לחלץ מזהה סרטון');
+            return;
+        }
+
+        console.log('קורא לפונקציית getVideoInfo');
+        this.getVideoInfo(videoId)
+            .then(videoInfo => {
+                console.log('התקבל מידע מוצלח:', videoInfo);
+
+                // ✅ הוסף את השורה הזו:
+                this.displayYouTubeInfo(videoInfo);
+
+                if (this.youtubeInfo) {
+                    console.log('youtubeInfo קיים:', this.youtubeInfo);
+                    console.log('תוכן אחרי הצגה:', this.youtubeInfo.innerHTML.substring(0, 100) + '...');
+                }
+            })
+
+            .catch(error => {
+                console.error('שגיאה בקבלת מידע:', error);
+            });
     }
 
     /**
      * טיפול בתמלול מסרטון יוטיוב
      */
+    // בקובץ youtubeHandler.js
+    // בקובץ youtubeHandler.js
     processYouTubeVideo() {
         const youtubeUrl = this.youtubeUrlInput.value.trim();
 
@@ -137,32 +169,69 @@ class YouTubeHandler {
             return;
         }
 
-        // תחילת תהליך התמלול
-        this.transcribeYouTubeVideo(youtubeUrl, this.ui.apiKey)
-            .then(transcription => {
-                // הצגת התוצאות
-                if (transcription) {
-                    this.ui.showResults(transcription);
-                } else {
-                    this.ui.showError('לא התקבל תמלול. נא לנסות שנית.');
-                }
+        // קבלת מידע על הסרטון תחילה
+        this.getVideoInfo(videoId)
+            .then(() => {
+                // המשך לקבלת ויצירת הקובץ
+                return this.convertToAudio(videoId);
+            })
+            .then(() => {
+                // החלק הזה לא צריך לעשות כלום כי handleYoutubeFile מטפל בכל
+                console.log('הקובץ הועבר לטאב העלאה בהצלחה');
+                this.processYoutubeBtn.disabled = false;
+                this.ui.loadingSpinner.style.display = 'none';
             })
             .catch(error => {
-                console.error('Error transcribing YouTube video:', error);
-
-                // בדיקה אם השגיאה היא "אין קובץ לתמלול"
-                if (error.message && error.message.includes('אין קובץ לתמלול')) {
-                    this.ui.showError(error.message);
-                } else {
-                    this.ui.showError('אירעה שגיאה בתמלול הסרטון: ' + (error.message || 'שגיאה לא ידועה'));
-                }
-            })
-            .finally(() => {
+                console.error('Error processing YouTube video:', error);
+                this.ui.showError('אירעה שגיאה בעיבוד הסרטון: ' + (error.message || 'שגיאה לא ידועה'));
                 this.ui.loadingSpinner.style.display = 'none';
                 this.processYoutubeBtn.disabled = false;
             });
     }
+    /**
+   * קבלת מידע על סרטון YouTube
+   * @param {string} videoId - מזהה הסרטון
+   * @returns {Promise<Object>} - מידע על הסרטון
+   */
+    async getVideoInfo(videoId) {
+        try {
+            // שימוש בשירות noembed לקבלת מידע על הסרטון
+            const response = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
 
+            if (!response.ok) {
+                throw new Error(`שגיאה בקבלת מידע על הסרטון: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // יצירת אובייקט מידע
+            const videoInfo = {
+                title: data.title || 'סרטון YouTube',
+                author: data.author_name || 'לא ידוע',
+                thumbnail: data.thumbnail_url,
+                // אומדן אורך - אם לא מגיע מהשירות
+                duration: data.duration || 120 // ברירת מחדל - 2 דקות
+            };
+
+            // הצגת המידע בממשק בעיצוב שתואם לתמונה שהראית
+            this.displayYouTubeInfo(videoInfo);
+
+            return videoInfo;
+        } catch (error) {
+            console.error('שגיאה בקבלת מידע על הסרטון:', error);
+
+            // אם יש שגיאה, מציג מידע בסיסי
+            const fallbackInfo = {
+                title: 'סרטון YouTube',
+                author: 'לא ידוע',
+                thumbnail: null,
+                duration: 120
+            };
+
+            this.displayYouTubeInfo(fallbackInfo);
+            return fallbackInfo;
+        }
+    }
     /**
      * עדכון התקדמות בתהליך תמלול סרטון יוטיוב
      * @param {Object} progressData - נתוני ההתקדמות
@@ -209,51 +278,36 @@ class YouTubeHandler {
         }
     }
 
+
     /**
-     * הצגת מידע על סרטון YouTube
-     * @param {Object} videoInfo - מידע על הסרטון
-     */
+ * הצגת מידע על סרטון YouTube
+ * @param {Object} videoInfo - מידע על הסרטון
+ */
     displayYouTubeInfo(videoInfo) {
-        if (!this.youtubeInfo || !videoInfo) return;
+        if (!this.youtubeInfo) return;
 
-        // יצירת תוכן למידע על הסרטון
-        let infoHTML = `<div class="youtube-video-info">`;
-
-        // הוספת תמונה ממוזערת אם קיימת
-        if (videoInfo.thumbnail) {
-            infoHTML += `<div class="video-thumbnail"><img src="${videoInfo.thumbnail}" alt="תמונה ממוזערת"></div>`;
-        }
-
-        // הוספת פרטי הסרטון
-        infoHTML += `
-            <div class="video-details">
-                <h4>${videoInfo.title}</h4>
-                <p>יוצר: ${videoInfo.author}</p>
+        const html = `
+            <div class="youtube-video-info">
+                <div class="video-thumbnail">
+                    <img src="${videoInfo.thumbnail}" alt="תמונה ממוזערת">
+                </div>
+                <div class="video-details">
+                    <h4>${videoInfo.title}</h4>
+                    <p>יוצר: ${videoInfo.author}</p>
+                </div>
+            </div>
         `;
 
-        // הוספת אורך הסרטון אם קיים
-        if (videoInfo.duration) {
-            const minutes = Math.floor(videoInfo.duration / 60);
-            const seconds = Math.floor(videoInfo.duration % 60);
-            infoHTML += `<p>אורך: ${minutes}:${seconds.toString().padStart(2, '0')}</p>`;
-
-            // הוספת זמן משוער לתמלול
-            const estimatedTime = this.estimateTranscriptionTime(videoInfo.duration);
-            infoHTML += `<p>זמן משוער לתמלול: ${estimatedTime}</p>`;
-        }
-
-        infoHTML += `</div></div>`;
-
-        // הצגת המידע
-        this.youtubeInfo.innerHTML = infoHTML;
-        this.youtubeInfo.style.display = 'flex';
+        this.youtubeInfo.innerHTML = html;
+        this.youtubeInfo.style.display = 'block';
     }
 
+
     /**
-     * חילוץ מזהה הסרטון מקישור YouTube
-     * @param {string} url - קישור YouTube
-     * @returns {string|null} - מזהה הסרטון או null אם לא נמצא
-     */
+  * חילוץ מזהה הסרטון מקישור YouTube
+  * @param {string} url - קישור YouTube
+  * @returns {string|null} - מזהה הסרטון או null אם לא נמצא
+  */
     extractVideoId(url) {
         // בדיקה שיש קישור
         if (!url) return null;
@@ -275,41 +329,81 @@ class YouTubeHandler {
             return null;
         } catch (error) {
             console.error('Invalid URL:', error);
-            return null;
+
+            // טיפול בשגיאות של URL - ניסיון לחלץ באמצעות ביטויים רגולריים
+            let match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            return match ? match[1] : null;
         }
     }
 
+
     /**
-     * קבלת מידע על סרטון YouTube (אורך, כותרת וכו')
+    * קבלת מידע על סרטון YouTube
      * @param {string} videoId - מזהה הסרטון
-     * @returns {Promise<Object>} - מידע על הסרטון
-     */
+    * @returns {Promise<Object>} - מידע על הסרטון
+    */
     async getVideoInfo(videoId) {
         try {
-            // שימוש ב-API של YouTube לקבלת מידע על הסרטון
-            // לצורך הדוגמה, משתמשים בשירות פשוט לקבלת מידע בסיסי
+            console.log(`מנסה לקבל מידע על סרטון עם מזהה: ${videoId}`);
+
+            // ניסיון לקבל מידע באמצעות noembed
             const response = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
 
             if (!response.ok) {
-                throw new Error('Failed to fetch video info');
+                throw new Error(`שגיאת שרת: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('מידע שהתקבל מהשרת:', data);
 
-            return {
+            // יצירת אובייקט המידע
+            const videoInfo = {
                 title: data.title || 'סרטון YouTube',
                 author: data.author_name || 'לא ידוע',
                 thumbnail: data.thumbnail_url,
-                // אורך הסרטון לא זמין בשירות זה, נקבל אותו מאוחר יותר
                 duration: 120 // ברירת מחדל - 2 דקות
             };
+
+            // ניסיון להוציא משך זמן מדויק
+            if (data.duration) {
+                // אם המידע מכיל ישירות את משך הזמן
+                videoInfo.duration = parseInt(data.duration);
+            } else {
+                // ניסיון לחלץ זמן מהכותרת או מהתיאור (אם יש)
+                const timePattern = /(\d+):(\d+)/;
+                const titleMatch = data.title ? data.title.match(timePattern) : null;
+
+                if (titleMatch) {
+                    const minutes = parseInt(titleMatch[1]);
+                    const seconds = parseInt(titleMatch[2]);
+                    videoInfo.duration = minutes * 60 + seconds;
+                    console.log(`חילצתי זמן מהכותרת: ${minutes}:${seconds} = ${videoInfo.duration} שניות`);
+                }
+            }
+
+            // אם יש תיאור ואין זמן, ננסה לחלץ מהתיאור
+            if (data.description && videoInfo.duration === 120) {
+                const descMatch = data.description.match(/(\d+):(\d+)/);
+                if (descMatch) {
+                    const minutes = parseInt(descMatch[1]);
+                    const seconds = parseInt(descMatch[2]);
+                    videoInfo.duration = minutes * 60 + seconds;
+                    console.log(`חילצתי זמן מהתיאור: ${minutes}:${seconds} = ${videoInfo.duration} שניות`);
+                }
+            }
+
+            console.log('מידע מעובד על הסרטון:', videoInfo);
+            return videoInfo;
+
         } catch (error) {
-            console.error('Error getting video info:', error);
+            console.error('שגיאה בקבלת מידע על הסרטון:', error);
+
+            // מידע ברירת מחדל במקרה של שגיאה
             return {
                 title: 'סרטון YouTube',
                 author: 'לא ידוע',
                 thumbnail: null,
-                duration: 120
+                duration: 120 // ברירת מחדל - 2 דקות
             };
         }
     }
@@ -347,17 +441,11 @@ class YouTubeHandler {
  */
     async transcribeYouTubeVideo(videoUrl, apiKey) {
         try {
-            // חילוץ מזהה הסרטון
             const videoId = this.extractVideoId(videoUrl);
+            if (!videoId) throw new Error('הקישור אינו תקין. נא להזין קישור YouTube חוקי.');
 
-            if (!videoId) {
-                throw new Error('הקישור אינו תקין. נא להזין קישור YouTube חוקי.');
-            }
-
-            // קבלת מידע על הסרטון
             const videoInfo = await this.getVideoInfo(videoId);
 
-            // עדכון התקדמות - מקבל מידע על הסרטון
             this.updateYouTubeProgress({
                 status: 'info',
                 progress: 10,
@@ -365,62 +453,45 @@ class YouTubeHandler {
                 message: 'מתחיל לעבד את הסרטון...'
             });
 
-            // ניסיון המרת הסרטון לאודיו עם טיפול בשגיאות
             let audioBlob;
             try {
-                audioBlob = await this.convertToAudio(videoId);
+                audioBlob = await this.convertToAudio(videoId, videoInfo.title);
             } catch (conversionError) {
-                console.error('שגיאה בהמרת סרטון יוטיוב:', conversionError);
-
-                // עדכון המשתמש על השגיאה עם מידע שימושי
                 this.updateYouTubeProgress({
                     status: 'error',
                     progress: 40,
                     message: 'שגיאה בהורדת האודיו מיוטיוב. נסו שיטה אחרת.'
                 });
-
-                // שגיאה ממוקדת למשתמש עם הצעות לפתרון
-                throw new Error('לא ניתן להוריד את האודיו מיוטיוב. ייתכן שיש הגבלות על הסרטון או בעיה זמנית בשרת. אנא נסה: (1) העלאת קובץ אודיו ישירות (2) הקלטת האודיו מהמסך או (3) ניסיון סרטון אחר.');
+                throw new Error('לא ניתן להוריד את האודיו. אנא נסה סרטון אחר או העלאה ידנית.');
             }
 
-            // בדיקה שהקובץ אכן קיים ותקין לפני המשך עיבוד
             const hasAudio = await this.hasAudioContent(audioBlob);
+            if (!hasAudio) throw new Error('אין קובץ לתמלול: הסרטון ריק או הומר לא נכון.');
 
-            if (!hasAudio) {
-                throw new Error('אין קובץ לתמלול: הסרטון אינו מכיל תוכן אודיו או שחלה שגיאה בהמרה.');
-            }
-
-            // עדכון התקדמות - מתחיל תמלול
             this.updateYouTubeProgress({
                 status: 'transcribing',
                 progress: 70,
                 message: 'מתמלל את האודיו...'
             });
 
-            // יצירת קובץ מה-blob
             const audioFile = new File([audioBlob], `youtube_${videoId}.mp3`, { type: 'audio/mp3' });
 
-            // מנגנון ניסיונות חוזרים לתמלול
+            // מדידת זמן
+            const startTime = Date.now();
+
             let transcription = '';
             let attempts = 0;
             const maxAttempts = 2;
 
             while (attempts < maxAttempts) {
                 try {
-                    // תמלול הקובץ באמצעות שירות התמלול הקיים
                     transcription = await Transcription.transcribeSingle(audioFile, apiKey);
-                    break; // אם הצליח, יוצאים מהלולאה
+                    break;
                 } catch (transcriptionError) {
                     attempts++;
-                    console.warn(`ניסיון תמלול ${attempts} נכשל:`, transcriptionError);
+                    if (attempts >= maxAttempts) throw transcriptionError;
 
-                    if (attempts >= maxAttempts) {
-                        throw transcriptionError; // אם כל הניסיונות נכשלו, מעבירים את השגיאה
-                    }
-
-                    // המתנה לפני ניסיון נוסף
                     await new Promise(resolve => setTimeout(resolve, 2000));
-
                     this.updateYouTubeProgress({
                         status: 'transcribing',
                         progress: 75,
@@ -429,7 +500,12 @@ class YouTubeHandler {
                 }
             }
 
-            // עדכון התקדמות - תמלול הושלם
+            const endTime = Date.now();
+            const elapsedSeconds = Math.round((endTime - startTime) / 1000);
+            const estimatedAudioDuration = elapsedSeconds * 5;
+
+            console.log(`🎧 זמן תמלול בפועל: ${elapsedSeconds}s → משך משוער של אודיו: ${estimatedAudioDuration}s`);
+
             this.updateYouTubeProgress({
                 status: 'complete',
                 progress: 100,
@@ -445,37 +521,48 @@ class YouTubeHandler {
     }
 
     /**
-     * המרת סרטון YouTube לקובץ אודיו באמצעות שרת ה-Render (RapidAPI)
-     * @param {string} videoId - מזהה הסרטון
-     * @returns {Promise<Blob>} - קובץ האודיו כ-Blob
-     */
-    async convertToAudio(videoId) {
+ * המרת סרטון YouTube לקובץ אודיו באמצעות שרת ה-Render (RapidAPI)
+ * @param {string} videoId - מזהה הסרטון
+ * @returns {Promise<Blob>} - קובץ האודיו כ-Blob
+ */
+    // בקובץ youtubeHandler.js של צד הלקוח
+    async convertToAudio(videoId, videoTitle) {
         try {
             this.updateYouTubeProgress({
                 status: 'converting',
                 progress: 20,
-                message: 'מוריד את האודיו מהיוטיוב...'
+                message: 'מקבל את קובץ ה-MP3 מהשרת...'
             });
-
-            const fullUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
             const response = await fetch('https://audiotranscribe-27kc.onrender.com/youtube', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ url: fullUrl })
+                body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${videoId}` })
             });
 
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`השרת לא הצליח להוריד את האודיו (${response.status}): ${errorText}`);
+                throw new Error(`שגיאה בשרת: ${response.status} - ${errorText}`);
             }
 
-            const audioBlob = await response.blob();
+            const data = await response.json();
+            if (!data.mp3Link) {
+                throw new Error('לא התקבל קישור לקובץ MP3');
+            }
+
+            this.updateYouTubeProgress({
+                status: 'converting',
+                progress: 50,
+                message: 'מוריד את קובץ ה-MP3...'
+            });
+
+            const audioResp = await fetch(data.mp3Link);
+            const audioBlob = await audioResp.blob();
 
             if (audioBlob.size < 1000) {
-                throw new Error(`הקובץ שהתקבל קטן מדי (${audioBlob.size} בייטים). יתכן שהיוטיוב חוסם את ההורדה.`);
+                throw new Error('הקובץ שהתקבל קטן מדי או ריק');
             }
 
             this.updateYouTubeProgress({
@@ -484,24 +571,73 @@ class YouTubeHandler {
                 message: 'ההמרה הושלמה, טוען ללשונית העלאה...'
             });
 
-            // המרה לקובץ MP3
-            const mp3File = new File([audioBlob], `youtube_${videoId}.mp3`, { type: 'audio/mp3' });
+            const safeTitle = videoTitle?.replace(/[^\w\s-]/g, '').trim() || `youtube_${videoId}`;
+            const fileName = `${safeTitle}.mp3`;
 
-            // מעבר אוטומטי לטאב העלאה
-            this.ui.switchToTab('upload'); // ודא שקיים פונקציה כזו
-            UploadHandler.loadFromBlob(mp3File); // בדיוק כמו בהקלטה
+            const audioFile = new File([audioBlob], fileName, {
+                type: 'audio/mp3',
+                lastModified: Date.now()
+            });
 
-            this.ui.showToast('🎉 ההמרה הושלמה! עבור לטאב העלאת קובץ כדי להתחיל תמלול.');
+            this.handleYoutubeFile(audioFile);
 
-            // לא חוזר קובץ ולא ממשיך לתמלול בשלב זה
-            return;
+            return audioBlob;
 
         } catch (error) {
-            console.error('שגיאה בהמרת יוטיוב:', error);
+            console.error('❌ שגיאה בהמרת סרטון YouTube:', error);
             throw new Error('שגיאה בהמרת הסרטון לאודיו: ' + error.message);
         }
     }
 
+
+    // פונקציה חדשה שצריך להוסיף
+    handleYoutubeFile(audioFile) {
+        // מעבר ללשונית העלאת קובץ
+        console.log('מעבר ללשונית העלאת קובץ');
+        const uploadTab = document.querySelector('[data-tab="upload-file"]');
+        if (uploadTab) {
+            uploadTab.click();
+        } else {
+            console.error('לא נמצאה לשונית "העלאת קובץ"');
+        }
+
+        // המתנה קצרה לאחר המעבר ללשונית
+        setTimeout(() => {
+            try {
+                if (!this.ui) {
+                    throw new Error('this.ui לא מוגדר בתוך handleYoutubeFile');
+                }
+
+                console.log('קריאה ל-handleNewFile עם מקור:', 'youtube');
+                this.ui.handleNewFile(audioFile, 'youtube');
+
+                // וידוא תצוגת אזורים
+                if (this.ui.uploadArea) {
+                    this.ui.uploadArea.style.display = 'none';
+                }
+
+                if (this.ui.fileInfo) {
+                    this.ui.fileInfo.style.display = 'block';
+                }
+
+                // גלילה עדינה למטה ומיקוד על כפתור התמלול
+                setTimeout(() => {
+                    if (this.ui.fileInfo) {
+                        this.ui.fileInfo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                    if (this.ui.transcribeBtn) {
+                        this.ui.transcribeBtn.focus();
+                    }
+                }, 300);
+
+            } catch (innerError) {
+                console.error('❌ שגיאה בטיפול בקובץ לאחר מעבר לשונית:', innerError);
+                if (this.ui && typeof this.ui.showError === 'function') {
+                    this.ui.showError('שגיאה בטיפול בקובץ לאחר מעבר לשונית: ' + innerError.message);
+                }
+            }
+        }, 100);
+    }
 
     // להוסיף למחלקת YouTubeHandler
     resetYoutubeUI() {
