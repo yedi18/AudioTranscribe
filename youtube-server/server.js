@@ -8,6 +8,16 @@ const { getYoutubeMp3Link } = require('./youtubeHandler');
 const app = express();
 const PORT = 10000;
 
+const multer = require('multer');
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const path = require('path');
+const fs = require('fs');
+
+ffmpeg.setFfmpegPath(ffmpegPath);
+
+const upload = multer({ dest: 'temp_uploads/' });
+
 // Middlewares
 app.use(cors());
 app.use(bodyParser.json());
@@ -35,6 +45,43 @@ app.post('/youtube', async (req, res) => {
         res.status(500).json({ error: 'שגיאה בקבלת קובץ MP3 מהשרת החיצוני' });
     }
 });
+// API: קבלת קובץ אודיו והמרתו ל-MP3
+app.post('/convert-audio', upload.single('audio'), async (req, res) => {
+    const file = req.file;
+    if (!file) return res.status(400).send('קובץ לא התקבל');
+
+    const originalPath = file.path;
+    const outputPath = path.join('temp_uploads', `${file.filename}.mp3`);
+
+    const ext = path.extname(file.originalname).toLowerCase();
+    const isMp3 = ext === '.mp3';
+
+    if (isMp3) {
+        // אם זה כבר MP3 – שלח כמו שהוא
+        return res.sendFile(path.resolve(originalPath));
+    }
+    // אחרי שליחת הקובץ למשתמש
+    setTimeout(() => {
+        fs.existsSync(originalPath) && fs.unlinkSync(originalPath);
+        fs.existsSync(outputPath) && fs.unlinkSync(outputPath);
+    }, 30000); // מחיקה אחרי 30 שניות
+
+
+    // המרה ל-MP3
+    ffmpeg(originalPath)
+        .output(outputPath)
+        .audioCodec('libmp3lame')
+        .on('end', () => {
+            console.log('✅ המרה ל-MP3 הושלמה');
+            res.sendFile(path.resolve(outputPath));
+        })
+        .on('error', (err) => {
+            console.error('❌ שגיאה בהמרה ל-MP3:', err.message);
+            res.status(500).send('שגיאה בהמרת הקובץ');
+        })
+        .run();
+});
+
 
 // הפעלת השרת
 app.listen(PORT, () => {
