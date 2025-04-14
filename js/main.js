@@ -125,9 +125,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.showError('נא לבחור קובץ אודיו תקין (MP3, WAV, OGG, M4A, WEBM)');
                 return;
             }
-            // אם הקובץ אינו MP3 – שלח לשרת להמרה
-            if (!this.selectedFile.name.toLowerCase().endsWith('.mp3')) {
-                console.log('📤 שולח קובץ לשרת להמרה ל־MP3');
+            // בדיקה אם הקובץ הוא MP3 אמיתי לפי שם + סוג MIME
+            const fileName = this.selectedFile.name?.toLowerCase()?.trim() || '';
+            const fileType = this.selectedFile.type || '';
+
+            const isMp3 = fileName.endsWith('.mp3') || fileType === 'audio/mpeg';
+
+            if (!isMp3) {
+                console.log('📤 קובץ אינו MP3 – נשלח לשרת להמרה');
 
                 const convertForm = new FormData();
                 convertForm.append('audio', this.selectedFile);
@@ -138,23 +143,24 @@ document.addEventListener('DOMContentLoaded', function () {
                         body: convertForm
                     });
 
-
                     if (!response.ok) throw new Error('השרת לא הצליח להמיר את הקובץ');
 
                     const mp3Blob = await response.blob();
 
                     const newFile = new File([mp3Blob], 'converted.mp3', {
-                        type: 'audio/mp3',
+                        type: 'audio/mpeg',
                         lastModified: Date.now()
                     });
 
-                    console.log('✅ קובץ הומר ל־MP3 בהצלחה');
+                    console.log('✅ המרה הושלמה – קובץ חדש הוזן');
                     this.selectedFile = newFile;
                 } catch (err) {
                     console.error('❌ שגיאה בהמרת הקובץ:', err);
                     this.showError('שגיאה בהמרת הקובץ ל־MP3: ' + err.message);
                     return;
                 }
+            } else {
+                console.log('📢 קובץ הוא MP3 – לא נשלח לשרת!');
             }
 
 

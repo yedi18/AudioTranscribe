@@ -23,7 +23,7 @@ class Transcription {
                 formData.append('file', audioFile);
             } else if (audioFile instanceof Blob) {
                 // יצירת אובייקט File מה-Blob
-                const fileName = `audio_segment_${new Date().getTime()}.mp3`;
+                const fileName = `audio_s   egment_${new Date().getTime()}.mp3`;
                 const file = new File([audioFile], fileName, { type: 'audio/mpeg' });
                 console.log(`שולח blob כקובץ: ${fileName}, גודל: ${file.size} בתים`);
                 formData.append('file', file);
