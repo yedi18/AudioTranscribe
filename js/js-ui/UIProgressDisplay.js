@@ -45,30 +45,30 @@ class UIProgressDisplay extends UIAPIManagement {
     }
 
     /**
- * מעדכן את הזמן המשוער לתמלול
- * @param {number} numSegments - מספר חלקי האודיו
- */
-    updateEstimatedTime(numSegments) {
+    * מעדכן את הזמן המשוער לתמלול
+    * @param {number} numSegments - מספר חלקי האודיו
+     */
+    updateEstimatedTime(durationInSeconds) {
         if (!this.timeEstimate) return;
 
+        const segmentLength = 25;
         const secondsPerSegment = 5;
+
+        const numSegments = Math.ceil(durationInSeconds / segmentLength);
         const estimatedSeconds = numSegments * secondsPerSegment;
 
-        let estimatedTime;
+        let displayText;
         if (estimatedSeconds < 60) {
-            estimatedTime = `${estimatedSeconds} שניות`;
+            displayText = `${Math.round(estimatedSeconds)} שניות`;
         } else {
             const minutes = Math.floor(estimatedSeconds / 60);
-            const seconds = estimatedSeconds % 60;
-            estimatedTime = `${minutes} דקות${seconds ? ` ו-${seconds} שניות` : ''}`;
+            const seconds = Math.round(estimatedSeconds % 60);
+            displayText = `${minutes} דקות ו-${seconds} שניות`;
         }
 
-        this.timeEstimate.textContent = estimatedTime;
-
-        if (this.estimatedTimeContainer) {
-            this.estimatedTimeContainer.style.display = 'block';
-        }
+        this.timeEstimate.textContent = displayText;
     }
+
 
 }
 
