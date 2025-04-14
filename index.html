@@ -171,17 +171,30 @@
                     <div class="tab-content" id="youtube-link-content">
                         <div class="youtube-input-area">
                             <h3>הזן קישור לסרטון יוטיוב</h3>
-                            <p>המערכת תמלל את השמע מהסרטון</p>
+                            <p>המערכת תמללה את השמע מהסרטון</p>
+
                             <div class="youtube-input-group">
                                 <input type="text" id="youtube-url" placeholder="הדבק כאן קישור YouTube" />
                                 <button class="btn" id="process-youtube-btn">
                                     <i class="fas fa-magic"></i> תמלל סרטון
                                 </button>
                             </div>
+                            <!-- התצוגה של הסרטון - נבנית דינמית ע"י youtubeHandler -->
+                            <div class="youtube-info" style="display: none;"></div>
+
+                            <!-- תצוגת טעינה בעת לחיצה על "תמלל סרטון" -->
+                            <div id="youtube-loading" style="display: none; margin-top: 1rem; text-align: center;">
+                                <i class="fas fa-spinner fa-spin"
+                                    style="font-size: 18px; color: #007bff; margin-left: 6px;"></i>
+                                <span style="font-size: 15px; color: #333;">התהליך עשוי להימשך מספר רגעים...</span>
+                            </div>
+
+
                             <p class="note"><i class="fas fa-info-circle"></i> הערה: יש להשתמש בקישור ישיר לסרטון
                                 YouTube</p>
                         </div>
                     </div>
+
 
                     <!-- תוכן לשונית הקלטה ישירה -->
                     <div class="tab-content" id="record-audio-content">

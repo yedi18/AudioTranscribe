@@ -180,7 +180,39 @@ class UIHandlers extends UICore {
                             const youtubeInput = document.getElementById('youtube-url');
                             if (youtubeInput) youtubeInput.value = '';
                         }
+                        if (youtubeInput) {
+                            youtubeInput.addEventListener('input', () => {
+                                const value = youtubeInput.value.trim();
+                                const youtubeInfoBox = document.querySelector('.youtube-info');
+                                const isValidYoutube = value.includes('youtube.com/') || value.includes('youtu.be/');
+
+                                if (!isValidYoutube && youtubeInfoBox) {
+                                    youtubeInfoBox.innerHTML = '';
+                                    youtubeInfoBox.style.display = 'none';
+                                }
+                            });
+                        }
+
                     }
+                    // אם עוזבים את טאב YouTube ואין קישור – איפוס תצוגה
+                    if (tabId !== 'youtube-link') {
+                        const youtubeInput = document.getElementById('youtube-url');
+                        const youtubeInfoBox = document.querySelector('.youtube-info');
+                        const url = youtubeInput?.value?.trim();
+                        //   const isValidYoutube = url && (url.includes('youtube.com/') || url.includes('youtu.be/'));
+
+                        const leftYoutubeTab = tabId !== 'youtube-link';
+                        const youtubeFieldEmpty = !url;
+
+                        if ((leftYoutubeTab || youtubeFieldEmpty) && youtubeInfoBox) {
+                            youtubeInfoBox.innerHTML = '';
+                            youtubeInfoBox.style.display = 'none';
+                        }
+
+                    }
+
+
+
                 });
             });
         }

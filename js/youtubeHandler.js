@@ -129,65 +129,62 @@ class YouTubeHandler {
     /**
      * טיפול בתמלול מסרטון יוטיוב
      */
-    // בקובץ youtubeHandler.js
-    // בקובץ youtubeHandler.js
     processYouTubeVideo() {
         const youtubeUrl = this.youtubeUrlInput.value.trim();
-
+        const loadingIndicator = document.getElementById('youtube-loading');
+        if (loadingIndicator) loadingIndicator.style.display = 'block';
+    
         if (!youtubeUrl) {
             this.ui.showError('נא להזין קישור יוטיוב תקין');
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
             return;
         }
-
-        // בדיקה שהקישור הוא אכן מיוטיוב
+    
         if (!youtubeUrl.includes('youtube.com/') && !youtubeUrl.includes('youtu.be/')) {
             this.ui.showError('נא להזין קישור יוטיוב תקין');
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
             return;
         }
-
-        // בדיקת מפתח API
+    
         if (!this.ui.apiKey) {
             this.ui.showError('נא להזין מפתח API של Huggingface בהגדרות');
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
             return;
         }
-
-        // הצגת מצב תמלול
+    
         this.ui.progressContainer.style.display = 'block';
         this.ui.loadingSpinner.style.display = 'block';
         this.processYoutubeBtn.disabled = true;
         this.ui.errorMessage.style.display = 'none';
-
-        // עדכון המצב הראשוני
+    
         this.ui.updateProgress({ status: 'processing', progress: 5, message: 'מכין לעיבוד סרטון YouTube...' });
-
-        // קבלת מזהה הסרטון
+    
         const videoId = this.extractVideoId(youtubeUrl);
-
+    
         if (!videoId) {
             this.ui.showError('לא ניתן לזהות את מזהה הסרטון. נא לוודא שהקישור תקין.');
             this.processYoutubeBtn.disabled = false;
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
             return;
         }
-
-        // קבלת מידע על הסרטון תחילה
+    
         this.getVideoInfo(videoId)
+            .then(() => this.convertToAudio(videoId))
             .then(() => {
-                // המשך לקבלת ויצירת הקובץ
-                return this.convertToAudio(videoId);
-            })
-            .then(() => {
-                // החלק הזה לא צריך לעשות כלום כי handleYoutubeFile מטפל בכל
                 console.log('הקובץ הועבר לטאב העלאה בהצלחה');
                 this.processYoutubeBtn.disabled = false;
                 this.ui.loadingSpinner.style.display = 'none';
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
             })
             .catch(error => {
                 console.error('Error processing YouTube video:', error);
                 this.ui.showError('אירעה שגיאה בעיבוד הסרטון: ' + (error.message || 'שגיאה לא ידועה'));
                 this.ui.loadingSpinner.style.display = 'none';
                 this.processYoutubeBtn.disabled = false;
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
             });
     }
+    
     /**
    * קבלת מידע על סרטון YouTube
    * @param {string} videoId - מזהה הסרטון
