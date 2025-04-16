@@ -39,6 +39,18 @@
             <div id="api-settings" class="api-settings">
                 <details>
                     <summary> הגדרות API <i class="fas fa-cog"></i></summary>
+                    <div id="api-settings" class="api-settings">
+                <div class="api-section" style="margin-bottom: 2rem;">
+                    <h4>מצב תמלול:</h4>
+                    <label for="transcription-mode">בחר כיצד יבוצע התמלול:</label>
+                    <select id="transcription-mode" class="styled-select">
+                        <option value="groq-only" selected>Groq בלבד – תמלול והגהה</option>
+                        <option value="hf-plus-groq">Hugging Face לתמלול + Groq להגהה</option>
+                    </select>
+                    <p id="provider-display" style="margin-top: 0.5rem; font-size: 0.9rem;">
+                        💡 תמלול יתבצע כולו דרך Groq.
+                    </p>
+                </div>
                     <div class="api-settings-content">
                         <!-- חלק חובה - Huggingface -->
                         <div class="api-section required">
@@ -108,7 +120,8 @@
                                 </div>
                                 <h3>גרור לכאן קובץ אודיו MP3</h3>
                                 <p>או לחץ כדי לבחור קובץ</p>
-                                <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.webm,.ogg,.m4a" style="display: none;">
+                                <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.webm,.ogg,.m4a"
+                                    style="display: none;">
                                 <button class="btn" id="select-file-btn"><i class="fas fa-file-audio"></i> בחר קובץ
                                     MP3</button>
                             </div>

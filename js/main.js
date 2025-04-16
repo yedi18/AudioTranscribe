@@ -118,6 +118,22 @@ document.addEventListener('DOMContentLoaded', function () {
      * הפעלת תמלול כאשר לוחצים על כפתור "התחל תמלול"
      */
     ui.onTranscribeClick = async function () {
+        const providerSelect = document.getElementById('transcription-provider');
+        const selectedProvider = providerSelect?.value || 'groq';
+
+        let apiKey = '';
+
+        if (selectedProvider === 'groq') {
+            apiKey = localStorage.getItem('groq_api_key');
+        } else {
+            apiKey = localStorage.getItem('huggingface_api_key');
+        }
+
+        if (!apiKey) {
+            this.showError('מפתח API חסר – נא להזין בהגדרות');
+            return;
+        }
+
         try {
             console.log('התחלת תהליך תמלול');
 
@@ -237,14 +253,17 @@ document.addEventListener('DOMContentLoaded', function () {
                             console.warn(`קטע אודיו ${i + 1} לא תקין. מנסה להמשיך בכל זאת.`);
                         }
                     }
+                    console.log('🔀 תמלול קטעים עם ספק:', selectedProvider);
 
                     // תמלול כל החלקים
                     transcription = await Transcription.transcribeSegments(
                         audioSegments,
-                        this.apiKey,
+                        apiKey,
                         (progressData) => this.updateProgress(progressData),
-                        1 // מספר בקשות מקסימלי במקביל - עדיף לשלוח אחד אחד
+                        1,
+                        selectedProvider
                     );
+
                 } catch (splitError) {
                     console.error("שגיאה בפיצול האודיו:", splitError);
 
@@ -270,8 +289,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (!isValid) {
                         console.warn('הקובץ המקורי עשוי להיות לא תקין, מנסה לתמלל בכל זאת');
                     }
+                    console.log('🎧 תמלול קובץ אחד עם ספק:', selectedProvider);
 
-                    transcription = await Transcription.transcribeSingle(this.selectedFile, this.apiKey);
+                    transcription = await Transcription.transcribeSingle(this.selectedFile, apiKey, selectedProvider);
                     this.updateProgress({ status: 'complete', progress: 100 });
                 } catch (singleError) {
                     console.error('שגיאה בתמלול קובץ בודד:', singleError);

@@ -17,7 +17,6 @@ class UIAPIManagement extends UIFileOperations {
                 this.huggingfaceKeyStatus.style.color = '#28a745';
             }
         }
-        this.apiKey = this.huggingfaceApiKey;
 
         // Groq
         if (this.groqApiKey) {

@@ -174,25 +174,31 @@ class UIHandlers extends UICore {
                             this.recordingHandler.resetRecordingUI();
                         }
                     } else if (tabId === 'youtube-link') {
-                        // איפוס ממשק היוטיוב
-                        if (this.youtubeHandler) {
-                            // איפוס שדה הקלט של היוטיוב
-                            const youtubeInput = document.getElementById('youtube-url');
-                            if (youtubeInput) youtubeInput.value = '';
-                        }
+                        // איפוס שדה הקלט של YouTube
+                        const youtubeInput = document.getElementById('youtube-url');
+                        const youtubeInfoBox = document.querySelector('.youtube-info');
+
                         if (youtubeInput) {
-                            youtubeInput.addEventListener('input', () => {
+                            youtubeInput.value = '';
+
+                            // ודא שלא נוספו מאזינים כפולים
+                            youtubeInput.removeEventListener('_validate', youtubeInput._validateListener);
+
+                            // מאזין חדש לבדיקה בזמן הקלדה
+                            const validateInput = () => {
                                 const value = youtubeInput.value.trim();
-                                const youtubeInfoBox = document.querySelector('.youtube-info');
                                 const isValidYoutube = value.includes('youtube.com/') || value.includes('youtu.be/');
 
                                 if (!isValidYoutube && youtubeInfoBox) {
                                     youtubeInfoBox.innerHTML = '';
                                     youtubeInfoBox.style.display = 'none';
                                 }
-                            });
-                        }
+                            };
 
+                            // שמירת הפונקציה על האובייקט כדי למנוע ריבוי מאזינים
+                            youtubeInput._validateListener = validateInput;
+                            youtubeInput.addEventListener('input', validateInput);
+                        }
                     }
                     // אם עוזבים את טאב YouTube ואין קישור – איפוס תצוגה
                     if (tabId !== 'youtube-link') {
