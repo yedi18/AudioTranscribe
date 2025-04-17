@@ -164,33 +164,41 @@ document.addEventListener('DOMContentLoaded', function () {
         updateAPISectionsDisplay();
     }, 100);
 
-
-
-
-
     /**
      * הפעלת תמלול כאשר לוחצים על כפתור "התחל תמלול"
      */
     ui.onTranscribeClick = async function () {
+        // בחירת ספק התמלול (Groq או Huggingface)
         const selectedProvider = this.getSelectedProvider();
+
+        // טעינת מפתח ה-API המתאים
         this.apiKey = selectedProvider === 'groq'
             ? localStorage.getItem('groq_api_key')
             : localStorage.getItem('huggingface_api_key');
 
         const apiKey = this.apiKey;
 
+        // בדיקה שיש מפתח API
         if (!apiKey) {
-            this.showError('מפתח API חסר – נא להזין בהגדרות');
+            const providerName = selectedProvider === 'groq' ? 'Groq' : 'Huggingface';
+            this.showError(`מפתח API של ${providerName} חסר – נא להזין בהגדרות`);
             return;
         }
 
+        // בדיקה אם יש מפתח אלטרנטיבי במקרה שנצטרך לעבור ספק
+        const alternativeProvider = selectedProvider === 'groq' ? 'huggingface' : 'groq';
+        const hasAlternativeKey = localStorage.getItem(
+            alternativeProvider === 'groq' ? 'groq_api_key' : 'huggingface_api_key'
+        ) ? true : false;
+
         try {
-            console.log('התחלת תהליך תמלול');
+            console.log(`התחלת תהליך תמלול עם ספק: ${selectedProvider}`);
 
             if (!this.selectedFile) {
                 this.showError('נא לבחור קובץ אודיו תקין (MP3, WAV, OGG, M4A, WEBM)');
                 return;
             }
+
             // בדיקה אם הקובץ הוא MP3 אמיתי לפי שם + סוג MIME
             const fileName = this.selectedFile.name?.toLowerCase()?.trim() || '';
             const fileType = this.selectedFile.type || '';
@@ -227,13 +235,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             } else {
                 console.log('📢 קובץ הוא MP3 – לא נשלח לשרת!');
-            }
-
-
-            // בדיקת מפתח API
-            if (!this.apiKey) {
-                this.showError('נא להזין מפתח API של Huggingface בהגדרות');
-                return;
             }
 
             // הצגת מצב תמלול
@@ -276,6 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             let transcription = '';
+            let providerSwitched = false;
 
             if (shouldSplit) {
                 try {
@@ -288,7 +290,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         segmentLengthValue,
                         (progressData) => this.updateProgress(progressData)
                     );
-
 
                     console.log(`נוצרו ${audioSegments.length} קטעי אודיו לתמלול`);
 
@@ -305,11 +306,27 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     console.log('🔀 תמלול קטעים עם ספק:', selectedProvider);
 
+                    // מעדכן את הפונקציה שמטפלת בהתקדמות כדי לזהות החלפת ספק
+                    const onProgressWithProviderDetection = (progressData) => {
+                        // בדיקה אם הספק הוחלף במהלך התמלול
+                        if (progressData.providerSwitched && progressData.newProvider) {
+                            providerSwitched = true;
+                            const newProviderName = progressData.newProvider === 'groq' ? 'Groq' : 'Huggingface';
+                            const oldProviderName = selectedProvider === 'groq' ? 'Groq' : 'Huggingface';
+
+                            // עדכון הודעת ההתקדמות כדי ליידע את המשתמש על החלפת הספק
+                            progressData.message = `עובר מ-${oldProviderName} ל-${newProviderName} (בגלל מגבלת שימוש)`;
+                        }
+
+                        // העברת נתוני ההתקדמות לפונקציית העדכון המקורית
+                        this.updateProgress(progressData);
+                    };
+
                     // תמלול כל החלקים
                     transcription = await Transcription.transcribeSegments(
                         audioSegments,
                         apiKey,
-                        (progressData) => this.updateProgress(progressData),
+                        onProgressWithProviderDetection,
                         1,
                         selectedProvider
                     );
@@ -317,8 +334,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 } catch (splitError) {
                     console.error("שגיאה בפיצול האודיו:", splitError);
 
-                    // בודק אם זו שגיאת תמלול מה-API
-                    if (splitError.message && splitError.message.includes('API')) {
+                    // בדיקה אם זו שגיאת Rate Limit
+                    if (splitError.message && (
+                        splitError.message.includes('rate_limit_exceeded') ||
+                        splitError.message.includes('Rate limit')
+                    )) {
+                        // בדיקה אם יש מפתח אלטרנטיבי זמין
+                        if (hasAlternativeKey) {
+                            console.warn(`מגבלת שימוש בספק ${selectedProvider}. מנסה לעבור ל-${alternativeProvider}...`);
+
+                            // עדכון המשתמש
+                            this.updateProgress({
+                                status: 'processing',
+                                progress: 40,
+                                message: `הגעת למגבלת שימוש של ${selectedProvider}, עובר ל-${alternativeProvider}...`
+                            });
+
+                            // החלפת המפתח לספק האלטרנטיבי
+                            const alternativeKey = localStorage.getItem(
+                                alternativeProvider === 'groq' ? 'groq_api_key' : 'huggingface_api_key'
+                            );
+
+                            // ניסיון חוזר עם הספק האלטרנטיבי
+                            transcription = await Transcription.transcribeSingle(
+                                this.selectedFile,
+                                alternativeKey,
+                                alternativeProvider
+                            );
+
+                            providerSwitched = true;
+                        } else {
+                            // אם אין מפתח אלטרנטיבי, מציג הודעה ברורה
+                            this.showError(`הגעת למגבלת השימוש של ${selectedProvider}. נא להמתין או להגדיר מפתח API של ${alternativeProvider}.`);
+                            throw splitError;
+                        }
+                    } else if (splitError.message && splitError.message.includes('API')) {
                         // ננסה לתמלל שוב ללא פיצול אוטומטית במקום לשאול את המשתמש
                         console.warn("אירעה שגיאה בתמלול הקטעים. מנסה שוב ללא פיצול.");
                         shouldSplit = false;
@@ -330,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // אם לא מפצלים או אם הפיצול נכשל וניסינו שוב
-            if (!shouldSplit) {
+            if (!shouldSplit && !transcription) {
                 // תמלול קובץ בודד ללא פיצול
                 this.updateProgress({ status: 'transcribing', progress: 40, completedSegments: 0, totalSegments: 1 });
                 try {
@@ -341,7 +391,42 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     console.log('🎧 תמלול קובץ אחד עם ספק:', selectedProvider);
 
-                    transcription = await Transcription.transcribeSingle(this.selectedFile, apiKey, selectedProvider);
+                    try {
+                        transcription = await Transcription.transcribeSingle(this.selectedFile, apiKey, selectedProvider);
+                    } catch (singleError) {
+                        // בדיקה אם זו שגיאת Rate Limit והאם יש מפתח אלטרנטיבי
+                        if (singleError.message && (
+                            singleError.message.includes('rate_limit_exceeded') ||
+                            singleError.message.includes('Rate limit')
+                        ) && hasAlternativeKey) {
+                            console.warn(`מגבלת שימוש בספק ${selectedProvider}. מנסה לעבור ל-${alternativeProvider}...`);
+
+                            // עדכון המשתמש
+                            this.updateProgress({
+                                status: 'processing',
+                                progress: 50,
+                                message: `הגעת למגבלת שימוש של ${selectedProvider}, עובר ל-${alternativeProvider}...`
+                            });
+
+                            // החלפת המפתח לספק האלטרנטיבי
+                            const alternativeKey = localStorage.getItem(
+                                alternativeProvider === 'groq' ? 'groq_api_key' : 'huggingface_api_key'
+                            );
+
+                            // ניסיון חוזר עם הספק האלטרנטיבי
+                            transcription = await Transcription.transcribeSingle(
+                                this.selectedFile,
+                                alternativeKey,
+                                alternativeProvider
+                            );
+
+                            providerSwitched = true;
+                        } else {
+                            // אם זו לא שגיאת Rate Limit או שאין מפתח אלטרנטיבי, זורק את השגיאה
+                            throw singleError;
+                        }
+                    }
+
                     this.updateProgress({ status: 'complete', progress: 100 });
                 } catch (singleError) {
                     console.error('שגיאה בתמלול קובץ בודד:', singleError);
@@ -357,8 +442,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // הצגת התוצאות
                 this.showResults(transcription);
-                //this.updateRestartButton();
 
+                // הוספת הודעה אם הספק הוחלף במהלך התמלול
+                if (providerSwitched) {
+                    const oldProviderName = selectedProvider === 'groq' ? 'Groq' : 'Huggingface';
+                    const newProviderName = alternativeProvider === 'groq' ? 'Groq' : 'Huggingface';
+
+                    // הוספת הודעה בתחילת הטקסט
+                    const message = `[הערה: במהלך התמלול המערכת עברה מ-${oldProviderName} ל-${newProviderName} בגלל מגבלת שימוש]\n\n`;
+                    this.transcriptionResult.value = message + this.transcriptionResult.value;
+                }
 
                 // הוספת כפתורים מיוחדים למצב הקלטה אם צריך
                 if (isFromRecording) {

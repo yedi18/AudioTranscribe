@@ -133,41 +133,41 @@ class YouTubeHandler {
         const youtubeUrl = this.youtubeUrlInput.value.trim();
         const loadingIndicator = document.getElementById('youtube-loading');
         if (loadingIndicator) loadingIndicator.style.display = 'block';
-    
+
         if (!youtubeUrl) {
             this.ui.showError('נא להזין קישור יוטיוב תקין');
             if (loadingIndicator) loadingIndicator.style.display = 'none';
             return;
         }
-    
+
         if (!youtubeUrl.includes('youtube.com/') && !youtubeUrl.includes('youtu.be/')) {
             this.ui.showError('נא להזין קישור יוטיוב תקין');
             if (loadingIndicator) loadingIndicator.style.display = 'none';
             return;
         }
-    
+
         if (!this.ui.apiKey) {
             this.ui.showError('נא להזין מפתח API של Huggingface בהגדרות');
             if (loadingIndicator) loadingIndicator.style.display = 'none';
             return;
         }
-    
+
         this.ui.progressContainer.style.display = 'block';
         this.ui.loadingSpinner.style.display = 'block';
         this.processYoutubeBtn.disabled = true;
         this.ui.errorMessage.style.display = 'none';
-    
+
         this.ui.updateProgress({ status: 'processing', progress: 5, message: 'מכין לעיבוד סרטון YouTube...' });
-    
+
         const videoId = this.extractVideoId(youtubeUrl);
-    
+
         if (!videoId) {
             this.ui.showError('לא ניתן לזהות את מזהה הסרטון. נא לוודא שהקישור תקין.');
             this.processYoutubeBtn.disabled = false;
             if (loadingIndicator) loadingIndicator.style.display = 'none';
             return;
         }
-    
+
         this.getVideoInfo(videoId)
             .then(() => this.convertToAudio(videoId))
             .then(() => {
@@ -184,7 +184,7 @@ class YouTubeHandler {
                 if (loadingIndicator) loadingIndicator.style.display = 'none';
             });
     }
-    
+
     /**
    * קבלת מידע על סרטון YouTube
    * @param {string} videoId - מזהה הסרטון
@@ -482,7 +482,10 @@ class YouTubeHandler {
 
             while (attempts < maxAttempts) {
                 try {
-                    transcription = await Transcription.transcribeSingle(audioFile, apiKey);
+                    const selectedProvider = this.ui.getSelectedProvider?.() || 'groq';
+                    console.log('🎧 תמלול יוטיוב עם ספק:', selectedProvider);
+
+                    transcription = await Transcription.transcribeSingle(audioFile, apiKey, selectedProvider);
                     break;
                 } catch (transcriptionError) {
                     attempts++;
@@ -531,17 +534,44 @@ class YouTubeHandler {
                 message: 'מקבל את קובץ ה-MP3 מהשרת...'
             });
 
-            const response = await fetch('https://audiotranscribe-27kc.onrender.com/youtube', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${videoId}` })
-            });
+            // הוספת מנגנון נסיון חוזר אוטומטי
+            let maxRetries = 3;
+            let attempt = 0;
+            let response = null;
+            let success = false;
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`שגיאה בשרת: ${response.status} - ${errorText}`);
+            while (attempt < maxRetries && !success) {
+                attempt++;
+                try {
+                    console.log(`ניסיון ${attempt} להורדת הסרטון מהשרת...`);
+
+                    // הוספת עיכוב קטן בניסיונות חוזרים
+                    if (attempt > 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        console.log("ממתין לפני ניסיון חוזר...");
+                    }
+
+                    response = await fetch('https://audiotranscribe-27kc.onrender.com/youtube', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${videoId}` })
+                    });
+
+                    if (response.ok) {
+                        success = true;
+                    } else {
+                        console.warn(`ניסיון ${attempt} נכשל עם סטטוס: ${response.status}`);
+                    }
+                } catch (retryError) {
+                    console.warn(`שגיאה בניסיון ${attempt}:`, retryError);
+                }
+            }
+
+            // בדיקה אם הצלחנו אחרי כל הניסיונות
+            if (!success) {
+                throw new Error(`לא התקבל קישור לקובץ MP3 לאחר ${maxRetries} ניסיונות`);
             }
 
             const data = await response.json();

@@ -4,9 +4,9 @@
  */
 class UIProgressDisplay extends UIAPIManagement {
     /**
-     * עדכון פס ההתקדמות
-     * @param {Object} progressData - נתוני ההתקדמות
-     */
+  * עדכון פס ההתקדמות
+  * @param {Object} progressData - נתוני ההתקדמות
+  */
     updateProgress(progressData) {
         this.progressBar.style.width = progressData.progress + '%';
         this.progressText.textContent = Math.round(progressData.progress) + '%';
@@ -24,13 +24,27 @@ class UIProgressDisplay extends UIAPIManagement {
                 }
                 break;
             case 'transcribing':
-                this.progressStatus.innerHTML = `<i class="fas fa-microphone"></i> מתמלל (קטע ${progressData.completedSegments || 1}/${progressData.totalSegments || 1})...`;
+                // בדיקה אם יש החלפת ספק שצריך לדווח עליה
+                if (progressData.providerSwitched && progressData.newProvider) {
+                    const newProviderName = progressData.newProvider === 'groq' ? 'Groq' : 'Huggingface';
+                    this.progressStatus.innerHTML = `<i class="fas fa-exchange-alt"></i> מעבר לספק ${newProviderName} (בגלל מגבלת שימוש)...`;
+                } else {
+                    this.progressStatus.innerHTML = `<i class="fas fa-microphone"></i> מתמלל (קטע ${progressData.completedSegments || 1}/${progressData.totalSegments || 1})...`;
+                }
                 break;
             case 'complete':
                 this.progressStatus.innerHTML = '<i class="fas fa-check-circle"></i> הושלם!';
                 break;
             case 'error':
-                this.progressStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> אירעה שגיאה: ' + (progressData.error || 'שגיאה לא מוכרת');
+                // בדיקה אם השגיאה היא שגיאת מגבלת קצב
+                if (progressData.error && (
+                    progressData.error.includes('rate_limit_exceeded') ||
+                    progressData.error.includes('Rate limit')
+                )) {
+                    this.progressStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> הגעת למגבלת שימוש. מנסה ספק אחר...';
+                } else {
+                    this.progressStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> אירעה שגיאה: ' + (progressData.error || 'שגיאה לא מוכרת');
+                }
                 break;
             case 'processing':
                 this.progressStatus.innerHTML = '<i class="fas fa-cog fa-spin"></i> ' + (progressData.message || 'מעבד...');

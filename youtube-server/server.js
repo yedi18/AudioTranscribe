@@ -37,12 +37,27 @@ app.post('/youtube', async (req, res) => {
 
     try {
         const videoId = new URL(url).searchParams.get("v");
-        const { link, title } = await getYoutubeMp3Link(videoId);
+        
+        if (!videoId) {
+            return res.status(400).json({ error: 'לא נמצא מזהה וידאו בקישור' });
+        }
+        
+        console.log(`📺 מנסה להוריד סרטון יוטיוב: ${videoId}`);
+        
+        // ניסיון עם יותר ניסיונות חוזרים ועיכוב ארוך יותר
+        const { link, title } = await getYoutubeMp3Link(videoId, 4, 3000);
+        
+        console.log(`✅ התקבל קישור MP3 בהצלחה עבור: ${title}`);
         res.json({ mp3Link: link, title });
 
     } catch (err) {
         console.error('שגיאה ב־/youtube:', err.message);
-        res.status(500).json({ error: 'שגיאה בקבלת קובץ MP3 מהשרת החיצוני' });
+        
+        // הודעת שגיאה ברורה יותר
+        res.status(500).json({ 
+            error: 'שגיאה בקבלת קובץ MP3 מהשרת החיצוני',
+            details: err.message 
+        });
     }
 });
 // API: קבלת קובץ אודיו והמרתו ל-MP3
