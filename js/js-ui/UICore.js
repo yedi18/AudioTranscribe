@@ -59,6 +59,8 @@ class UICore {
         if (this.groqApiKeyInput) {
             this.groqApiKeyInput.value = this.groqApiKey;
         }
+        this.apiKey = this.groqApiKey || this.huggingfaceApiKey;
+
 
         // מצב הממשק
         this.selectedFile = null;

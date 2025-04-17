@@ -253,7 +253,13 @@ class UIHandlers extends UICore {
             });
         }
     }
-
+    getSelectedProvider() {
+        const modeSelect = document.getElementById('transcription-mode');
+        if (!modeSelect) return 'groq';
+        const mode = modeSelect.value;
+        return mode === 'hf-plus-groq' ? 'huggingface' : 'groq';
+    }
+    
     /**
      * העתקת תוכן התמלול
      */

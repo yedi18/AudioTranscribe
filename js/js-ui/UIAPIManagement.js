@@ -29,7 +29,10 @@ class UIAPIManagement extends UIFileOperations {
                 this.groqKeyStatus.style.color = '#28a745';
             }
         }
-
+        this.apiKey = this.getSelectedProvider() === 'groq'
+        ? this.groqApiKey
+        : this.huggingfaceApiKey;
+    
         // קישור אירועים לניהול API
         this.bindAPIEvents();
     }

@@ -40,60 +40,71 @@
                 <details>
                     <summary> הגדרות API <i class="fas fa-cog"></i></summary>
                     <div id="api-settings" class="api-settings">
-                <div class="api-section" style="margin-bottom: 2rem;">
-                    <h4>מצב תמלול:</h4>
-                    <label for="transcription-mode">בחר כיצד יבוצע התמלול:</label>
-                    <select id="transcription-mode" class="styled-select">
-                        <option value="groq-only" selected>Groq בלבד – תמלול והגהה</option>
-                        <option value="hf-plus-groq">Hugging Face לתמלול + Groq להגהה</option>
-                    </select>
-                    <p id="provider-display" style="margin-top: 0.5rem; font-size: 0.9rem;">
-                        💡 תמלול יתבצע כולו דרך Groq.
-                    </p>
-                </div>
-                    <div class="api-settings-content">
-                        <!-- חלק חובה - Huggingface -->
-                        <div class="api-section required">
-                            <h4>תמלול (חובה):</h4>
-                            <label for="huggingface-api-key">מפתח API של Hugging Face</label>
-                            <p class="api-description">נדרש כדי לתמלל קבצי אודיו לטקסט. ניתן לקבל מפתח באתר <a
-                                    href="https://huggingface.co" target="_blank">huggingface.co</a></p>
-                            <div class="api-input-group">
-                                <input type="password" id="huggingface-api-key"
-                                    placeholder="הדבק את מפתח ה-API של Huggingface כאן">
-                                <button id="save-huggingface-key" class="btn"><i class="fas fa-save"></i> שמור</button>
-                            </div>
-                            <div style="margin-top: 10px;">
-                                <input type="checkbox" id="show-huggingface-key" style="margin-left: 8px;">
-                                <label for="show-huggingface-key">הצג/הסתר מפתח API</label>
-                            </div>
-                            <div id="huggingface-key-status" class="api-key-status"></div>
-                            <div class="api-help-icon" id="huggingface-help-icon">
-                                <i class="fas fa-question-circle"></i>
-                            </div>
-                        </div>
+                        <div class="api-section" style="margin-bottom: 2rem;">
+                            <h4>מצב תמלול:</h4>
+                            <label for="transcription-mode">בחר כיצד יבוצע התמלול:</label>
+                            <span class="tooltip-icon">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltip-text">
+                                    <strong>Groq בלבד:</strong> תמלול מהיר, כולל גם סיכום והגהה – אך ייתכנו שגיאות קלות.<br>
+                                    <strong>Hugging Face + Groq:</strong> תמלול מדויק ואיכותי יותר אך איטי יותר. ההגהה מתבצעת ב-Groq.
+                                </span>
+                            </span>
+                            <select id="transcription-mode" class="styled-select">
+                                <option value="groq-only" selected>Groq בלבד – תמלול והגהה</option>
+                                <option value="hf-plus-groq">Hugging Face לתמלול + Groq להגהה</option>
+                            </select>
+                                                  
 
-                        <!-- חלק אופציונלי - Groq -->
-                        <div class="api-section optional">
-                            <h4>סיכום והגהה חכמה (אופציונלי):</h4>
-                            <label for="groq-api-key">מפתח API של Groq</label>
-                            <p class="api-description">אם ברצונך להשתמש בפיצ'רים של סיכום והגהה חכמה מבוססי GPT, יש
-                                להזין כאן את מפתח ה־API של Groq. ניתן לקבל מפתח באתר <a href="https://groq.com"
-                                    target="_blank">groq.com</a></p>
-                            <div class="api-input-group">
-                                <input type="password" id="groq-api-key" placeholder="הדבק את מפתח ה-API של Groq כאן">
-                                <button id="save-groq-key" class="btn"><i class="fas fa-save"></i> שמור</button>
-                            </div>
-                            <div style="margin-top: 10px;">
-                                <input type="checkbox" id="show-groq-key" style="margin-left: 8px;">
-                                <label for="show-groq-key">הצג/הסתר מפתח API</label>
-                            </div>
-                            <div id="groq-key-status" class="api-key-status"></div>
-                            <div class="api-help-icon" id="groq-help-icon">
-                                <i class="fas fa-question-circle"></i>
+                        </div>
+                        <div class="api-settings-content">
+                           
+                            <!-- חלק אופציונלי - Groq -->
+                            <div class="api-section optional">
+                                <h4>Groq – תמלול מהיר כולל סיכום : <span class="recommended-badge">מומלץ</span>
+                                </h4>
+
+                                <label for="groq-api-key">מפתח API של Groq</label>
+                                <p class="api-description">אם ברצונך להשתמש בפיצ'רים של סיכום והגהה חכמה מבוססי GPT, יש
+                                    להזין כאן את מפתח ה־API של Groq. ניתן לקבל מפתח באתר <a href="https://groq.com"
+                                        target="_blank">groq.com</a></p>
+                                <div class="api-input-group">
+                                    <input type="password" id="groq-api-key"
+                                        placeholder="הדבק את מפתח ה-API של Groq כאן">
+                                    <button id="save-groq-key" class="btn"><i class="fas fa-save"></i> שמור</button>
+                                </div>
+                                <div style="margin-top: 10px;">
+                                    <input type="checkbox" id="show-groq-key" style="margin-left: 8px;">
+                                    <label for="show-groq-key">הצג/הסתר מפתח API</label>
+                                </div>
+                                <div id="groq-key-status" class="api-key-status"></div>
+                                <div class="api-help-icon" id="groq-help-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                         <!-- חלק חובה - Huggingface -->
+                            <div class="api-section required">
+                                <h4>תמלול פחות חשוף לשגיאות</h4>
+                                <label for="huggingface-api-key">מפתח API של Hugging Face</label>
+                                <p class="api-description">נדרש כדי לתמלל קבצי אודיו לטקסט. ניתן לקבל מפתח באתר <a
+                                        href="https://huggingface.co" target="_blank">huggingface.co</a></p>
+                                <div class="api-input-group">
+                                    <input type="password" id="huggingface-api-key"
+                                        placeholder="הדבק את מפתח ה-API של Huggingface כאן">
+                                    <button id="save-huggingface-key" class="btn"><i class="fas fa-save"></i>
+                                        שמור</button>
+                                </div>
+                                <div style="margin-top: 10px;">
+                                    <input type="checkbox" id="show-huggingface-key" style="margin-left: 8px;">
+                                    <label for="show-huggingface-key">הצג/הסתר מפתח API</label>
+                                </div>
+                                <div id="huggingface-key-status" class="api-key-status"></div>
+                                <div class="api-help-icon" id="huggingface-help-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                            </div>
+
                 </details>
             </div>
             <!-- לשוניות אפשרויות העלאה -->

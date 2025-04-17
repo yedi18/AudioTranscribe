@@ -2,7 +2,7 @@
    api-settings.css - הגדרות API והודעות
    ================================================ */
 
-   .api-settings {
+.api-settings {
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
     border-bottom: 1px solid #e9ecef;
@@ -146,4 +146,79 @@
 .api-description a:hover {
     text-decoration: underline;
     color: var(--secondary-color);
+}
+
+
+/* תווית מומלץ */
+.recommended-badge {
+    background-color: #ffe066;
+    color: #8a6d00;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border-radius: 12px;
+    margin-right: 8px;
+}
+
+/* סגנון מודגש לאזור Groq כשנבחר */
+.api-section.groq-highlight {
+    background: linear-gradient(to left, #fdfdff, #e8f0ff);
+    border: 2px solid #508be8;
+    box-shadow: 0 0 8px rgba(80, 139, 232, 0.2);
+    transition: all 0.3s ease;
+}
+
+/* עיצוב מותאם לתיבת select */
+.styled-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 140'%3E%3Cpolyline points='20,50 70,100 120,50' fill='none' stroke='%23000' stroke-width='20' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 12px;
+    padding-right: 2.5rem;
+
+    cursor: pointer;
+}
+
+.styled-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(80, 139, 232, 0.2);
+}
+
+.tooltip-icon {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    color: var(--primary-color);
+}
+
+.tooltip-icon .tooltip-text {
+    visibility: hidden;
+    width: 260px;
+    background-color: #444;
+    color: #fff;
+    text-align: right;
+    border-radius: 6px;
+    padding: 0.6rem;
+    position: absolute;
+    z-index: 10;
+    bottom: 120%;
+    right: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.tooltip-icon:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
 }

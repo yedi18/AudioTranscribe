@@ -114,20 +114,70 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('ממשק משתמש אותחל בהצלחה');
     ui.init();
 
+
+    // עדכון this.apiKey כשמשנים את הספק שנבחר
+    const modeSelect = document.getElementById('transcription-mode');
+    if (modeSelect) {
+        modeSelect.addEventListener('change', () => {
+            const selectedMode = modeSelect.value;
+            const selectedProvider = selectedMode === 'hf-plus-groq' ? 'huggingface' : 'groq';
+
+            ui.apiKey = selectedProvider === 'groq'
+                ? localStorage.getItem('groq_api_key')
+                : localStorage.getItem('huggingface_api_key');
+
+            console.log('✅ עודכן apiKey לפי הספק החדש:', selectedProvider);
+        });
+    }
+    // ... ui.init() קיים פה
+
+    const huggingfaceSection = document.querySelector('.api-section.required');
+    const groqSection = document.querySelector('.api-section.optional');
+    const recommendedBadge = groqSection?.querySelector('.recommended-badge');
+
+    function updateAPISectionsDisplay() {
+        const selectedMode = modeSelect?.value;
+        const selectedProvider = selectedMode === 'hf-plus-groq' ? 'huggingface' : 'groq';
+
+        // טען מפתח API
+        ui.apiKey = selectedProvider === 'groq'
+            ? localStorage.getItem('groq_api_key')
+            : localStorage.getItem('huggingface_api_key');
+
+        // הסתר/הצג הגדרות API בהתאם
+        if (selectedProvider === 'groq') {
+            if (huggingfaceSection) huggingfaceSection.style.display = 'none';
+            if (groqSection) groqSection.classList.add('groq-highlight');
+            if (recommendedBadge) recommendedBadge.style.display = 'inline-block';
+        } else {
+            if (huggingfaceSection) huggingfaceSection.style.display = '';
+            if (groqSection) groqSection.classList.remove('groq-highlight');
+            if (recommendedBadge) recommendedBadge.style.display = 'none';
+        }
+    }
+
+    // בעת שינוי בבחירה
+    modeSelect?.addEventListener('change', updateAPISectionsDisplay);
+
+    // בעת טעינת הדף
+    setTimeout(() => {
+        updateAPISectionsDisplay();
+    }, 100);
+
+
+
+
+
     /**
      * הפעלת תמלול כאשר לוחצים על כפתור "התחל תמלול"
      */
     ui.onTranscribeClick = async function () {
-        const providerSelect = document.getElementById('transcription-provider');
-        const selectedProvider = providerSelect?.value || 'groq';
+        const selectedProvider = this.getSelectedProvider();
+        this.apiKey = selectedProvider === 'groq'
+            ? localStorage.getItem('groq_api_key')
+            : localStorage.getItem('huggingface_api_key');
 
-        let apiKey = '';
-
-        if (selectedProvider === 'groq') {
-            apiKey = localStorage.getItem('groq_api_key');
-        } else {
-            apiKey = localStorage.getItem('huggingface_api_key');
-        }
+        const apiKey = this.apiKey;
 
         if (!apiKey) {
             this.showError('מפתח API חסר – נא להזין בהגדרות');
