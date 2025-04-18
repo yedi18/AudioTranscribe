@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const getYoutubeMp3Link = async (videoId, retries = 3, delay = 2000) => {
+const getYoutubeMp3Link = async (videoId, retries = 5, delay = 3000) => {
   const options = {
     method: 'GET',
     url: 'https://youtube-mp36.p.rapidapi.com/dl',
@@ -13,12 +13,13 @@ const getYoutubeMp3Link = async (videoId, retries = 3, delay = 2000) => {
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      console.log(`🔁 ניסיון #${attempt} למשיכת MP3 מ־YouTube`);
+      console.log(`🔁 ניסיון #${attempt}/${retries} למשיכת MP3 מ־YouTube`);
 
-      // המתנה בניסיונות נוספים
+      // המתנה בניסיונות נוספים - הגדלת ההמתנה בכל ניסיון נוסף
       if (attempt > 1) {
-        console.log(`⏱️ ממתין ${delay / 1000} שניות לפני ניסיון חוזר...`);
-        await new Promise(res => setTimeout(res, delay));
+        const waitTime = delay * (attempt - 1); // הגדלת ההמתנה בכל ניסיון
+        console.log(`⏱️ ממתין ${waitTime / 1000} שניות לפני ניסיון חוזר...`);
+        await new Promise(res => setTimeout(res, waitTime));
       }
 
       const response = await axios.request(options);
@@ -34,17 +35,17 @@ const getYoutubeMp3Link = async (videoId, retries = 3, delay = 2000) => {
       }
 
     } catch (error) {
-      console.warn(`❌ שגיאה בניסיון ${attempt}: ${error.message}`);
+      console.warn(`❌ שגיאה בניסיון ${attempt}/${retries}: ${error.message}`);
 
       // אם זה לא הניסיון האחרון, המשך לניסיון הבא
       if (attempt < retries) {
-        await new Promise(res => setTimeout(res, delay));
         continue;
       }
       throw error;
     }
   }
 
-  throw new Error('לא הצלחנו להשיג קישור MP3 לאחר מספר ניסיונות');
+  throw new Error(`לא הצלחנו להשיג קישור MP3 לאחר ${retries} ניסיונות`);
 };
+
 module.exports = { getYoutubeMp3Link };

@@ -37,26 +37,26 @@ app.post('/youtube', async (req, res) => {
 
     try {
         const videoId = new URL(url).searchParams.get("v");
-        
+
         if (!videoId) {
             return res.status(400).json({ error: 'לא נמצא מזהה וידאו בקישור' });
         }
-        
+
         console.log(`📺 מנסה להוריד סרטון יוטיוב: ${videoId}`);
-        
-        // ניסיון עם יותר ניסיונות חוזרים ועיכוב ארוך יותר
-        const { link, title } = await getYoutubeMp3Link(videoId, 4, 3000);
-        
+
+        // שימוש בפרמטרים מורחבים: 5 ניסיונות עם השהייה של 4 שניות
+        const { link, title } = await getYoutubeMp3Link(videoId, 5, 4000);
+
         console.log(`✅ התקבל קישור MP3 בהצלחה עבור: ${title}`);
         res.json({ mp3Link: link, title });
 
     } catch (err) {
         console.error('שגיאה ב־/youtube:', err.message);
-        
+
         // הודעת שגיאה ברורה יותר
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'שגיאה בקבלת קובץ MP3 מהשרת החיצוני',
-            details: err.message 
+            details: err.message
         });
     }
 });
