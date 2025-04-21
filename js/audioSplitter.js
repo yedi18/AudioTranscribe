@@ -12,32 +12,32 @@ class AudioSplitter {
     static async splitAudio(audioFile, segmentDurationParam, onProgress = null) {
         // וידוא שמשך הקטע תקין
         const segmentDuration = Number(segmentDurationParam) || 25;
-
+    
         try {
             // תחילה, בדוק את אורך הקובץ
             const audioDuration = await AudioSplitter.getAudioDuration(audioFile);
             if (!audioDuration || !isFinite(audioDuration) || isNaN(audioDuration)) {
                 throw new Error('⛔ זמן אודיו לא תקני: ' + audioDuration);
             }
-
+    
             console.log(`אורך האודיו המקורי: ${audioDuration} שניות`);
-
+    
             // אם הקובץ קצר מהזמן המבוקש, פשוט נחזיר אותו כמו שהוא
             if (audioDuration <= segmentDuration) {
                 console.log("הקובץ קצר מספיק - מחזיר אותו כמו שהוא, לא נחתך");
-
+    
                 // אם MP3 → מחזיר כמו שהוא
-                if (audioFile.type === 'audio/mp3' || audioFile.name.endsWith('.mp3')) {
+                if (audioFile.type === 'audio/mpeg' || audioFile.type === 'audio/mp3' || audioFile.name.endsWith('.mp3')) {
                     if (onProgress) onProgress({ status: 'complete', progress: 100 });
                     return [audioFile];
                 }
-
+    
                 // אחרת, ממיר ל־MP3 תקני
                 const convertedFile = await AudioSplitter.convertToValidMp3(audioFile);
                 if (onProgress) onProgress({ status: 'complete', progress: 100 });
                 return [convertedFile];
             }
-
+    
             // אחרת, נפצל את הקובץ לחלקים
             if (onProgress) onProgress({
                 status: 'splitting',
@@ -45,16 +45,12 @@ class AudioSplitter {
                 totalSegments: Math.ceil(audioDuration / segmentDuration),
                 duration: audioDuration
             });
-
+    
             // מערך שיכיל את כל הקטעים
-            // פיצול הקובץ לחלקים
-            // ננסה לפצל את הקובץ לפי הזמן
-            // קוד מקורי שמשנים אותו:
-            // return await AudioSplitter.sliceAudioFile(audioFile, segmentDuration, audioDuration, onProgress);
-
-            // גישה חדשה:
             const segments = [];
-
+            // מערך נפרד לשמירת נתוני הבייטים של כל קטע - מנגנון חסין יותר
+            const segmentsData = [];
+    
             // טיפול מיוחד בקטע הראשון
             try {
                 if (onProgress) onProgress({
@@ -62,10 +58,26 @@ class AudioSplitter {
                     progress: 20,
                     message: 'מכין קטע ראשון מיוחד...'
                 });
-
-                const firstSegment = await AudioSplitter.handleFirstSegment(audioFile, segmentDuration);
-                segments.push(firstSegment);
-
+    
+                // קריאת הקובץ מלא כארייבאפר פעם אחת בלבד
+                const completeAudioBuffer = await audioFile.arrayBuffer();
+                
+                // טיפול בקטע ראשון באמצעות הפונקציה המשופרת
+                const firstSegmentData = await AudioSplitter.extractSegmentData(completeAudioBuffer, 0, segmentDuration, audioDuration);
+                const firstSegmentBlob = new Blob([firstSegmentData], { type: 'audio/mpeg' });
+                const firstSegmentFile = new File([firstSegmentBlob], `segment_1.mp3`, {
+                    type: 'audio/mpeg',
+                    lastModified: Date.now()
+                });
+    
+                segments.push(firstSegmentFile);
+                segmentsData.push({
+                    bytes: firstSegmentData,
+                    index: 0,
+                    type: 'audio/mpeg',
+                    name: `segment_1.mp3`
+                });
+    
                 // עדכון התקדמות
                 if (onProgress) onProgress({
                     status: 'splitting',
@@ -73,86 +85,190 @@ class AudioSplitter {
                     currentSegment: 1,
                     totalSegments: Math.ceil(audioDuration / segmentDuration)
                 });
-
-            } catch (firstSegmentError) {
-                console.warn('נכשל ביצירת קטע ראשון מיוחד, חוזר לשיטה הרגילה:', firstSegmentError);
-
-                // חישוב הגודל בבתים של הקטע הראשון
-                const bytesPerSecond = audioFile.size / audioDuration;
-                const endTime = Math.min(segmentDuration, audioDuration);
-                const endByte = Math.floor(endTime * bytesPerSecond);
-
-                // יצירת הקטע הראשון באמצעות חיתוך רגיל
-                const firstSegmentData = await audioFile.slice(0, endByte).arrayBuffer();
-                const firstSegmentBlob = new Blob([firstSegmentData], { type: audioFile.type });
-                const firstSegmentFile = new File([firstSegmentBlob], `segment_1.mp3`, {
-                    type: audioFile.type,
-                    lastModified: new Date().getTime()
-                });
-
-                segments.push(firstSegmentFile);
-            }
-
-            // מספר הקטעים הנותרים
-            const numRemainingSegments = Math.ceil(audioDuration / segmentDuration) - 1;
-
-            if (numRemainingSegments > 0) {
-                console.log(`מפצל את שאר הקובץ ל-${numRemainingSegments} קטעים נוספים של ${segmentDuration} שניות כל אחד`);
-
-                // חישוב גודל כל קטע בבתים (בקירוב)
-                const bytesPerSecond = audioFile.size / audioDuration;
-
-                // פיצול שאר הקטעים
-                for (let i = 1; i <= numRemainingSegments; i++) {
-                    const startTime = i * segmentDuration;
-                    const endTime = Math.min((i + 1) * segmentDuration, audioDuration);
-                    const chunkDuration = endTime - startTime;
-
-                    // חישוב הגודל בבתים
-                    const startByte = Math.floor(startTime * bytesPerSecond);
-                    const endByte = Math.floor(endTime * bytesPerSecond);
-
-                    // יצירת קטע חדש
-                    let segmentData;
-                    if (i === numRemainingSegments) {
-                        // בקטע האחרון ניקח את כל שאר הקובץ
-                        segmentData = await audioFile.slice(startByte).arrayBuffer();
-                    } else {
-                        segmentData = await audioFile.slice(startByte, endByte).arrayBuffer();
-                    }
-
-                    const blob = new Blob([segmentData], { type: audioFile.type });
-                    const segmentFile = new File([blob], `segment_${i + 1}.mp3`, {
-                        type: audioFile.type,
-                        lastModified: new Date().getTime()
-                    });
-
-                    segments.push(segmentFile);
-
-                    // עדכון התקדמות
-                    if (onProgress) {
-                        const segmentProgress = 30 + (70 * (i) / numRemainingSegments);
-                        onProgress({
-                            status: 'splitting',
-                            progress: segmentProgress,
-                            currentSegment: i + 1,
-                            totalSegments: numRemainingSegments + 1
+    
+                // מספר הקטעים הנותרים
+                const numRemainingSegments = Math.ceil(audioDuration / segmentDuration) - 1;
+    
+                if (numRemainingSegments > 0) {
+                    console.log(`מפצל את שאר הקובץ ל-${numRemainingSegments} קטעים נוספים של ${segmentDuration} שניות כל אחד`);
+    
+                    // פיצול שאר הקטעים
+                    for (let i = 1; i <= numRemainingSegments; i++) {
+                        const startTime = i * segmentDuration;
+                        const endTime = Math.min((i + 1) * segmentDuration, audioDuration);
+                        
+                        // יצירת קטע חדש על בסיס הבאפר המלא שכבר נטען
+                        const segmentData = await AudioSplitter.extractSegmentData(completeAudioBuffer, startTime, endTime, audioDuration);
+                        
+                        const blob = new Blob([segmentData], { type: 'audio/mpeg' });
+                        const segmentFile = new File([blob], `segment_${i + 1}.mp3`, {
+                            type: 'audio/mpeg',
+                            lastModified: Date.now()
                         });
+    
+                        segments.push(segmentFile);
+                        segmentsData.push({
+                            bytes: segmentData,
+                            index: i,
+                            type: 'audio/mpeg',
+                            name: `segment_${i + 1}.mp3`
+                        });
+    
+                        // עדכון התקדמות
+                        if (onProgress) {
+                            const segmentProgress = 30 + (70 * (i) / numRemainingSegments);
+                            onProgress({
+                                status: 'splitting',
+                                progress: segmentProgress,
+                                currentSegment: i + 1,
+                                totalSegments: numRemainingSegments + 1
+                            });
+                        }
                     }
                 }
+    
+                // שמירת נתוני הקטעים ב-sessionStorage לגיבוי
+                try {
+                    // שמירת נתונים מינימליים בגלל מגבלות גודל
+                    const minimalSegmentsData = segmentsData.map((segment, idx) => ({
+                        index: idx,
+                        type: segment.type,
+                        name: segment.name
+                    }));
+                    
+                    // שמור את המידע על הקטעים - בלי הבייטים עצמם
+                    sessionStorage.setItem('audioSegmentsInfo', JSON.stringify(minimalSegmentsData));
+                    
+                    // שמור כל קטע בנפרד בצורה מקודדת
+                    for (let i = 0; i < segmentsData.length; i++) {
+                        const segment = segmentsData[i];
+                        // המרה לבייס64 - צורה קומפקטית יותר
+                        const base64Data = await AudioSplitter.arrayBufferToBase64(segment.bytes);
+                        // שמירה בנפרד לכל קטע
+                        sessionStorage.setItem(`audioSegment_${i}`, base64Data);
+                    }
+                } catch (storageError) {
+                    console.warn('לא הצליח לשמור את נתוני הקטעים ב-sessionStorage:', storageError);
+                    // נמשיך בלי השמירה במקרה של שגיאה
+                }
+            } catch (segmentError) {
+                console.error('שגיאה ביצירת הקטעים:', segmentError);
+                throw segmentError;
             }
-
+    
             // בדיקה שהחלקים נוצרו כראוי
             if (segments.length === 0) {
                 throw new Error('No audio segments were created');
             }
-
+    
             if (onProgress) onProgress({ status: 'complete', progress: 100 });
+            
+            // החזרת הקטעים בצורה מסודרת יחד עם מידע על אופן שחזור
+            window.audioSegmentsData = segmentsData;
             return segments;
-
+    
         } catch (error) {
             console.error('Error splitting audio:', error);
             throw error;
+        }
+    }
+    
+    /**
+     * המרת ArrayBuffer לייצוג Base64
+     * @param {ArrayBuffer} buffer - הבאפר להמרה
+     * @returns {Promise<string>} - ייצוג Base64
+     */
+    static async arrayBufferToBase64(buffer) {
+        return new Promise((resolve) => {
+            const blob = new Blob([buffer]);
+            const reader = new FileReader();
+            reader.onload = () => {
+                const dataUrl = reader.result;
+                const base64 = dataUrl.split(',')[1];
+                resolve(base64);
+            };
+            reader.readAsDataURL(blob);
+        });
+    }
+    
+    /**
+     * המרת Base64 חזרה ל-ArrayBuffer
+     * @param {string} base64 - ייצוג Base64
+     * @returns {Promise<ArrayBuffer>} - ArrayBuffer
+     */
+    static async base64ToArrayBuffer(base64) {
+        return new Promise((resolve) => {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            resolve(bytes.buffer);
+        });
+    }
+    
+    /**
+     * חילוץ נתוני קטע מתוך באפר שלם לפי זמן
+     * @param {ArrayBuffer} completeBuffer - הבאפר השלם של הקובץ
+     * @param {number} startTime - זמן התחלה בשניות
+     * @param {number} endTime - זמן סיום בשניות
+     * @param {number} totalDuration - אורך האודיו הכולל בשניות
+     * @returns {Promise<ArrayBuffer>} - הנתונים של הקטע המחולץ
+     */
+    static async extractSegmentData(completeBuffer, startTime, endTime, totalDuration) {
+        // חישוב יחס הזמן לגודל הקובץ
+        const bytesPerSecond = completeBuffer.byteLength / totalDuration;
+        
+        // חישוב התחלה וסוף בבייטים
+        const startByte = Math.floor(startTime * bytesPerSecond);
+        let endByte;
+        
+        // טיפול מיוחד לקטע ראשון - דילוג על מטא-דאטה אם יש
+        if (startTime === 0) {
+            // דילוג על 2% מהמטא-דאטה בהתחלת הקובץ
+            const skipBytes = Math.floor(completeBuffer.byteLength * 0.02);
+            // לקטע הראשון, דלג על המטא-דאטה
+            endByte = Math.min(Math.floor(endTime * bytesPerSecond), completeBuffer.byteLength);
+            return completeBuffer.slice(skipBytes, endByte);
+        } else {
+            // לקטעים רגילים, חתוך לפי הזמן המדויק
+            endByte = Math.min(Math.floor(endTime * bytesPerSecond), completeBuffer.byteLength);
+            return completeBuffer.slice(startByte, endByte);
+        }
+    }
+    
+    /**
+     * שחזור קטע אודיו מנתונים שמורים
+     * @param {number} index - אינדקס הקטע
+     * @returns {Promise<File|null>} - קובץ הקטע המשוחזר או null אם לא ניתן לשחזר
+     */
+    static async recoverSegment(index) {
+        try {
+            // ניסיון לאחזר מידע על הקטע
+            const segmentsInfoStr = sessionStorage.getItem('audioSegmentsInfo');
+            if (!segmentsInfoStr) return null;
+            
+            const segmentsInfo = JSON.parse(segmentsInfoStr);
+            const segmentInfo = segmentsInfo.find(s => s.index === index);
+            if (!segmentInfo) return null;
+            
+            // ניסיון לאחזר את הנתונים עצמם
+            const base64Data = sessionStorage.getItem(`audioSegment_${index}`);
+            if (!base64Data) return null;
+            
+            // המרה חזרה ל-ArrayBuffer
+            const arrayBuffer = await AudioSplitter.base64ToArrayBuffer(base64Data);
+            
+            // יצירת קובץ מהנתונים המשוחזרים
+            const blob = new Blob([arrayBuffer], { type: segmentInfo.type || 'audio/mpeg' });
+            return new File([blob], segmentInfo.name || `segment_${index+1}.mp3`, {
+                type: segmentInfo.type || 'audio/mpeg',
+                lastModified: Date.now()
+            });
+        } catch (error) {
+            console.error(`שגיאה בשחזור קטע ${index}:`, error);
+            return null;
         }
     }
     /**

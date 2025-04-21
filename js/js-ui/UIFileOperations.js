@@ -9,21 +9,42 @@ class UIFileOperations extends UIHandlers {
     }
 
     /**
-    * טיפול בבחירת קובץ
-    * @param {FileList} files - רשימת הקבצים שנבחרו
-    */
+ * טיפול בבחירת קובץ
+ * @param {FileList} files - רשימת הקבצים שנבחרו
+ */
     handleFileSelect(files) {
         if (files.length > 0) {
             // שינוי: במקום לטפל בקובץ כאן, קוראים לפונקציה החדשה
             this.handleNewFile(files[0], 'upload');
 
             const fileName = this.selectedFile.name.toLowerCase();
+
+            // הסר שגיאה/אזהרה קודמת אם קיימת
+            if (this.errorMessage) {
+                this.errorMessage.style.display = 'none';
+            }
+
+            // מחיקת אזהרה קודמת אם קיימת
+            const existingWarning = document.querySelector('.warning-message');
+            if (existingWarning) existingWarning.remove();
+
+            // בדיקת סוג הקובץ והצגת אזהרה אם אינו MP3
             if (!fileName.endsWith('.mp3')) {
-                this.showErrorWithLink(
-                    'הקובץ אינו קובץ MP3 תקני. אנא המר אותו ל־MP3 לפני התמלול.',
-                    'https://cloudconvert.com/audio-converter'
-                );
-                return;
+                const warningBox = document.createElement('div');
+                warningBox.className = 'warning-message';
+                warningBox.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i> 
+                <span>אזהרה: קובץ זה אינו בפורמט MP3. יתכן שההמרה תארך זמן נוסף.</span>
+                <a href="https://cloudconvert.com/audio-converter" target="_blank">להמרת הקובץ ל-MP3</a>
+            `;
+
+                // הוסף את האזהרה לפני אזור מידע הקובץ
+                if (this.fileInfo && this.fileInfo.parentNode) {
+                    // אם אתה רוצה לאבטח שהוורנינג באמת בסוף הקונטיינר:
+                    this.fileInfo.parentNode.appendChild(warningBox);
+
+
+                }
             }
 
             // הצג טיפים רלוונטיים
@@ -90,7 +111,7 @@ class UIFileOperations extends UIHandlers {
             if (this.estimatedTimeContainer) {
                 this.estimatedTimeContainer.style.display = 'block';
             }
-            
+
             // הצגת כפתור הורדה אם מקור הקובץ הוא הקלטה או יוטיוב
             const downloadBtn = document.getElementById('download-source-btn');
             if (downloadBtn) {

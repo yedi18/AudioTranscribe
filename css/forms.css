@@ -184,3 +184,26 @@ textarea:read-only {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
 }
+
+/* הוסף לאחד מקבצי ה-CSS כמו utilities.css */
+.warning-message {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    border-radius: 4px;
+    padding: 10px 15px;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+}
+
+.warning-message i {
+    font-size: 18px;
+    margin-left: 10px;
+}
+
+.warning-message a {
+    margin-right: 8px;
+    color: #0069d9;
+    text-decoration: underline;
+}

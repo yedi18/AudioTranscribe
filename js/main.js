@@ -168,6 +168,11 @@ document.addEventListener('DOMContentLoaded', function () {
      * הפעלת תמלול כאשר לוחצים על כפתור "התחל תמלול"
      */
     ui.onTranscribeClick = async function () {
+        const segmentLengthValue = Number(this.segmentLengthInput.value) || 25;
+    
+        const warning = document.querySelector('.warning-message');
+        if (warning) warning.remove();
+    
         // בחירת ספק התמלול (Groq או Huggingface)
         const selectedProvider = this.getSelectedProvider();
 
@@ -205,13 +210,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const isMp3 = fileName.endsWith('.mp3') || fileType === 'audio/mpeg';
 
+            // הצגת מצב תמלול
+            this.progressContainer.style.display = 'block';
+            this.loadingSpinner.style.display = 'block';
+            this.transcribeBtn.disabled = true;
+            this.errorMessage.style.display = 'none';
+
+            // אם הקובץ אינו MP3, הצג הודעת המרה
             if (!isMp3) {
                 console.log('📤 קובץ אינו MP3 – נשלח לשרת להמרה');
+
+                // עדכון התקדמות להמרה
+                this.updateProgress({
+                    status: 'processing',
+                    progress: 5,
+                    message: 'ממיר את הקובץ לפורמט MP3... (עשוי לקחת מספר שניות)'
+                });
 
                 const convertForm = new FormData();
                 convertForm.append('audio', this.selectedFile);
 
                 try {
+                    this.updateProgress({
+                        status: 'processing',
+                        progress: 15,
+                        message: 'שולח קובץ לשרת ההמרה...'
+                    });
+
                     const response = await fetch('https://audiotranscribe-27kc.onrender.com/convert-audio', {
                         method: 'POST',
                         body: convertForm
@@ -219,7 +244,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     if (!response.ok) throw new Error('השרת לא הצליח להמיר את הקובץ');
 
+                    this.updateProgress({
+                        status: 'processing',
+                        progress: 35,
+                        message: 'מוריד את הקובץ המומר...'
+                    });
+
                     const mp3Blob = await response.blob();
+
+                    this.updateProgress({
+                        status: 'processing',
+                        progress: 40,
+                        message: 'ההמרה הושלמה, מתחיל תמלול...'
+                    });
 
                     const newFile = new File([mp3Blob], 'converted.mp3', {
                         type: 'audio/mpeg',
@@ -237,18 +274,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('📢 קובץ הוא MP3 – לא נשלח לשרת!');
             }
 
-            // הצגת מצב תמלול
-            this.progressContainer.style.display = 'block';
-            this.loadingSpinner.style.display = 'block';
-            this.transcribeBtn.disabled = true;
-            this.errorMessage.style.display = 'none';
-
-            // פיצול אוטומטי ללא התראות
-            let shouldSplit = false;
-            const segmentLength = parseInt(this.segmentLengthInput.value) || 25;
-
             // עדכון המצב הראשוני
-            this.updateProgress({ status: 'decoding', progress: 5 });
+            this.updateProgress({ status: 'decoding', progress: isMp3 ? 5 : 45 });
 
             // בדיקת אורך הקובץ
             let audioDuration = 0;
@@ -261,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // רק לוג פנימי, ללא התראות למשתמש
                 if (audioDuration > 30) {
-                    console.log(`הקובץ ארוך (${audioDuration.toFixed(2)} שניות), מפצל אוטומטית לקטעים של ${segmentLength} שניות`);
+                    console.log(`הקובץ ארוך (${audioDuration.toFixed(2)} שניות), מפצל אוטומטית לקטעים של ${segmentLengthValue} שניות`);
                 } else {
                     console.log(`הקובץ קצר (${audioDuration.toFixed(2)} שניות), אין צורך בפיצול`);
                 }
@@ -279,12 +306,12 @@ document.addEventListener('DOMContentLoaded', function () {
             let transcription = '';
             let providerSwitched = false;
 
+
             if (shouldSplit) {
                 try {
-                    // פיצול האודיו לחלקים קטנים
-                    const segmentLengthValue = Number(segmentLength) || 25;
+                    // קבלת האורך מכלי הקלט
                     console.log(`מפצל אודיו לקטעים של ${segmentLengthValue} שניות`);
-
+                    
                     const audioSegments = await AudioSplitter.splitAudio(
                         this.selectedFile,
                         segmentLengthValue,
@@ -484,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function () {
             this.loadingSpinner.style.display = 'none';
             this.transcribeBtn.disabled = false;
         }
-    };
+    }
 
     // הוספת סגנון כפתורים לפי הגדרות קבועות
     function applyButtonStyles() {
