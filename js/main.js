@@ -84,6 +84,48 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+// הוסף את זה לפונקציה הראשית ב-main.js או בסוף הקובץ
+document.addEventListener('DOMContentLoaded', function () {
+    // קוד קיים...
+
+    // הוספת מאזין לשינויי נראות הדף
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+            console.log('הדף חזר להיות נראה - ממשיך תהליכים שהיו באמצע');
+
+            // בדיקה אם יש תהליך תמלול פעיל
+            const transcriptionState = sessionStorage.getItem('transcribeSegmentsState');
+            if (transcriptionState) {
+                try {
+                    const state = JSON.parse(transcriptionState);
+                    const now = Date.now();
+                    const timePassed = now - state.timestamp;
+
+                    // אם עברו פחות מ-30 דקות, נעדכן את סרגל ההתקדמות
+                    if (timePassed < 30 * 60 * 1000) {
+                        console.log('נמצא תהליך תמלול פעיל, מעדכן התקדמות');
+
+                        if (ui && ui.updateProgress) {
+                            ui.updateProgress({
+                                status: 'transcribing',
+                                progress: (state.completedSegments / state.totalSegments) * 100,
+                                completedSegments: state.completedSegments,
+                                totalSegments: state.totalSegments,
+                                message: 'ממשיך בתמלול...'
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.warn('שגיאה בניתוח מצב התמלול:', e);
+                }
+            }
+        } else {
+            console.log('הדף נהיה לא נראה - שומר מצב עבודה');
+            // כל הלוגיקה של שמירת המצב כבר מוטמעת בפונקציות עצמן
+        }
+    });
+});
 /**
  * טיפול בתוצאות התמלול והצגתן
  * פונקציה זו מוסיפה טיפול מיוחד בכפתורים
@@ -167,12 +209,50 @@ document.addEventListener('DOMContentLoaded', function () {
     /**
      * הפעלת תמלול כאשר לוחצים על כפתור "התחל תמלול"
      */
+    /**
+ * הפעלת תמלול כאשר לוחצים על כפתור "התחל תמלול"
+ */
     ui.onTranscribeClick = async function () {
         const segmentLengthValue = Number(this.segmentLengthInput.value) || 25;
-    
+
         const warning = document.querySelector('.warning-message');
         if (warning) warning.remove();
-    
+
+        // בדיקה אם יש תהליך תמלול שהופסק באמצע
+        const savedState = sessionStorage.getItem('transcribeSegmentsState');
+        if (savedState) {
+            try {
+                const state = JSON.parse(savedState);
+                const now = Date.now();
+                const timePassed = now - state.timestamp;
+
+                // אם עברו פחות מ-30 דקות, נציע להמשיך את התמלול
+                if (timePassed < 30 * 60 * 1000) {
+                    if (confirm('נמצא תהליך תמלול שהופסק. האם תרצה להמשיך מאיפה שהפסקת?')) {
+                        // הפעל את תהליך התמלול שוב - מערכת ההתאוששות תטפל בשאר
+                        this.progressContainer.style.display = 'block';
+                        this.loadingSpinner.style.display = 'block';
+                        this.transcribeBtn.disabled = true;
+                        this.errorMessage.style.display = 'none';
+
+                        this.updateProgress({
+                            status: 'transcribing',
+                            progress: (state.completedSegments / state.totalSegments) * 100,
+                            completedSegments: state.completedSegments,
+                            totalSegments: state.totalSegments,
+                            message: 'משחזר פעולת תמלול קודמת...'
+                        });
+                    }
+                } else {
+                    // המידע ישן מדי, נקה אותו
+                    sessionStorage.removeItem('transcribeSegmentsState');
+                }
+            } catch (e) {
+                console.warn('שגיאה בניתוח מצב התמלול:', e);
+                sessionStorage.removeItem('transcribeSegmentsState');
+            }
+        }
+
         // בחירת ספק התמלול (Groq או Huggingface)
         const selectedProvider = this.getSelectedProvider();
 
@@ -279,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // בדיקת אורך הקובץ
             let audioDuration = 0;
+            let shouldSplit = false;
             try {
                 audioDuration = await getAudioDuration(this.selectedFile);
                 console.log(`אורך קובץ האודיו: ${audioDuration.toFixed(2)} שניות`);
@@ -306,12 +387,11 @@ document.addEventListener('DOMContentLoaded', function () {
             let transcription = '';
             let providerSwitched = false;
 
-
             if (shouldSplit) {
                 try {
                     // קבלת האורך מכלי הקלט
                     console.log(`מפצל אודיו לקטעים של ${segmentLengthValue} שניות`);
-                    
+
                     const audioSegments = await AudioSplitter.splitAudio(
                         this.selectedFile,
                         segmentLengthValue,
@@ -501,6 +581,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         };
                     }
                 }
+
+                // נקה נתוני מצב כשסיימנו בהצלחה
+                sessionStorage.removeItem('transcribeSegmentsState');
             } else {
                 this.showError('לא התקבל תמלול. נא לנסות שנית.');
             }
@@ -512,7 +595,6 @@ document.addEventListener('DOMContentLoaded', function () {
             this.transcribeBtn.disabled = false;
         }
     }
-
     // הוספת סגנון כפתורים לפי הגדרות קבועות
     function applyButtonStyles() {
         // כפתור תמלול

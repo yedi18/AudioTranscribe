@@ -69,6 +69,16 @@ class UICore {
         this.recordingHandler = null;
         this.youtubeHandler = null;
         this.enhancementHandler = null;
+
+
+        this.isTranscriptionInProgress = false;
+        this.transcriptionState = {
+            status: null,
+            progress: 0,
+            segments: [],
+            completedSegments: 0,
+            totalSegments: 0
+        };
     }
 
     /**
