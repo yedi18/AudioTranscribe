@@ -1,6 +1,5 @@
 /**
- * מודול לטיפול באירועים וקישור אירועים בממשק
- * מרחיב את מחלקת UICore
+ * מודול לטיפול באירועים וקישור אירועים בממשק - מעודכן לOpenAI בלבד
  */
 class UIHandlers extends UICore {
     /**
@@ -46,11 +45,6 @@ class UIHandlers extends UICore {
             });
         }
 
-        // אם יש מודול טרנסקריפשן, עדכן את מפתח ה-API
-        if (this.transcription) {
-            this.transcription.HUGGINGFACE_API_KEY = this.huggingfaceApiKey;
-        }
-
         // כפתור העתקה
         if (this.copyBtn) {
             this.copyBtn.addEventListener('click', () => {
@@ -65,78 +59,50 @@ class UIHandlers extends UICore {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         }
-
-        // הגדרות פיצול אודיו
-        if (this.splitAudioCheckbox && this.splitSettings) {
-            this.splitAudioCheckbox.addEventListener('change', () => {
-                this.splitSettings.style.display = this.splitAudioCheckbox.checked ? 'block' : 'none';
-            });
-        }
-
-        // כפתור סיכום
-        const generateSummaryBtn = document.getElementById('generate-summary-btn');
-        if (generateSummaryBtn) {
-            generateSummaryBtn.addEventListener('click', () => {
-                if (typeof this.performSummary === 'function') {
-                    this.performSummary();
-                }
-            });
-        }
     }
 
     /**
      * קישור אירועים לניהול API
      */
     bindAPIEvents() {
-        // קישור אירועים לשמירת מפתח API של Huggingface
-        if (this.saveHuggingfaceKeyBtn) {
-            this.saveHuggingfaceKeyBtn.addEventListener('click', () => {
-                this.saveHuggingfaceApiKey();
+        // קישור אירועים לשמירת מפתח API של OpenAI
+        if (this.saveOpenaiKeyBtn) {
+            this.saveOpenaiKeyBtn.addEventListener('click', () => {
+                this.saveOpenaiApiKey();
             });
         }
 
-        // קישור אירועים לשמירת מפתח API של Groq
-        if (this.saveGroqKeyBtn) {
-            this.saveGroqKeyBtn.addEventListener('click', () => {
-                this.saveGroqApiKey();
+        // הצגת/הסתרת מפתח API של OpenAI
+        if (this.showOpenaiKeyCheckbox && this.openaiApiKeyInput) {
+            this.showOpenaiKeyCheckbox.addEventListener('change', () => {
+                this.openaiApiKeyInput.type = this.showOpenaiKeyCheckbox.checked ? 'text' : 'password';
             });
         }
 
-        // הצגת/הסתרת מפתח API של Huggingface
-        if (this.showHuggingfaceKeyCheckbox && this.huggingfaceApiKeyInput) {
-            this.showHuggingfaceKeyCheckbox.addEventListener('change', () => {
-                this.huggingfaceApiKeyInput.type = this.showHuggingfaceKeyCheckbox.checked ? 'text' : 'password';
-            });
-        }
-
-        // הצגת/הסתרת מפתח API של Groq
-        if (this.showGroqKeyCheckbox && this.groqApiKeyInput) {
-            this.showGroqKeyCheckbox.addEventListener('change', () => {
-                this.groqApiKeyInput.type = this.showGroqKeyCheckbox.checked ? 'text' : 'password';
-            });
-        }
-
-        // טיפול באירועים של מדריך ה-API
-        if (this.apiHelpIcon && this.apiGuideModal && this.closeModalBtn) {
-            this.apiHelpIcon.addEventListener('click', () => {
-                this.apiGuideModal.style.display = 'block';
+        // טיפול במודל עזרה של OpenAI
+        if (this.openaiHelpIcon && this.openaiGuideModal) {
+            this.openaiHelpIcon.addEventListener('click', () => {
+                this.openaiGuideModal.style.display = 'block';
             });
 
-            this.closeModalBtn.addEventListener('click', () => {
-                this.apiGuideModal.style.display = 'none';
-            });
+            const closeModal = this.openaiGuideModal.querySelector('.close-modal');
+            if (closeModal) {
+                closeModal.addEventListener('click', () => {
+                    this.openaiGuideModal.style.display = 'none';
+                });
+            }
 
             // סגירת המודאל בלחיצה מחוץ לתוכן
             window.addEventListener('click', (e) => {
-                if (e.target === this.apiGuideModal) {
-                    this.apiGuideModal.style.display = 'none';
+                if (e.target === this.openaiGuideModal) {
+                    this.openaiGuideModal.style.display = 'none';
                 }
             });
 
             // סגירת המודאל בלחיצה על Escape
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && this.apiGuideModal.style.display === 'block') {
-                    this.apiGuideModal.style.display = 'none';
+                if (e.key === 'Escape' && this.openaiGuideModal.style.display === 'block') {
+                    this.openaiGuideModal.style.display = 'none';
                 }
             });
         }
@@ -195,17 +161,16 @@ class UIHandlers extends UICore {
                                 }
                             };
 
-                            // שמירת הפונקציה על האובייקט כדי למנוע ריבוי מאזינים
                             youtubeInput._validateListener = validateInput;
                             youtubeInput.addEventListener('input', validateInput);
                         }
                     }
-                    // אם עוזבים את טאב YouTube ואין קישור – איפוס תצוגה
+
+                    // איפוס תצוגת YouTube אם עוזבים את הטאב
                     if (tabId !== 'youtube-link') {
                         const youtubeInput = document.getElementById('youtube-url');
                         const youtubeInfoBox = document.querySelector('.youtube-info');
                         const url = youtubeInput?.value?.trim();
-                        //   const isValidYoutube = url && (url.includes('youtube.com/') || url.includes('youtu.be/'));
 
                         const leftYoutubeTab = tabId !== 'youtube-link';
                         const youtubeFieldEmpty = !url;
@@ -214,11 +179,7 @@ class UIHandlers extends UICore {
                             youtubeInfoBox.innerHTML = '';
                             youtubeInfoBox.style.display = 'none';
                         }
-
                     }
-
-
-
                 });
             });
         }
@@ -253,50 +214,12 @@ class UIHandlers extends UICore {
             });
         }
     }
-    getSelectedProvider() {
-        const modeSelect = document.getElementById('transcription-mode');
-        if (!modeSelect) return 'groq';
-        const mode = modeSelect.value;
-        return mode === 'hf-plus-groq' ? 'huggingface' : 'groq';
-    }
     
     /**
      * העתקת תוכן התמלול
      */
     copyTranscription() {
-        // מציאת הטאב הפעיל
-        const activeResultTab = document.querySelector('.result-tab-btn.active');
-        if (!activeResultTab) return;
-
-        const tabType = activeResultTab.getAttribute('data-result-tab');
-
-        // בחירת תיבת הטקסט המתאימה
-        let textArea;
-        switch (tabType) {
-            case 'original':
-                textArea = document.getElementById('transcription-result');
-                break;
-            case 'enhanced':
-                textArea = document.getElementById('enhanced-result');
-                break;
-            case 'summary':
-                // אם נבחר פרומפט חופשי 
-                const summaryLengthSelect = document.getElementById('summary-length');
-                const customPromptContainer = document.getElementById('custom-prompt-container');
-
-                if (summaryLengthSelect.value === 'custom' &&
-                    customPromptContainer.style.display !== 'none') {
-                    // אם נבחר פרומפט חופשי והוא מוצג
-                    textArea = document.getElementById('summary-result');
-                } else {
-                    // בכל מקרה אחר
-                    textArea = document.getElementById('summary-result');
-                }
-                break;
-            default:
-                return;
-        }
-
+        const textArea = document.getElementById('transcription-result');
         if (!textArea) return;
 
         // בחירת הטקסט והעתקה
@@ -311,6 +234,7 @@ class UIHandlers extends UICore {
             this.copyBtn.innerHTML = originalText;
         }, 2000);
     }
+
     switchTab(tabId) {
         const targetTab = document.querySelector(`[data-tab="${tabId}"]`);
         if (targetTab) {
@@ -319,7 +243,6 @@ class UIHandlers extends UICore {
             targetTab.click(); // מפעיל את האירוע של המעבר
         }
     }
-
 }
 
 // ייצוא המחלקה

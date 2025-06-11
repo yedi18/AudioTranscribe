@@ -1,142 +1,57 @@
 /**
- * מודול לטיפול בניהול מפתחות API
- * מרחיב את מחלקת UIFileOperations
+ * מודול לטיפול בניהול מפתחות API - מעודכן לOpenAI בלבד
  */
 class UIAPIManagement extends UIFileOperations {
     /**
      * אתחול הגדרות API
      */
     initAPISettings() {
-        // Huggingface
-        if (this.huggingfaceApiKey) {
-            if (this.huggingfaceApiKeyInput) {
-                this.huggingfaceApiKeyInput.value = this.huggingfaceApiKey;
+        // OpenAI
+        if (this.openaiApiKey) {
+            if (this.openaiApiKeyInput) {
+                this.openaiApiKeyInput.value = this.openaiApiKey;
             }            
-            if (this.huggingfaceKeyStatus) {
-                this.huggingfaceKeyStatus.textContent = 'מפתח API של Huggingface נטען בהצלחה';
-                this.huggingfaceKeyStatus.style.color = '#28a745';
+            if (this.openaiKeyStatus) {
+                this.openaiKeyStatus.textContent = 'מפתח API של OpenAI נטען בהצלחה';
+                this.openaiKeyStatus.style.color = '#28a745';
             }
         }
 
-        // Groq
-        if (this.groqApiKey) {
-            if (this.groqApiKeyInput) {
-                this.groqApiKeyInput.value = this.groqApiKey;
-            }
-            
-            if (this.groqKeyStatus) {
-                this.groqKeyStatus.textContent = 'מפתח API של Groq נטען בהצלחה';
-                this.groqKeyStatus.style.color = '#28a745';
-            }
-        }
-        this.apiKey = this.getSelectedProvider() === 'groq'
-        ? this.groqApiKey
-        : this.huggingfaceApiKey;
+        this.apiKey = this.openaiApiKey;
     
         // קישור אירועים לניהול API
         this.bindAPIEvents();
     }
 
     /**
-     * שמירת מפתח API של Huggingface
+     * שמירת מפתח API של OpenAI
      */
-    saveHuggingfaceApiKey() {
-        const newApiKey = this.huggingfaceApiKeyInput.value.trim();
+    saveOpenaiApiKey() {
+        const newApiKey = this.openaiApiKeyInput.value.trim();
         if (newApiKey) {
-            localStorage.setItem('huggingface_api_key', newApiKey);
-            this.huggingfaceApiKey = newApiKey;
-
-            // עדכון המפתח בשאר המערכת
-            this.apiKey = newApiKey; // לשמור תאימות עם הקוד הקיים
-
-            // הצגת אישור הצלחה עם אנימציה
-            this.huggingfaceKeyStatus.textContent = 'מפתח API של Huggingface נשמר בהצלחה!';
-            this.huggingfaceKeyStatus.style.color = '#28a745';
-            this.huggingfaceKeyStatus.style.animation = 'fadeIn 0.3s';
-
-            setTimeout(() => {
-                this.huggingfaceKeyStatus.style.animation = 'fadeOut 0.5s forwards';
-                setTimeout(() => {
-                    this.huggingfaceKeyStatus.textContent = '';
-                    this.huggingfaceKeyStatus.style.animation = '';
-                }, 500);
-            }, 3000);
-        } else {
-            this.huggingfaceKeyStatus.textContent = 'נא להזין מפתח API תקין';
-            this.huggingfaceKeyStatus.style.color = '#dc3545';
-            this.huggingfaceKeyStatus.style.animation = 'shake 0.5s';
-
-            setTimeout(() => {
-                this.huggingfaceKeyStatus.style.animation = '';
-            }, 500);
-        }
-    }
-
-    /**
-     * שמירת מפתח API של Groq
-     */
-    saveGroqApiKey() {
-        const newApiKey = this.groqApiKeyInput.value.trim();
-        if (newApiKey) {
-            localStorage.setItem('groq_api_key', newApiKey);
-            this.groqApiKey = newApiKey;
-
-            // הצגת אישור הצלחה עם אנימציה
-            this.groqKeyStatus.textContent = 'מפתח API של Groq נשמר בהצלחה!';
-            this.groqKeyStatus.style.color = '#28a745';
-            this.groqKeyStatus.style.animation = 'fadeIn 0.3s';
-
-            // עדכון המפתח גם במודול EnhancementHandler אם הוא קיים
-            if (this.enhancementHandler) {
-                this.enhancementHandler.GROQ_API_KEY = newApiKey;
-            }
-
-            setTimeout(() => {
-                this.groqKeyStatus.style.animation = 'fadeOut 0.5s forwards';
-                setTimeout(() => {
-                    this.groqKeyStatus.textContent = '';
-                    this.groqKeyStatus.style.animation = '';
-                }, 500);
-            }, 3000);
-        } else {
-            this.groqKeyStatus.textContent = 'נא להזין מפתח API תקין';
-            this.groqKeyStatus.style.color = '#dc3545';
-            this.groqKeyStatus.style.animation = 'shake 0.5s';
-
-            setTimeout(() => {
-                this.groqKeyStatus.style.animation = '';
-            }, 500);
-        }
-    }
-
-    /**
-     * שמירת מפתח API (Legacy)
-     */
-    saveApiKey() {
-        const newApiKey = this.apiKeyInput.value.trim();
-        if (newApiKey) {
-            localStorage.setItem('huggingface_api_key', newApiKey);
+            localStorage.setItem('openai_api_key', newApiKey);
+            this.openaiApiKey = newApiKey;
             this.apiKey = newApiKey;
 
             // הצגת אישור הצלחה עם אנימציה
-            this.apiKeyStatus.textContent = 'מפתח API נשמר בהצלחה!';
-            this.apiKeyStatus.style.color = '#28a745';
-            this.apiKeyStatus.style.animation = 'fadeIn 0.3s';
+            this.openaiKeyStatus.textContent = 'מפתח API של OpenAI נשמר בהצלחה!';
+            this.openaiKeyStatus.style.color = '#28a745';
+            this.openaiKeyStatus.style.animation = 'fadeIn 0.3s';
 
             setTimeout(() => {
-                this.apiKeyStatus.style.animation = 'fadeOut 0.5s forwards';
+                this.openaiKeyStatus.style.animation = 'fadeOut 0.5s forwards';
                 setTimeout(() => {
-                    this.apiKeyStatus.textContent = '';
-                    this.apiKeyStatus.style.animation = '';
+                    this.openaiKeyStatus.textContent = '';
+                    this.openaiKeyStatus.style.animation = '';
                 }, 500);
             }, 3000);
         } else {
-            this.apiKeyStatus.textContent = 'נא להזין מפתח API תקין';
-            this.apiKeyStatus.style.color = '#dc3545';
-            this.apiKeyStatus.style.animation = 'shake 0.5s';
+            this.openaiKeyStatus.textContent = 'נא להזין מפתח API תקין';
+            this.openaiKeyStatus.style.color = '#dc3545';
+            this.openaiKeyStatus.style.animation = 'shake 0.5s';
 
             setTimeout(() => {
-                this.apiKeyStatus.style.animation = '';
+                this.openaiKeyStatus.style.animation = '';
             }, 500);
         }
     }

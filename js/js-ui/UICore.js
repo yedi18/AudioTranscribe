@@ -1,6 +1,5 @@
 /**
- * מודול ליבה של ממשק המשתמש
- * מכיל את המחלקה הבסיסית והקונסטרקטור
+ * מודול ליבה של ממשק המשתמש - מעודכן לOpenAI בלבד
  */
 class UICore {
     constructor() {
@@ -23,44 +22,25 @@ class UICore {
         this.copyBtn = document.getElementById('copy-btn');
         this.newBtn = document.getElementById('new-btn');
         this.uploadContainer = document.getElementById('upload-container');
-        this.showApiKeyCheckbox = document.getElementById('show-api-key');
-        this.splitAudioCheckbox = document.getElementById('split-audio');
-        this.splitSettings = document.getElementById('split-settings');
-        this.segmentLengthInput = document.getElementById('segment-length');
         this.tipsCard = document.getElementById('tips-card');
         this.timeEstimate = document.getElementById('time-estimate');
-        this.estimatedTimeContainer = document.getElementById('estimated-time');
-        this.apiHelpIcon = document.getElementById('api-help-icon');
-        this.apiGuideModal = document.getElementById('api-guide-modal');
-        this.closeModalBtn = document.querySelector('.close-modal');
+        this.estimatedTimeContainer = document.getElementById('estimated-time-container');
         this.downloadDropdownBtn = document.getElementById('download-dropdown-btn');
 
-        // אלמנטים API Huggingface
-        this.huggingfaceApiKeyInput = document.getElementById('huggingface-api-key');
-        this.saveHuggingfaceKeyBtn = document.getElementById('save-huggingface-key');
-        this.huggingfaceKeyStatus = document.getElementById('huggingface-key-status');
-        this.showHuggingfaceKeyCheckbox = document.getElementById('show-huggingface-key');
-        this.huggingfaceHelpIcon = document.getElementById('huggingface-help-icon');
+        // אלמנטים OpenAI
+        this.openaiApiKeyInput = document.getElementById('openai-api-key');
+        this.saveOpenaiKeyBtn = document.getElementById('save-openai-key');
+        this.openaiKeyStatus = document.getElementById('openai-key-status');
+        this.showOpenaiKeyCheckbox = document.getElementById('show-openai-key');
+        this.openaiHelpIcon = document.getElementById('openai-help-icon');
+        this.openaiGuideModal = document.getElementById('openai-guide-modal');
 
-        // אלמנטים Groq
-        this.groqApiKeyInput = document.getElementById('groq-api-key');
-        this.saveGroqKeyBtn = document.getElementById('save-groq-key');
-        this.groqKeyStatus = document.getElementById('groq-key-status');
-        this.showGroqKeyCheckbox = document.getElementById('show-groq-key');
-        this.groqHelpIcon = document.getElementById('groq-help-icon');
-        this.groqGuideModal = document.getElementById('groq-guide-modal');
-
-        // טעינת מפתחות API
-        this.huggingfaceApiKey = localStorage.getItem('huggingface_api_key') || '';
-        if (this.huggingfaceApiKeyInput) {
-            this.huggingfaceApiKeyInput.value = this.huggingfaceApiKey;
+        // טעינת מפתח API של OpenAI
+        this.openaiApiKey = localStorage.getItem('openai_api_key') || '';
+        if (this.openaiApiKeyInput) {
+            this.openaiApiKeyInput.value = this.openaiApiKey;
         }
-        this.groqApiKey = localStorage.getItem('groq_api_key') || '';
-        if (this.groqApiKeyInput) {
-            this.groqApiKeyInput.value = this.groqApiKey;
-        }
-        this.apiKey = this.groqApiKey || this.huggingfaceApiKey;
-
+        this.apiKey = this.openaiApiKey;
 
         // מצב הממשק
         this.selectedFile = null;
@@ -68,14 +48,11 @@ class UICore {
         // יצירת מופעים של מנהלי המודולים השונים
         this.recordingHandler = null;
         this.youtubeHandler = null;
-        this.enhancementHandler = null;
-
 
         this.isTranscriptionInProgress = false;
         this.transcriptionState = {
             status: null,
             progress: 0,
-            segments: [],
             completedSegments: 0,
             totalSegments: 0
         };
@@ -114,11 +91,6 @@ class UICore {
         if (window.YouTubeHandler) {
             this.youtubeHandler = new YouTubeHandler(this);
         }
-
-        // אתחול מודול שיפורים אם הוא זמין
-        if (window.EnhancementHandler) {
-            this.enhancementHandler = new EnhancementHandler(this);
-        }
     }
 
     /**
@@ -143,7 +115,6 @@ class UICore {
     /**
      * איפוס הממשק
      */
-    // עדכון resetUI במחלקת UICore
     resetUI() {
         // איפוס הממשק
         if (this.fileInput) this.fileInput.value = '';
@@ -161,10 +132,10 @@ class UICore {
         }
         if (this.progressText) this.progressText.textContent = '0%';
 
-        // וידוא שאזור ההעלאה מוצג - חשוב!
+        // וידוא שאזור ההעלאה מוצג
         if (this.uploadArea) {
             console.log('מציג את uploadArea');
-            this.uploadArea.style.display = 'flex'; // שינוי מ-'block' ל-'flex'
+            this.uploadArea.style.display = 'flex';
         } else {
             console.error('אלמנט uploadArea לא נמצא');
         }

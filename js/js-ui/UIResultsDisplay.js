@@ -1,6 +1,5 @@
 /**
- * מודול לטיפול בהצגת תוצאות בממשק
- * מרחיב את מחלקת UIProgressDisplay
+ * מודול לטיפול בהצגת תוצאות בממשק - עם ניקוי מלא של טיימרים
  */
 class UIResultsDisplay extends UIProgressDisplay {
     /**
@@ -14,27 +13,10 @@ class UIResultsDisplay extends UIProgressDisplay {
         this.loadingSpinner.style.display = 'none';
         this.progressContainer.style.display = 'none';
 
-        // מציג את התמלול
+        // מציג את התמלול (ללא דוח בטקסט)
         this.transcriptionResult.value = transcription || "לא התקבל תמלול. נא לנסות שוב.";
 
-        // איפוס מצב לשוניות השיפור אם המודול קיים
-        if (this.enhancementHandler) {
-            this.enhancementHandler.resetState();
-        }
         this.updateRestartButton();
-
-        // החזרת הלשונית הראשונה למצב פעיל
-        const resultTabButtons = document.querySelectorAll('.result-tab-btn');
-        const resultTabContents = document.querySelectorAll('.result-tab-content');
-
-        resultTabButtons.forEach(btn => btn.classList.remove('active'));
-        resultTabContents.forEach(content => content.classList.remove('active'));
-
-        const originalTabBtn = document.querySelector('[data-result-tab="original"]');
-        if (originalTabBtn) originalTabBtn.classList.add('active');
-
-        const originalContent = document.getElementById('original-content');
-        if (originalContent) originalContent.classList.add('active');
 
         // גלילה אל התוצאות
         this.resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -46,6 +28,37 @@ class UIResultsDisplay extends UIProgressDisplay {
 
         // הצגת התוצאות עם אפקט כניסה
         this.resultContainer.style.animation = 'fadeIn 0.5s';
+    }
+
+    /**
+     * איפוס הממשק כולל הסרת כל הטיימרים
+     */
+    resetUI() {
+        // קריאה לפונקציה המקורית
+        super.resetUI();
+        
+        // הסרת תצוגת זמן התמלול הסופי
+        const timeDisplay = document.getElementById('transcription-time-display');
+        if (timeDisplay) {
+            timeDisplay.remove();
+        }
+
+        // הסרת שעון בזמן אמת
+        const realTimeTimer = document.getElementById('real-time-timer');
+        if (realTimeTimer) {
+            realTimeTimer.remove();
+        }
+
+        // עצירת טיימר בזמן אמת אם פועל
+        if (this.realTimeInterval) {
+            clearInterval(this.realTimeInterval);
+            this.realTimeInterval = null;
+        }
+
+        // ניקוי פונקציות טיימר
+        if (this.stopRealTimeTimer) {
+            this.stopRealTimeTimer();
+        }
     }
 
     /**
@@ -76,7 +89,7 @@ class UIResultsDisplay extends UIProgressDisplay {
                 };
                 break;
             case 'recording':
-                restartBtn.innerHTML = '<i class="fas fa-microphone"></i>הקלט הקלטה חדשה';
+                restartBtn.innerHTML = '<i class="fas fa-microphone"></i> הקלט הקלטה חדשה';
                 restartBtn.className = 'btn new-btn btn-record';
                 restartBtn.onclick = () => {
                     this.resetUI();

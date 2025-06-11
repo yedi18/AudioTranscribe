@@ -1,49 +1,66 @@
 /**
- * מודול לטיפול בפעולות על קבצים בממשק
- * מרחיב את מחלקת UIHandlers
+ * מודול לטיפול בפעולות על קבצים בממשק - מעודכן עם בדיקת גודל 24MB
  */
 class UIFileOperations extends UIHandlers {
     constructor(ui) {
         super();
-        this.ui = ui; // גישה ל־UI מתוך המחלקה
+        this.ui = ui;
     }
 
     /**
- * טיפול בבחירת קובץ
- * @param {FileList} files - רשימת הקבצים שנבחרו
- */
+     * טיפול בבחירת קובץ
+     * @param {FileList} files - רשימת הקבצים שנבחרו
+     */
     handleFileSelect(files) {
         if (files.length > 0) {
-            // שינוי: במקום לטפל בקובץ כאן, קוראים לפונקציה החדשה
             this.handleNewFile(files[0], 'upload');
 
             const fileName = this.selectedFile.name.toLowerCase();
+            const fileSizeMB = this.selectedFile.size / (1024 * 1024);
 
             // הסר שגיאה/אזהרה קודמת אם קיימת
             if (this.errorMessage) {
                 this.errorMessage.style.display = 'none';
             }
 
-            // מחיקת אזהרה קודמת אם קיימת
-            const existingWarning = document.querySelector('.warning-message');
-            if (existingWarning) existingWarning.remove();
+            // מחיקת אזהרות קודמות אם קיימות
+            const existingWarnings = document.querySelectorAll('.warning-message, .size-warning-message');
+            existingWarnings.forEach(warning => warning.remove());
 
-            // בדיקת סוג הקובץ והצגת אזהרה אם אינו MP3
-            if (!fileName.endsWith('.mp3')) {
-                const warningBox = document.createElement('div');
-                warningBox.className = 'warning-message';
-                warningBox.innerHTML = `
-                <i class="fas fa-exclamation-triangle"></i> 
-                <span>אזהרה: קובץ זה אינו בפורמט MP3. יתכן שההמרה תארך זמן נוסף.</span>
-                <a href="https://cloudconvert.com/audio-converter" target="_blank">להמרת הקובץ ל-MP3</a>
-            `;
+            // בדיקת גודל הקובץ והצגת אזהרה אם גדול מ-24MB
+            if (fileSizeMB > 24) {
+                const expectedChunks = AudioSplitter.getExpectedChunks(this.selectedFile);
+                const costInfo = AudioSplitter.estimateCost(this.selectedFile);
+                const timeInfo = AudioSplitter.estimateTranscriptionTime(this.selectedFile);
+                
+                const sizeWarningBox = document.createElement('div');
+                sizeWarningBox.className = 'size-warning-message';
+                sizeWarningBox.style.cssText = `
+                    background: #fff3cd;
+                    border: 1px solid #ffeb3b;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin: 15px 0;
+                    color: #856404;
+                    font-size: 14px;
+                `;
+                
+                sizeWarningBox.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <i class="fas fa-info-circle" style="color: #ff9800; font-size: 18px; margin-top: 2px;"></i>
+                        <div>
+                            <strong>קובץ גדול מזוהה (${fileSizeMB.toFixed(1)}MB)</strong><br>
+                            הקובץ יחולק ל-<strong>${expectedChunks} חלקים</strong> לצורך התמלול<br>
+                            <div style="margin-top: 8px; font-size: 13px;">
+                                ⏱️ זמן משוער לתמלול: <strong>${timeInfo.displayText}</strong><br>
+                                💰 עלות משוערת: <strong>$${costInfo.estimatedCostUSD}</strong> (כ-<strong>${costInfo.estimatedCostILS} ₪</strong>)
+                            </div>
+                        </div>
+                    </div>
+                `;
 
-                // הוסף את האזהרה לפני אזור מידע הקובץ
                 if (this.fileInfo && this.fileInfo.parentNode) {
-                    // אם אתה רוצה לאבטח שהוורנינג באמת בסוף הקונטיינר:
-                    this.fileInfo.parentNode.appendChild(warningBox);
-
-
+                    this.fileInfo.parentNode.appendChild(sizeWarningBox);
                 }
             }
 
@@ -59,12 +76,12 @@ class UIFileOperations extends UIHandlers {
             }, 300);
         }
     }
+
     /**
      * טיפול בקובץ מכל מקור
      * @param {File} file - קובץ האודיו
      * @param {string} source - מקור הקובץ ('upload', 'recording', 'youtube')
      */
-    // בדיקה בתוך handleNewFile בקובץ UIFileOperations.js
     handleNewFile(file, source) {
         console.log("מתחיל טיפול בקובץ חדש ממקור:", source,
             "שם:", file.name,
@@ -85,7 +102,15 @@ class UIFileOperations extends UIHandlers {
             }
 
             if (this.fileSize) {
-                this.fileSize.textContent = `גודל: ${this.formatFileSize(file.size)}`;
+                const sizeText = `גודל: ${this.formatFileSize(file.size)}`;
+                const fileSizeMB = file.size / (1024 * 1024);
+                
+                // הוספת התרעה אם הקובץ גדול
+                if (fileSizeMB > 24) {
+                    this.fileSize.innerHTML = `${sizeText} <span style="color: #ff9800; font-weight: bold;">(יחולק לחלקים)</span>`;
+                } else {
+                    this.fileSize.textContent = sizeText;
+                }
             } else {
                 console.error("אלמנט fileSize לא נמצא");
             }
@@ -126,6 +151,7 @@ class UIFileOperations extends UIHandlers {
             } else {
                 console.error("אלמנט download-source-btn לא נמצא");
             }
+
             this.checkFileDurationAndUpdateEstimate();
 
             // הסתרת שגיאות קודמות
@@ -142,28 +168,19 @@ class UIFileOperations extends UIHandlers {
             }
         }
     }
+
     /**
      * בדיקת משך הקובץ ועדכון הזמן המשוער
      */
     checkFileDurationAndUpdateEstimate() {
         if (typeof getAudioDuration === 'function') {
-            // השתמש בפונקציה הגלובלית
             getAudioDuration(this.selectedFile).then(duration => {
                 this.updateEstimatedTime(duration);
             }).catch(error => {
                 console.error('שגיאה בקריאת אורך הקובץ:', error);
                 this.updateEstimatedTime(60); // הערכה ברירת מחדל של דקה
             });
-        } else if (typeof AudioSplitter !== 'undefined' && typeof AudioSplitter.getAudioDuration === 'function') {
-            // השתמש בפונקציה מתוך מחלקת AudioSplitter
-            AudioSplitter.getAudioDuration(this.selectedFile).then(duration => {
-                this.updateEstimatedTime(duration);
-            }).catch(error => {
-                console.error('שגיאה בקריאת אורך הקובץ:', error);
-                this.updateEstimatedTime(60);
-            });
         } else {
-            // אם הפונקציה לא קיימת, השתמש בהערכה ברירת מחדל
             console.error('פונקציית getAudioDuration לא נמצאה');
             this.updateEstimatedTime(60);
         }
@@ -183,68 +200,19 @@ class UIFileOperations extends UIHandlers {
             return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
         }
     }
-    /**
-     * הצגת כפתור הורדה
-     * @param {File} file - קובץ האודיו להורדה
-     */
-    showDownloadButton(file) {
-        const downloadBtn = document.getElementById('download-source-btn');
-        if (!downloadBtn) return;
-        downloadBtn.href = URL.createObjectURL(file);
-        downloadBtn.download = file.name || 'audio.mp3';
-        downloadBtn.style.display = ''; // הצגת הכפתור לפי ה-CSS
-    }
 
-    /**
-     * הסתרת כפתור הורדה
-     */
-    hideDownloadButton() {
-        const downloadBtn = document.getElementById('download-source-btn');
-        if (!downloadBtn) return;
-        downloadBtn.style.display = 'none';
-    }
     /**
      * הורדת התמלול בפורמט הנבחר
      * @param {string} format - פורמט הקובץ (txt, srt, word)
      */
     downloadTranscription(format = 'txt') {
-        // מציאת הטאב הפעיל
-        const activeResultTab = document.querySelector('.result-tab-btn.active');
-        if (!activeResultTab) return;
-
-        const tabType = activeResultTab.getAttribute('data-result-tab');
-
-        // בחירת תיבת הטקסט המתאימה
-        let textArea;
-        switch (tabType) {
-            case 'original':
-                textArea = document.getElementById('transcription-result');
-                break;
-            case 'enhanced':
-                textArea = document.getElementById('enhanced-result');
-                break;
-            case 'summary':
-                textArea = document.getElementById('summary-result');
-                break;
-            default:
-                return;
-        }
-
+        const textArea = document.getElementById('transcription-result');
         if (!textArea) return;
 
         const text = textArea.value.trim();
         if (!text) return;
 
         let blob, fileName;
-
-        // שמות התאמה לסוגי הטאבים
-        const tabNames = {
-            'original': 'תמלול_מקורי',
-            'enhanced': 'הגהה_חכמה',
-            'summary': 'סיכום_AI'
-        };
-
-        const tabSuffix = tabNames[tabType] || 'תמלול';
 
         switch (format) {
             case 'srt':
@@ -259,14 +227,14 @@ class UIFileOperations extends UIHandlers {
                 xmlns="http://www.w3.org/TR/REC-html40">
             <head>
                 <meta charset="utf-8">
-                <title>${tabSuffix}</title>
+                <title>תמלול</title>
                 <style>
                     body { font-family: 'Arial', sans-serif; direction: rtl; }
                     p { line-height: 1.6; margin-bottom: 10px; }
                 </style>
             </head>
             <body>
-                <h1>${tabSuffix}</h1>
+                <h1>תמלול</h1>
                 ${text.split('\n').map(line => `<p>${line}</p>`).join('')}
             </body>
             </html>
@@ -282,8 +250,8 @@ class UIFileOperations extends UIHandlers {
 
         // יצירת שם קובץ
         fileName = this.selectedFile ?
-            this.selectedFile.name.replace(/\.[^/.]+$/, '') + `_${tabSuffix}.${format}` :
-            `${tabSuffix}.${format}`;
+            this.selectedFile.name.replace(/\.[^/.]+$/, '') + `_תמלול.${format}` :
+            `תמלול.${format}`;
 
         // יצירת קישור להורדה
         const link = document.createElement('a');
@@ -310,11 +278,9 @@ class UIFileOperations extends UIHandlers {
      * @returns {string} - טקסט בפורמט SRT
      */
     convertToSRT(text) {
-        // פיצול הטקסט לשורות
         const lines = text.split('\n');
         let srtContent = '';
 
-        // כל שורה תהיה תת-כתובת נפרדת
         lines.forEach((line, index) => {
             if (line.trim()) {
                 const startTime = index * 5; // 5 שניות לכל שורה
@@ -368,7 +334,6 @@ class UIFileOperations extends UIHandlers {
         this.loadingSpinner.style.display = 'none';
         this.errorMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-
 }
 
 // ייצוא המחלקה

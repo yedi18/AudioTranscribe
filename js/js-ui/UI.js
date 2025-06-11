@@ -1,26 +1,20 @@
 /**
- * מודול לטיפול בממשק המשתמש - קובץ ראשי
- * מייבא את כל המודולים האחרים
+ * מודול לטיפול בממשק המשתמש - קובץ ראשי מעודכן לOpenAI בלבד
  */
 class UI extends UIResultsDisplay {
     constructor() {
         super();
-        console.log('מחלקת UI הוטענה בהצלחה');
+        console.log('מחלקת UI הוטענה בהצלחה - מעודכן לOpenAI Whisper');
     }
 }
-
 
 // הוספת פונקציית דיבוג לבדיקת localStorage
 function debugLocalStorage() {
     console.group('Local Storage Debug');
 
-    // בדיקת מפתחות Huggingface
-    const huggingfaceKey = localStorage.getItem('huggingface_api_key');
-    console.log('Huggingface API Key:', huggingfaceKey ? 'Exists' : 'Not Found');
-
-    // בדיקת מפתחות Groq
-    const groqKey = localStorage.getItem('groq_api_key');
-    console.log('Groq API Key:', groqKey ? 'Exists' : 'Not Found');
+    // בדיקת מפתח OpenAI
+    const openaiKey = localStorage.getItem('openai_api_key');
+    console.log('OpenAI API Key:', openaiKey ? 'Exists' : 'Not Found');
 
     // הדפסת כל המפתחות ב-localStorage
     console.log('All localStorage keys:');
@@ -32,12 +26,9 @@ function debugLocalStorage() {
     console.groupEnd();
 }
 
-
-
-
 function resetUploadUI() {
     const fileInput = document.getElementById('file-input');
-    if (fileInput) fileInput.value = ''; // איפוס קלט
+    if (fileInput) fileInput.value = '';
 
     this.selectedFile = null;
     this.fileInfo.style.display = 'none';
@@ -45,9 +36,6 @@ function resetUploadUI() {
     this.resultContainer.style.display = 'none';
     this.errorMessage.style.display = 'none';
 }
-
-
-
 
 // הוספת פונקציית דיבוג לאירועים
 document.addEventListener('DOMContentLoaded', () => {
@@ -74,52 +62,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    helpBtn.addEventListener('click', toggleHelpPopup);
-    closeBtn.addEventListener('click', toggleHelpPopup);
-    scrollToApiBtn.addEventListener('click', scrollToApiSettings);
+    if (helpBtn) helpBtn.addEventListener('click', toggleHelpPopup);
+    if (closeBtn) closeBtn.addEventListener('click', toggleHelpPopup);
+    if (scrollToApiBtn) scrollToApiBtn.addEventListener('click', scrollToApiSettings);
 
     // סגירת הפופאפ בלחיצה מחוץ אליו
     document.addEventListener('click', function (event) {
-        if (helpPopup.classList.contains('show') &&
+        if (helpPopup && helpPopup.classList.contains('show') &&
             !helpPopup.contains(event.target) &&
             event.target !== helpBtn) {
             toggleHelpPopup();
         }
     });
 
-
     // הדפסת מפתחות localStorage בעת טעינת הדף
     debugLocalStorage();
 
+    // שיפור הטיפול בשמירת המפתח
+    const openaiInput = document.getElementById('openai-api-key');
+    const saveOpenaiKeyBtn = document.getElementById('save-openai-key');
 
-    // שיפור הטיפול בשמירת המפתחות
-    const huggingfaceInput = document.getElementById('huggingface-api-key');
-    const groqInput = document.getElementById('groq-api-key');
-    const saveHuggingfaceKeyBtn = document.getElementById('save-huggingface-key');
-    const saveGroqKeyBtn = document.getElementById('save-groq-key');
-
-    if (saveHuggingfaceKeyBtn) {
-        saveHuggingfaceKeyBtn.addEventListener('click', () => {
-            if (huggingfaceInput) {
-                const apiKey = huggingfaceInput.value.trim();
-                console.log('Saving Huggingface API Key', apiKey);
-                localStorage.setItem('huggingface_api_key', apiKey);
+    if (saveOpenaiKeyBtn) {
+        saveOpenaiKeyBtn.addEventListener('click', () => {
+            if (openaiInput) {
+                const apiKey = openaiInput.value.trim();
+                console.log('Saving OpenAI API Key', apiKey);
+                localStorage.setItem('openai_api_key', apiKey);
                 debugLocalStorage(); // הדפסת המצב לאחר השמירה
             }
         });
     }
-
-    if (saveGroqKeyBtn) {
-        saveGroqKeyBtn.addEventListener('click', () => {
-            if (groqInput) {
-                const apiKey = groqInput.value.trim();
-                console.log('Saving Groq API Key', apiKey);
-                localStorage.setItem('groq_api_key', apiKey);
-                debugLocalStorage(); // הדפסת המצב לאחר השמירה
-            }
-        });
-    }
-
 });
 
 // ייצוא המחלקה

@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>שירות תמלול אודיו MP3 | המרת קול לטקסט מדויק</title>
     <meta name="description" content="המר קבצי MP3 לטקסט בעברית בקלות. שירות תמלול אודיו מהיר ומדויק.">
-    <!-- קבצי CSS המפוצלים במקום קובץ components.css -->
+
+    <!-- קבצי CSS -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/buttons.css">
     <link rel="stylesheet" href="css/forms.css">
@@ -18,99 +19,56 @@
     <link rel="stylesheet" href="css/modals.css">
     <link rel="stylesheet" href="css/badges.css">
     <link rel="stylesheet" href="css/utilities.css">
+
     <link
         href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap"
         rel="stylesheet">
-    <!-- אייקונים של Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="icon.png" />
 
     <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
-
 </head>
 
 <body>
     <div class="container">
         <header>
             <h1><i class="upload-icon fas fa-cloud-upload-alt"></i> תמלול קבצי אודיו בעברית</h1>
-            <p class="subtitle">העלה קובץ MP3 ותוך רגעים בודדים תקבל תמלול מדויק בעברית או בשפות נוספות</p>
+            <p class="subtitle">העלה קובץ אודיו ותוך רגעים בודדים תקבל תמלול מדויק בעברית או בשפות נוספות</p>
         </header>
 
         <div class="card">
+            <!-- הגדרות API -->
             <div id="api-settings" class="api-settings">
                 <details>
                     <summary> הגדרות API <i class="fas fa-cog"></i></summary>
-                    <div id="api-settings" class="api-settings">
-                        <div class="api-section" style="margin-bottom: 2rem;">
-                            <h4>מצב תמלול:</h4>
-                            <label for="transcription-mode">בחר כיצד יבוצע התמלול:</label>
-                            <span class="tooltip-icon">
-                                <i class="fas fa-info-circle"></i>
-                                <span class="tooltip-text">
-                                    <strong>Groq בלבד:</strong> תמלול מהיר, כולל גם סיכום והגהה – אך ייתכנו שגיאות
-                                    קלות.<br>
-                                    <strong>Hugging Face + Groq:</strong> תמלול מדויק ואיכותי יותר אך איטי יותר. ההגהה
-                                    מתבצעת ב-Groq.
-                                </span>
-                            </span>
-                            <select id="transcription-mode" class="styled-select">
-                                <option value="groq-only" selected>Groq בלבד – תמלול והגהה</option>
-                                <option value="hf-plus-groq">Hugging Face לתמלול + Groq להגהה</option>
-                            </select>
+                    <div class="api-settings-content">
+                        <div class="api-section recommended">
+                            <h4>OpenAI Whisper – תמלול מקצועי <span class="recommended-badge">מומלץ</span></h4>
 
-
-                        </div>
-                        <div class="api-settings-content">
-
-                            <!-- חלק אופציונלי - Groq -->
-                            <div class="api-section optional">
-                                <h4>Groq – תמלול מהיר כולל סיכום : <span class="recommended-badge">מומלץ</span>
-                                </h4>
-
-                                <label for="groq-api-key">מפתח API של Groq</label>
-                                <p class="api-description">אם ברצונך להשתמש בפיצ'רים של סיכום והגהה חכמה מבוססי GPT, יש
-                                    להזין כאן את מפתח ה־API של Groq. ניתן לקבל מפתח באתר <a href="https://groq.com"
-                                        target="_blank">groq.com</a></p>
-                                <div class="api-input-group">
-                                    <input type="password" id="groq-api-key"
-                                        placeholder="הדבק את מפתח ה-API של Groq כאן">
-                                    <button id="save-groq-key" class="btn"><i class="fas fa-save"></i> שמור</button>
-                                </div>
-                                <div style="margin-top: 10px;">
-                                    <input type="checkbox" id="show-groq-key" style="margin-left: 8px;">
-                                    <label for="show-groq-key">הצג/הסתר מפתח API</label>
-                                </div>
-                                <div id="groq-key-status" class="api-key-status"></div>
-                                <div class="api-help-icon" id="groq-help-icon">
-                                    <i class="fas fa-question-circle"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- חלק חובה - Huggingface -->
-                        <div class="api-section required">
-                            <h4>תמלול פחות חשוף לשגיאות</h4>
-                            <label for="huggingface-api-key">מפתח API של Hugging Face</label>
-                            <p class="api-description">נדרש כדי לתמלל קבצי אודיו לטקסט. ניתן לקבל מפתח באתר <a
-                                    href="https://huggingface.co" target="_blank">huggingface.co</a></p>
+                            <label for="openai-api-key">מפתח API של OpenAI</label>
+                            <p class="api-description">
+                                השירות המומלץ ביותר! תומך בכל פורמטי האודיו, מהיר, מדויק ויחסית זול ($0.006 לדקה).
+                                ניתן לקבל מפתח באתר <a href="https://platform.openai.com/api-keys"
+                                    target="_blank">platform.openai.com</a>
+                            </p>
                             <div class="api-input-group">
-                                <input type="password" id="huggingface-api-key"
-                                    placeholder="הדבק את מפתח ה-API של Huggingface כאן">
-                                <button id="save-huggingface-key" class="btn"><i class="fas fa-save"></i>
-                                    שמור</button>
+                                <input type="password" id="openai-api-key"
+                                    placeholder="הדבק את מפתח ה-API של OpenAI כאן">
+                                <button id="save-openai-key" class="btn"><i class="fas fa-save"></i> שמור</button>
                             </div>
                             <div style="margin-top: 10px;">
-                                <input type="checkbox" id="show-huggingface-key" style="margin-left: 8px;">
-                                <label for="show-huggingface-key">הצג/הסתר מפתח API</label>
+                                <input type="checkbox" id="show-openai-key" style="margin-left: 8px;">
+                                <label for="show-openai-key">הצג/הסתר מפתח API</label>
                             </div>
-                            <div id="huggingface-key-status" class="api-key-status"></div>
-                            <div class="api-help-icon" id="huggingface-help-icon">
+                            <div id="openai-key-status" class="api-key-status"></div>
+                            <div class="api-help-icon" id="openai-help-icon">
                                 <i class="fas fa-question-circle"></i>
                             </div>
                         </div>
-
+                    </div>
                 </details>
             </div>
+
             <!-- לשוניות אפשרויות העלאה -->
             <div class="upload-tabs">
                 <div class="tabs-header">
@@ -126,45 +84,26 @@
                 </div>
 
                 <div class="tabs-content">
-                    <!-- תוכן לשונית העלאת קובץ יהיה האזור הקיים -->
+                    <!-- תוכן לשונית העלאת קובץ -->
                     <div class="tab-content active" id="upload-file-content">
                         <div id="upload-container">
                             <div id="upload-area" class="upload-area">
                                 <div class="upload-icon">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                 </div>
-                                <h3>גרור לכאן קובץ אודיו MP3</h3>
+                                <h3>גרור לכאן קובץ אודיו</h3>
                                 <p>או לחץ כדי לבחור קובץ</p>
                                 <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.webm,.ogg,.m4a"
                                     style="display: none;">
                                 <button class="btn" id="select-file-btn"><i class="fas fa-file-audio"></i> בחר קובץ
-                                    MP3</button>
+                                    אודיו</button>
                             </div>
 
                             <div id="file-info" class="file-info">
                                 <p><i class="fas fa-file-audio"></i> הקובץ שנבחר: <span id="file-name"
                                         class="file-name"></span></p>
                                 <p id="file-size"></p>
-                                <div class="settings">
-                                    <!-- צ'קבוקס מוסתר לפיצול אוטומטי -->
-                                    <div class="checkbox-wrapper" style="display: none;">
-                                        <input type="checkbox" id="split-audio" checked>
-                                        <label for="split-audio">פיצול לקטעים קצרים</label>
-                                        <span class="checkmark"></span>
-                                    </div>
 
-                                    <!-- הגדרות פיצול מתקדמות -->
-                                    <details class="split-settings-details">
-                                        <summary>הגדרות פיצול מתקדמות <i class="fas fa-cog"></i></summary>
-                                        <div class="split-settings">
-                                            <label for="segment-length">אורך כל קטע בשניות:</label>
-                                            <input type="number" id="segment-length" value="25" min="5" max="30">
-                                            <span class="badge badge-secondary">מומלץ: 25 שניות</span>
-                                            <p class="note"><i class="fas fa-info-circle"></i> הערה: מומלץ לקבוע ערך
-                                                נמוך מ-30 שניות לתוצאות מדויקות יותר</p>
-                                        </div>
-                                    </details>
-                                </div>
                                 <div id="estimated-time-container" class="estimated-time-box">
                                     <i class="fas fa-clock"></i>
                                     <span class="estimated-label">זמן משוער לתמלול:</span>
@@ -172,8 +111,8 @@
                                 </div>
 
                                 <div class="button-group">
-                                    <button class="btn" id="transcribe-btn"><i class="fas fa-magic"></i> התחל תמלול
-                                        MP3</button>
+                                    <button class="btn" id="transcribe-btn"><i class="fas fa-magic"></i> התחל
+                                        תמלול</button>
                                     <a href="#" id="download-source-btn" class="btn download-btn">
                                         <i class="fas fa-download"></i> הורד את קובץ האודיו
                                     </a>
@@ -187,7 +126,7 @@
                                 </div>
                                 <p id="progress-text" class="progress-text">0%</p>
                                 <div class="loading-spinner"></div>
-                                <p class="note">תהליך התמלול עשוי להימשך מספר דקות בהתאם לאורך הקובץ</p>
+                                <p class="note">תהליך התמלול מהיר וזול - רק $0.006 לדקה!</p>
                             </div>
 
                             <div id="loading-spinner" class="loading-spinner"></div>
@@ -207,22 +146,19 @@
                                     <i class="fas fa-magic"></i> תמלל סרטון
                                 </button>
                             </div>
-                            <!-- התצוגה של הסרטון - נבנית דינמית ע"י youtubeHandler -->
+
                             <div class="youtube-info" style="display: none;"></div>
 
-                            <!-- תצוגת טעינה בעת לחיצה על "תמלל סרטון" -->
                             <div id="youtube-loading" style="display: none; margin-top: 1rem; text-align: center;">
                                 <i class="fas fa-spinner fa-spin"
                                     style="font-size: 18px; color: #007bff; margin-left: 6px;"></i>
                                 <span style="font-size: 15px; color: #333;">התהליך עשוי להימשך מספר רגעים...</span>
                             </div>
 
-
                             <p class="note"><i class="fas fa-info-circle"></i> הערה: יש להשתמש בקישור ישיר לסרטון
                                 YouTube</p>
                         </div>
                     </div>
-
 
                     <!-- תוכן לשונית הקלטה ישירה -->
                     <div class="tab-content" id="record-audio-content">
@@ -248,74 +184,14 @@
                     </div>
                 </div>
             </div>
+
+            <!-- תוצאות התמלול -->
             <div id="result-container" class="result-container">
                 <h3 class="decorated">תוצאת התמלול <span class="badge badge-success">הושלם!</span></h3>
 
-                <!-- לשוניות הגהה/AI -->
-                <div class="result-tabs">
-                    <button class="result-tab-btn active" data-result-tab="original">תמלול מקורי</button>
-                    <button class="result-tab-btn" data-result-tab="enhanced">הגהה חכמה</button>
-                    <button class="result-tab-btn" data-result-tab="summary">סיכום AI</button>
-                </div>
-
-                <!-- תוכן לשוניות -->
                 <div class="result-tabs-content">
-                    <!-- תמלול מקורי -->
                     <div class="result-tab-content active" id="original-content">
                         <textarea id="transcription-result" readonly></textarea>
-                    </div>
-
-                    <!-- הגהה חכמה -->
-                    <div class="result-tab-content" id="enhanced-content">
-
-                        <div class="summary-length-options" style="margin-bottom: 1rem;">
-                            <label for="enhance-mode">בחר סוג הגהה:</label>
-                            <select id="enhance-mode">
-                                <option value="default" selected>הגהת ברירת מחדל</option>
-                                <option value="custom">פרומפט חופשי</option>
-                            </select>
-
-                            <div id="enhance-custom-prompt-container"
-                                style="display: none; width: 100%; margin-top: 10px;">
-                                <textarea id="enhance-custom-prompt"
-                                    placeholder="כתוב כאן הוראות מותאמות אישית להגהה..." rows="3" style="width: 100%;"
-                                    class="form-control"></textarea>
-                            </div>
-
-                            <button id="generate-enhancement-btn" class="btn btn-primary">
-                                <i class="fas fa-pen-to-square"></i> בצע הגהה
-                            </button>
-                        </div>
-
-
-
-                        <textarea id="enhanced-result" readonly></textarea>
-                    </div>
-
-                    <!-- סיכום AI -->
-                    <div class="result-tab-content" id="summary-content">
-                        <!-- אזור בחירת אורך הסיכום - עכשיו בתוך הטאב של סיכום AI -->
-                        <div class="summary-length-options">
-                            <label for="summary-length">בחר אורך סיכום:</label>
-                            <select id="summary-length">
-                                <option value="short">קצר</option>
-                                <option value="medium" selected>בינוני</option>
-                                <option value="long">ארוך</option>
-                                <option value="custom">פרומפט חופשי</option>
-                            </select>
-
-                            <!-- אזור פרומפט חופשי (מוסתר כברירת מחדל) -->
-                            <div id="custom-prompt-container" style="display: none; width: 100%; margin-top: 10px;">
-                                <textarea id="custom-prompt" placeholder="הקלד הוראות מותאמות אישית לסיכום..." rows="3"
-                                    style="width: 100%;"></textarea>
-                            </div>
-
-                            <!-- כפתור ליצירת הסיכום -->
-                            <button id="generate-summary-btn" class="btn btn-primary">צור סיכום</button>
-                        </div>
-
-                        <!-- תיבת הטקסט של הסיכום -->
-                        <textarea id="summary-result" readonly></textarea>
                     </div>
                 </div>
 
@@ -348,113 +224,66 @@
                 <h4><i class="fas fa-lightbulb"></i> טיפים לתמלול מוצלח</h4>
                 <ul>
                     <li>וודא שהקובץ באיכות טובה עם רעש רקע מינימלי</li>
-                    <li>עבור קבצים ארוכים, הפיצול לקטעים קצרים משפר את איכות התמלול</li>
-                    <li>מומלץ לבדוק את התמלול ולתקן שגיאות במידת הצורך</li>
+                    <li>OpenAI Whisper תומך בכל פורמטי האודיו הפופולריים (MP3, WAV, M4A, FLAC ועוד)</li>
+                    <li>קבצים עד 24MB יעובדו ישירות - קבצים גדולים יחולקו אוטומטית</li>
+                    <li>זמן תמלול טיפוסי: 10-30 שניות לקבצים קטנים, 45-90 שניות לקבצים של 24MB</li>
+                    <li>עלות זולה: רק $0.006 לדקת אודיו - קובץ של שעה עולה כ-36 סנט!</li>
                 </ul>
             </div>
         </div>
-        <div id="huggingface-guide-modal" class="modal">
+
+        <!-- מודל עזרה לOpenAI -->
+        <div id="openai-guide-modal" class="modal">
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
-                <h3>איך להשיג מפתח API של Huggingface</h3>
+                <h3>איך להשיג מפתח API של OpenAI</h3>
                 <div class="guide-steps">
                     <div class="step">
                         <div class="step-number">1</div>
                         <div class="step-content">
-                            <h4>היכנס לאתר Huggingface</h4>
-                            <p>פתח את האתר <a href="https://huggingface.co/" target="_blank">huggingface.co</a></p>
+                            <h4>היכנס לאתר OpenAI</h4>
+                            <p>פתח את האתר <a href="https://platform.openai.com/"
+                                    target="_blank">platform.openai.com</a></p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">2</div>
                         <div class="step-content">
                             <h4>צור חשבון או התחבר</h4>
-                            <p>לחץ על "Sign Up" בפינה הימנית העליונה ליצירת חשבון חדש, או התחבר לחשבון קיים</p>
+                            <p>לחץ על "Sign Up" או "Login" בפינה הימנית העליונה</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">3</div>
                         <div class="step-content">
-                            <h4>פתח את הגדרות המשתמש</h4>
-                            <p>לאחר ההתחברות, לחץ על תמונת הפרופיל שלך בפינה הימנית העליונה ובחר ב-"Settings"</p>
+                            <h4>נווט לAPI Keys</h4>
+                            <p>לחץ על "API Keys" בתפריט הצדדי או לך ישירות ל-API Keys</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">4</div>
                         <div class="step-content">
-                            <h4>צור מפתח API חדש</h4>
-                            <p>בתפריט הצדדי, בחר ב-"Access Tokens", ואז לחץ על כפתור "New token"</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">5</div>
-                        <div class="step-content">
-                            <h4>הגדר את המפתח</h4>
-                            <p>תן שם למפתח (לדוגמה "Audio Transcription"), בחר הרשאות "Read" ולחץ על "Generate token"
-                            </p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">6</div>
-                        <div class="step-content">
-                            <h4>העתק את המפתח</h4>
-                            <p>העתק את המפתח שנוצר והדבק אותו בשדה "מפתח API של Huggingface" בעמוד זה</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="guide-note">
-                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר
-                        מלבד Huggingface.</p>
-                </div>
-            </div>
-        </div>
-        <div id="groq-guide-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h3>איך להשיג מפתח API של Groq</h3>
-                <div class="guide-steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h4>היכנס לאתר Groq</h4>
-                            <p>פתח את האתר <a href="https://groq.com/" target="_blank">groq.com</a></p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h4>צור חשבון או התחבר</h4>
-                            <p>לחץ על "Sign Up" ליצירת חשבון חדש, או התחבר לחשבון קיים</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h4>נווט לאזור API Keys</h4>
-                            <p>לאחר ההתחברות, נווט לאזור API Keys בממשק המשתמש</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">4</div>
-                        <div class="step-content">
-                            <h4>צור מפתח API חדש</h4>
-                            <p>לחץ על כפתור "Create API Key" ליצירת מפתח חדש</p>
+                            <h4>צור מפתח חדש</h4>
+                            <p>לחץ על "Create new secret key" ותן שם למפתח</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">5</div>
                         <div class="step-content">
                             <h4>העתק את המפתח</h4>
-                            <p>העתק את המפתח שנוצר והדבק אותו בשדה "מפתח API של Groq" בעמוד זה</p>
+                            <p>העתק את המפתח שנוצר והדבק אותו בשדה למעלה</p>
                         </div>
                     </div>
                 </div>
                 <div class="guide-note">
-                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר
-                        מלבד Groq.</p>
+                    <p><strong>עלות:</strong> רק $0.006 לדקה - קובץ של שעה עולה כ-36 סנט!</p>
+                    <p><strong>מהירות:</strong> קבצים קטנים (עד 10MB) - 10-30 שניות | קבצים גדולים (24MB) - 45-90 שניות
+                    </p>
+                    <p><strong>פורמטים נתמכים:</strong> MP3, WAV, FLAC, M4A, AAC, OGG, WEBM ועוד</p>
                 </div>
             </div>
         </div>
+
         <!-- כפתור עזרה צף -->
         <button id="help-btn" title="עזרה">i</button>
 
@@ -467,12 +296,12 @@
                     <span class="step-number">1</span>
                     הכנסת מפתח API ✔️
                 </h3>
-                <p>כדי שהתמלול יעבוד, עליך להזין מפתח API של Hugging Face.</p>
+                <p>כדי שהתמלול יעבוד, עליך להזין מפתח API של OpenAI.</p>
                 <div class="help-links">
-                    <a href="https://huggingface.co/join" target="_blank">
-                        <i class="fas fa-sign-in-alt"></i> אין לך חשבון? הרשם ל-Hugging Face
+                    <a href="https://platform.openai.com/signup" target="_blank">
+                        <i class="fas fa-sign-in-alt"></i> אין לך חשבון? הרשם ל-OpenAI
                     </a>
-                    <a href="https://huggingface.co/settings/tokens" target="_blank">
+                    <a href="https://platform.openai.com/api-keys" target="_blank">
                         <i class="fas fa-key"></i> צפה במפתחות שלך
                     </a>
                 </div>
@@ -480,17 +309,13 @@
                     <i class="fas fa-cog"></i> להסבר נרחב - עבור להגדרות API
                 </button>
             </div>
+
             <div class="help-step">
                 <h3>
                     <span class="step-number">2</span>
-                    העלאת קובץ MP3 ✔️
+                    העלאת קובץ אודיו ✔️
                 </h3>
-                <p>כרגע האתר תומך רק בקבצי MP3.</p>
-                <div class="help-links">
-                    <a href="https://cloudconvert.com/audio-converter" target="_blank">
-                        <i class="fas fa-exchange-alt"></i> המר קצבי אודיו אחרים ל-MP3
-                    </a>
-                </div>
+                <p>תומך בכל פורמטי האודיו - MP3, WAV, M4A ועוד. עד 25MB ו-60 דקות.</p>
             </div>
 
             <div class="help-step">
@@ -498,17 +323,15 @@
                     <span class="step-number">3</span>
                     התחלת תמלול ✔️
                 </h3>
-                <p>לחץ על "בחר קובץ MP3" ואז על "תמלול".</p>
+                <p>לחץ על "התחל תמלול" - התהליך מהיר ויעיל!</p>
             </div>
-
 
             <div class="developer-toggle">
                 <details>
                     <summary>על יוצר האתר <span class="profile-emoji">👨‍💻</span></summary>
                     <h4>ידידיה שאולי - מתכנת חובב</h4>
                     אני ידידיה שאולי, מפתח האתר הזה.
-
-                    הקמתי אותו כדי להנגיש תמלול קולי איכותי במיוחד לדוברי עברית, בצורה פשוטה, חינמית וללא צורך בהרשמה.
+                    הקמתי אותו כדי להנגיש תמלול קולי איכותי במיוחד לדוברי עברית, בצורה פשוטה וללא צורך בהרשמה.
                     אשמח לפידבק והצעות לשיפור!
 
                     <div class="developer-links">
@@ -520,16 +343,17 @@
                         </a>
                     </div>
                 </details>
-
             </div>
 
             <button id="close-help-popup" class="close-btn">סגור</button>
         </div>
+
         <footer>
-            <p>© 2025 שירות תמלול אודיו - פשוט, מהיר ומדויק. <a href="#" id="show-tips">טיפים לשימוש</a></p>
+            <p>© 2025 שירות תמלול אודיו - מהיר, מדויק וזול עם OpenAI Whisper. <a href="#" id="show-tips">טיפים
+                    לשימוש</a></p>
         </footer>
 
-        <!-- נגדיר סקריפט קצר לבדיקת שגיאות -->
+        <!-- סקריפטים -->
         <script>
             window.onerror = function (message, source, lineno, colno, error) {
                 console.error('--- שגיאת JavaScript מלאה ---');
@@ -538,19 +362,15 @@
                 console.error('שורה:', lineno, 'עמודה:', colno);
                 console.error('אובייקט שגיאה:', error);
                 if (error && error.stack) console.error('Stack:', error.stack);
-                return false; // כדי לא לחסום שגיאות מהדפדפן
+                return false;
             };
         </script>
 
-
-
-        <!-- טעינת קבצי JavaScript בסדר הנכון -->
+        <!-- טעינת קבצי JavaScript -->
         <script src="js/audioSplitter.js"></script>
         <script src="js/transcription.js"></script>
-        <script src="js/enhancementHandler.js"></script>
         <script src="js/recordingHandler.js"></script>
         <script src="js/youtubeHandler.js"></script>
-        <!-- מודולי ממשק משתמש -->
         <script src="js/js-ui/UICore.js"></script>
         <script src="js/js-ui/UIHandlers.js"></script>
         <script src="js/js-ui/UIFileOperations.js"></script>
@@ -560,41 +380,20 @@
         <script src="js/js-ui/UI.js"></script>
         <script src="js/main.js"></script>
 
-        <!-- סקריפט בדיקה נוסף -->
+        <!-- סקריפטים נוספים -->
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // בדיקה אם כל המודולים נטענו כראוי
-                if (typeof window.AudioSplitter === 'undefined') {
-                    console.error('AudioSplitter לא נטען!');
-                } else {
-                    console.log('AudioSplitter נטען בהצלחה');
-                }
-
-                if (typeof window.Transcription === 'undefined') {
-                    console.error('Transcription לא נטען!');
-                } else {
-                    console.log('Transcription נטען בהצלחה');
-                }
-
-                if (typeof window.UI === 'undefined') {
-                    console.error('UI לא נטען!');
-                } else {
-                    console.log('UI נטען בהצלחה');
-                }
-
-                // הוספת פונקציונליות להצגת טיפים
+                // הצגת טיפים
                 document.getElementById('show-tips').addEventListener('click', function (e) {
                     e.preventDefault();
                     const tipsCard = document.getElementById('tips-card');
                     tipsCard.style.display = tipsCard.style.display === 'none' ? 'block' : 'none';
                 });
-            });
-        </script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                const helpIcon = document.getElementById("huggingface-help-icon");
-                const modal = document.getElementById("huggingface-guide-modal");
-                const closeModal = document.querySelector("#huggingface-guide-modal .close-modal");
+
+                // מודל עזרה לOpenAI
+                const helpIcon = document.getElementById("openai-help-icon");
+                const modal = document.getElementById("openai-guide-modal");
+                const closeModal = document.querySelector("#openai-guide-modal .close-modal");
 
                 if (helpIcon && modal && closeModal) {
                     helpIcon.addEventListener("click", () => {
@@ -608,53 +407,6 @@
                     window.addEventListener("click", (e) => {
                         if (e.target === modal) {
                             modal.style.display = "none";
-                        }
-                    });
-                } else {
-                    console.error("אחד הרכיבים לא נטען כראוי (modal, helpIcon או closeModal)");
-                }
-            });
-        </script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                // מודאל Huggingface הקיים
-                const helpIcon = document.getElementById("huggingface-help-icon");
-                const modal = document.getElementById("api-guide-modal");
-                const closeModal = document.querySelector("#api-guide-modal .close-modal");
-
-                if (helpIcon && modal && closeModal) {
-                    helpIcon.addEventListener("click", () => {
-                        modal.style.display = "block";
-                    });
-
-                    closeModal.addEventListener("click", () => {
-                        modal.style.display = "none";
-                    });
-
-                    window.addEventListener("click", (e) => {
-                        if (e.target === modal) {
-                            modal.style.display = "none";
-                        }
-                    });
-                }
-
-                // מודאל Groq החדש
-                const groqHelpIcon = document.getElementById("groq-help-icon");
-                const groqModal = document.getElementById("groq-guide-modal");
-                const groqCloseModal = document.querySelector("#groq-guide-modal .close-modal");
-
-                if (groqHelpIcon && groqModal && groqCloseModal) {
-                    groqHelpIcon.addEventListener("click", () => {
-                        groqModal.style.display = "block";
-                    });
-
-                    groqCloseModal.addEventListener("click", () => {
-                        groqModal.style.display = "none";
-                    });
-
-                    window.addEventListener("click", (e) => {
-                        if (e.target === groqModal) {
-                            groqModal.style.display = "none";
                         }
                     });
                 }
