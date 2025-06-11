@@ -1,7 +1,12 @@
 /**
- * מודול לטיפול בהצגת תוצאות בממשק - עם ניקוי מלא של טיימרים
+ * מודול לטיפול בהצגת תוצאות בממשק - עם תמיכה בהגהה וסיכום AI
  */
 class UIResultsDisplay extends UIProgressDisplay {
+    constructor() {
+        super();
+        this.enhancementHandler = null;
+    }
+
     /**
      * מציג את תוצאות התמלול
      * @param {string} transcription - טקסט התמלול
@@ -16,6 +21,11 @@ class UIResultsDisplay extends UIProgressDisplay {
         // מציג את התמלול (ללא דוח בטקסט)
         this.transcriptionResult.value = transcription || "לא התקבל תמלול. נא לנסות שוב.";
 
+        // אתחול מנהל הגהה וסיכום אם עדיין לא קיים
+        if (!this.enhancementHandler && window.EnhancementHandler) {
+            this.enhancementHandler = new EnhancementHandler(this);
+        }
+
         this.updateRestartButton();
 
         // גלילה אל התוצאות
@@ -28,10 +38,85 @@ class UIResultsDisplay extends UIProgressDisplay {
 
         // הצגת התוצאות עם אפקט כניסה
         this.resultContainer.style.animation = 'fadeIn 0.5s';
+
+        // הוספת פונקציונליות העתקה לטאבים שונים
+        this.bindCopyFunctionality();
     }
 
     /**
-     * איפוס הממשק כולל הסרת כל הטיימרים
+     * קישור פונקציונליות העתקה לטאבים השונים
+     */
+    bindCopyFunctionality() {
+        const copyBtn = document.getElementById('copy-btn');
+        if (!copyBtn) return;
+
+        // הסרת מאזינים קיימים
+        const newCopyBtn = copyBtn.cloneNode(true);
+        copyBtn.parentNode.replaceChild(newCopyBtn, copyBtn);
+
+        newCopyBtn.addEventListener('click', () => {
+            // קביעת איזה טאב פעיל
+            const activeTab = document.querySelector('.result-tab-btn.active');
+            if (!activeTab) return;
+
+            const tabType = activeTab.getAttribute('data-result-tab');
+            let textToCopy = '';
+
+            switch (tabType) {
+                case 'original':
+                    const transcriptionResult = document.getElementById('transcription-result');
+                    textToCopy = transcriptionResult ? transcriptionResult.value : '';
+                    break;
+
+                case 'enhanced':
+                    const enhancedResult = document.getElementById('enhanced-result');
+                    textToCopy = enhancedResult ? this.extractTextFromHTML(enhancedResult.innerHTML) : '';
+                    break;
+
+                case 'summary':
+                    const summaryResult = document.getElementById('summary-result');
+                    textToCopy = summaryResult ? this.extractTextFromHTML(summaryResult.innerHTML) : '';
+                    break;
+            }
+
+            if (textToCopy) {
+                // העתקה ללוח
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    // אנימציה להודעת העתקה
+                    const originalText = newCopyBtn.innerHTML;
+                    newCopyBtn.innerHTML = '<i class="fas fa-check"></i> הועתק!';
+                    newCopyBtn.style.background = '#28a745';
+
+                    setTimeout(() => {
+                        newCopyBtn.innerHTML = originalText;
+                        newCopyBtn.style.background = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('שגיאה בהעתקה:', err);
+                    alert('שגיאה בהעתקת הטקסט');
+                });
+            } else {
+                alert('אין תוכן להעתקה');
+            }
+        });
+    }
+
+    /**
+     * חילוץ טקסט מ-HTML
+     */
+    extractTextFromHTML(html) {
+        if (!html) return '';
+        
+        // יצירת אלמנט זמני לחילוץ הטקסט
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        // חילוץ טקסט עם שמירה על מבנה
+        return tempDiv.textContent || tempDiv.innerText || '';
+    }
+
+    /**
+     * איפוס הממשק כולל הסרת כל הטיימרים והאלמנטים של AI
      */
     resetUI() {
         // קריאה לפונקציה המקורית
@@ -58,6 +143,25 @@ class UIResultsDisplay extends UIProgressDisplay {
         // ניקוי פונקציות טיימר
         if (this.stopRealTimeTimer) {
             this.stopRealTimeTimer();
+        }
+
+        // איפוס מנהל הגהה וסיכום
+        if (this.enhancementHandler) {
+            this.enhancementHandler.resetState();
+        }
+
+        // איפוס טאבי התוצאות למקורי
+        const originalTab = document.querySelector('[data-result-tab="original"]');
+        const originalContent = document.getElementById('original-content');
+        
+        if (originalTab && originalContent) {
+            // הסרת active מכל הטאבים
+            document.querySelectorAll('.result-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.result-tab-content').forEach(content => content.classList.remove('active'));
+            
+            // הפעלת הטאב המקורי
+            originalTab.classList.add('active');
+            originalContent.classList.add('active');
         }
     }
 

@@ -1,5 +1,5 @@
 /**
- * עדכון לקובץ enhancementHandler.js - הוספת תמיכה בפרומפט חופשי
+ * מודול מלא לטיפול בהגהה וסיכום חכמים עם AI
  */
 
 class EnhancementHandler {
@@ -7,33 +7,41 @@ class EnhancementHandler {
         this.ui = uiInstance;
         this.enhancementPerformed = false;
         this.summaryPerformed = false;
+        this.currentProcessingAbortController = null;
 
-        // מפתח API של שירות ה-AI (Groq במקרה הזה)
-        this.GROQ_API_KEY = localStorage.getItem('groq_api_key');
+        // מפתחות API לשירותי AI שונים
+        this.API_KEYS = {
+            openai: localStorage.getItem('openai_api_key') || '',
+            groq: localStorage.getItem('groq_api_key') || '',
+            anthropic: localStorage.getItem('anthropic_api_key') || ''
+        };
 
         // אלמנטי ממשק
         this.enhancedResult = document.getElementById('enhanced-result');
         this.summaryResult = document.getElementById('summary-result');
         this.enhanceTabBtn = document.querySelector('[data-result-tab="enhanced"]');
         this.summaryTabBtn = document.querySelector('[data-result-tab="summary"]');
-        this.summaryLengthSelect = document.getElementById('summary-length');
-        this.customPromptContainer = document.getElementById('custom-prompt-container');
-        this.customPrompt = document.getElementById('custom-prompt');
-        this.generateSummaryBtn = document.getElementById('generate-summary-btn');
-
+        
+        // אלמנטי הגהה
         this.enhanceModeSelect = document.getElementById('enhance-mode');
         this.enhanceCustomPromptContainer = document.getElementById('enhance-custom-prompt-container');
         this.enhanceCustomPrompt = document.getElementById('enhance-custom-prompt');
         this.generateEnhancementBtn = document.getElementById('generate-enhancement-btn');
-
+        this.enhanceProviderSelect = document.getElementById('enhance-provider-select');
+        
+        // אלמנטי סיכום
+        this.summaryLengthSelect = document.getElementById('summary-length');
+        this.customPromptContainer = document.getElementById('custom-prompt-container');
+        this.customPrompt = document.getElementById('custom-prompt');
+        this.generateSummaryBtn = document.getElementById('generate-summary-btn');
+        this.summaryProviderSelect = document.getElementById('summary-provider-select');
 
         // קישור אירועים
         this.bindEvents();
     }
 
     /**
-     * קישור אירועים לאלמנטי שיפור AI
-     * (מתוך קובץ enhancementHandler.js)
+     * קישור אירועים לאלמנטי הגהה וסיכום
      */
     bindEvents() {
         // קישור לשוניות תוצאה
@@ -43,7 +51,6 @@ class EnhancementHandler {
         if (resultTabButtons.length > 0) {
             resultTabButtons.forEach(button => {
                 button.addEventListener('click', () => {
-                    // החלפת הטאב הפעיל - חשוב שזה יקרה קודם!
                     const tabId = button.getAttribute('data-result-tab');
 
                     // הסרת מחלקת active מכל הטאבים
@@ -56,136 +63,113 @@ class EnhancementHandler {
                     if (contentElement) {
                         contentElement.classList.add('active');
                     }
-
-
-                    // לא מפעילים סיכום אוטומטי - משאירים את זה לכפתור "צור סיכום"
                 });
             });
         }
 
-        // הוספת האזנה לשינוי באורך הסיכום כדי להציג/להסתיר את אזור הפרומפט החופשי
-        if (this.summaryLengthSelect) {
-            this.summaryLengthSelect.addEventListener('change', () => {
-                // בדיקה אם נבחר פרומפט חופשי
-                if (this.summaryLengthSelect.value === 'custom' && this.customPromptContainer) {
-                    this.customPromptContainer.style.display = 'block';
-                } else if (this.customPromptContainer) {
-                    this.customPromptContainer.style.display = 'none';
+        // אירועי הגהה
+        if (this.enhanceModeSelect) {
+            this.enhanceModeSelect.addEventListener('change', () => {
+                const isCustom = this.enhanceModeSelect.value === 'custom';
+                if (this.enhanceCustomPromptContainer) {
+                    this.enhanceCustomPromptContainer.style.display = isCustom ? 'block' : 'none';
                 }
             });
         }
 
-        // הוספת האזנה לכפתור יצירת הסיכום
-        const generateSummaryBtn = document.getElementById('generate-summary-btn');
-        if (generateSummaryBtn) {
-            console.log('מוסיף האזנה לכפתור "צור סיכום"');
-
-            // שמירת התייחסות ל-this כדי שיהיה נגיש בתוך פונקציית האירוע
-            const self = this;
-
-            // מסיר האזנות קודמות (במידה וקיימות)
-            const newBtn = generateSummaryBtn.cloneNode(true);
-            generateSummaryBtn.parentNode.replaceChild(newBtn, generateSummaryBtn);
-
-            // מוסיף האזנה חדשה (עם שמירת התייחסות ל-this הנכון)
-            newBtn.addEventListener('click', function () {
-                console.log('כפתור "צור סיכום" נלחץ');
-                self.performSummary();
-            });
-        }
-
-        // הצגת אזור פרומפט חופשי לפי בחירה
-        // הצגת אזור פרומפט חופשי אם נבחר
-        if (this.enhanceModeSelect) {
-            this.enhanceModeSelect.addEventListener('change', () => {
-                const isCustom = this.enhanceModeSelect.value === 'custom';
-                this.enhanceCustomPromptContainer.style.display = isCustom ? 'block' : 'none';
-            });
-        }
-
-        // ביצוע הגהה בלחיצה בלבד
         if (this.generateEnhancementBtn) {
             this.generateEnhancementBtn.addEventListener('click', () => {
                 this.performEnhancement();
             });
         }
 
+        // אירועי סיכום
+        if (this.summaryLengthSelect) {
+            this.summaryLengthSelect.addEventListener('change', () => {
+                const isCustom = this.summaryLengthSelect.value === 'custom';
+                if (this.customPromptContainer) {
+                    this.customPromptContainer.style.display = isCustom ? 'block' : 'none';
+                }
+            });
+        }
 
+        if (this.generateSummaryBtn) {
+            this.generateSummaryBtn.addEventListener('click', () => {
+                this.performSummary();
+            });
+        }
     }
 
     /**
-     * איפוס מצב לשוניות השיפור
+     * איפוס מצב הגהה וסיכום
      */
     resetState() {
         this.enhancementPerformed = false;
         this.summaryPerformed = false;
 
+        // איפוס הגהה
         if (this.enhanceModeSelect) this.enhanceModeSelect.value = 'default';
         if (this.enhanceCustomPromptContainer) this.enhanceCustomPromptContainer.style.display = 'none';
         if (this.enhanceCustomPrompt) this.enhanceCustomPrompt.value = '';
+        if (this.enhancedResult) this.enhancedResult.innerHTML = '';
 
-        if (this.enhancedResult) this.enhancedResult.value = '';
-        if (this.summaryResult) this.summaryResult.value = '';
-
-        // איפוס תיבת פרומפט חופשי
-        if (this.customPrompt) this.customPrompt.value = '';
-        if (this.customPromptContainer) this.customPromptContainer.style.display = 'none';
+        // איפוס סיכום
         if (this.summaryLengthSelect) this.summaryLengthSelect.value = 'medium';
+        if (this.customPromptContainer) this.customPromptContainer.style.display = 'none';
+        if (this.customPrompt) this.customPrompt.value = '';
+        if (this.summaryResult) this.summaryResult.innerHTML = '';
+
+        // עצירת תהליכים רצים
+        if (this.currentProcessingAbortController) {
+            this.currentProcessingAbortController.abort();
+            this.currentProcessingAbortController = null;
+        }
     }
+
     /**
-     * חלוקת טקסט ארוך לחלקים
-     * @param {string} text - הטקסט המלא
-     * @param {number} maxTokens - מספר מקסימלי של תווים בכל חלק
-     * @returns {string[]} מערך של חלקים
+     * חלוקת טקסט ארוך לחלקים חכמה
      */
-    splitTextIntoChunks(text, maxTokens = 4000) {
-        // אם הטקסט קצר מספיק, החזר אותו כמו שהוא
+    splitTextIntoChunks(text, maxTokens = 3500) {
         if (text.length <= maxTokens) {
             return [text];
         }
 
-        // חלוקה לפסקאות
         const paragraphs = text.split('\n\n');
         const chunks = [];
         let currentChunk = '';
 
-        // בניית חלקים מהפסקאות
         for (const paragraph of paragraphs) {
-            // אם הוספת הפסקה תחרוג מהגודל המקסימלי
             if (currentChunk.length + paragraph.length + 2 > maxTokens) {
-                // שמירת החלק הנוכחי (אם לא ריק)
                 if (currentChunk.length > 0) {
-                    chunks.push(currentChunk);
+                    chunks.push(currentChunk.trim());
                     currentChunk = '';
                 }
 
-                // אם הפסקה עצמה ארוכה מדי, חלק אותה לתתי-חלקים
                 if (paragraph.length > maxTokens) {
                     let tempParagraph = paragraph;
                     while (tempParagraph.length > 0) {
-                        // חיפוש נקודת סיום משפט בגבולות המגבלה
                         let endIndex = maxTokens;
-                        while (endIndex > 0 && tempParagraph[endIndex] !== '.' &&
-                            tempParagraph[endIndex] !== '!' && tempParagraph[endIndex] !== '?') {
+                        while (endIndex > 0 && 
+                               tempParagraph[endIndex] !== '.' &&
+                               tempParagraph[endIndex] !== '!' && 
+                               tempParagraph[endIndex] !== '?' &&
+                               tempParagraph[endIndex] !== '\n') {
                             endIndex--;
                         }
 
-                        // אם לא נמצאה נקודת סיום, פשוט חתוך במגבלה
                         if (endIndex === 0) {
                             endIndex = Math.min(maxTokens, tempParagraph.length);
                         } else {
-                            // כלול את סימן הפיסוק
                             endIndex++;
                         }
 
-                        chunks.push(tempParagraph.substring(0, endIndex));
+                        chunks.push(tempParagraph.substring(0, endIndex).trim());
                         tempParagraph = tempParagraph.substring(endIndex).trim();
                     }
                 } else {
                     currentChunk = paragraph;
                 }
             } else {
-                // הוסף הפסקה לחלק הנוכחי
                 if (currentChunk.length > 0) {
                     currentChunk += '\n\n';
                 }
@@ -193,283 +177,166 @@ class EnhancementHandler {
             }
         }
 
-        // הוסף את החלק האחרון אם קיים
         if (currentChunk.length > 0) {
-            chunks.push(currentChunk);
+            chunks.push(currentChunk.trim());
         }
 
         return chunks;
     }
 
     /**
-     * ביצוע הגהה חכמה על התמלול - עם תמיכה בטקסטים ארוכים
+     * ביצוע הגהה חכמה
      */
     async performEnhancement() {
-        if (!this.GROQ_API_KEY) {
-            alert('נא להזין מפתח API של Groq בהגדרות כדי להשתמש בהגהה חכמה.');
+        const provider = this.enhanceProviderSelect?.value || 'openai';
+        const apiKey = this.API_KEYS[provider];
+
+        if (!apiKey) {
+            alert(`נא להזין מפתח API של ${this.getProviderName(provider)} בהגדרות`);
             return;
         }
 
         const text = this.ui.transcriptionResult?.value;
         if (!text || !this.enhancedResult || !this.enhanceTabBtn) return;
 
-        // עדכון ממשק בזמן טיפול
+        // עדכון ממשק
         this.enhanceTabBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> מגיה...';
-        this.enhancedResult.value = "ממתין להגיה ...";
+        this.enhancedResult.innerHTML = '<div class="processing-message"><i class="fas fa-cog fa-spin"></i> מתחיל הגהה חכמה...</div>';
 
-        // פרומפט ברירת מחדל
-        const defaultPrompt = `הטקסט הבא הוא תמלול חופשי או טקסט לא ערוך בעברית.
-    
-    אנא בצע עליו עריכה לשונית וארגונית מלאה ("הגהה חכמה") הכוללת את הפעולות הבאות:
-    
-    - תקן שגיאות כתיב, תחביר ופיסוק
-    - הפוך את הטקסט לברור, זורם ונעים לקריאה בעברית תקנית בלבד
-    - סדר את הטקסט בפסקאות ברורות לפי נושאים
-    - הסר חזרות מיותרות וניסוחים מסורבלים
-    - אל תדלג על רעיונות חשובים ולא על חלקים משמעותיים
-    - שמור על משמעות הדברים המקורית כפי שנאמרו
-    - אל תתרגם, אל תכתוב באנגלית, ואל תשתמש בביטויים לועזיים כלל
-    - התוצאה הסופית צריכה להיות טקסט עברי ערוך, רהוט, קריא ומובנה — מוכן לפרסום`;
-
-        // בדיקה אם נבחר פרומפט חופשי
-        const useCustomPrompt = this.enhanceModeSelect?.value === 'custom';
-        const userPrompt = this.enhanceCustomPrompt?.value?.trim();
-        const promptPrefix = useCustomPrompt && userPrompt
-            ? userPrompt
-            : defaultPrompt;
-
-        // חלוקת הטקסט לחלקים אם הוא ארוך מדי
-        const textChunks = this.splitTextIntoChunks(text, 3500); // 3500 תווים לכל היותר
-        let enhancedResult = '';
+        // יצירת AbortController לביטול
+        this.currentProcessingAbortController = new AbortController();
 
         try {
-            // עיבוד כל חלק בנפרד
+            // קבלת הפרומפט
+            const prompt = this.getEnhancementPrompt();
+            
+            // חלוקת הטקסט
+            const textChunks = this.splitTextIntoChunks(text, 3500);
+            
+            if (textChunks.length > 1) {
+                this.enhancedResult.innerHTML = `<div class="processing-message"><i class="fas fa-cut"></i> מחלק טקסט ל-${textChunks.length} חלקים...</div>`;
+            }
+
+            let enhancedResult = '';
+
             for (let i = 0; i < textChunks.length; i++) {
-                // עדכון הממשק לגבי ההתקדמות
-                this.enhancedResult.value = `מעבד חלק ${i + 1} מתוך ${textChunks.length}...`;
-
-                // הכנת הפרומפט המלא עם הטקסט הנוכחי
-                const promptText = `${promptPrefix}\n\nהטקסט לעריכה (חלק ${i + 1} מתוך ${textChunks.length}):\n"""\n${textChunks[i]}\n"""`;
-
-                // שליחה ל-API
-                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${this.GROQ_API_KEY}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        model: "llama3-70b-8192",
-                        messages: [
-                            {
-                                role: "system",
-                                content: promptText
-                            }
-                        ],
-                        temperature: 0.2
-                    })
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(`שגיאת API: ${response.status} - ${error.error?.message || 'שגיאה לא ידועה'}`);
+                if (this.currentProcessingAbortController.signal.aborted) {
+                    return;
                 }
 
-                const data = await response.json();
-                const result = data?.choices?.[0]?.message?.content;
+                this.enhancedResult.innerHTML = `<div class="processing-message"><i class="fas fa-magic fa-spin"></i> מעבד חלק ${i + 1} מתוך ${textChunks.length}...</div>`;
 
+                const chunkPrompt = textChunks.length > 1 
+                    ? `${prompt}\n\nחלק ${i + 1} מתוך ${textChunks.length}:\n${textChunks[i]}`
+                    : `${prompt}\n\n${textChunks[i]}`;
+
+                const result = await this.callAI(provider, apiKey, chunkPrompt, this.currentProcessingAbortController.signal);
+                
                 if (result) {
-                    // הוספת החלק המוגה לתוצאה המלאה
                     enhancedResult += (enhancedResult ? '\n\n' : '') + result;
+                }
+
+                // עיכוב קטן בין בקשות
+                if (i < textChunks.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
 
-            // הצגת התוצאה הסופית
-            this.enhancedResult.value = enhancedResult || "לא התקבל טקסט מתוקן.";
+            this.enhancedResult.innerHTML = this.formatTextWithMarkdown(enhancedResult || "לא התקבל טקסט מתוקן.");
             this.enhancementPerformed = true;
 
         } catch (err) {
-            this.enhancedResult.value = `שגיאה בעת ניסיון ההגהה: ${err.message}`;
-            console.error(err);
+            if (err.name === 'AbortError') {
+                this.enhancedResult.innerHTML = '<div class="error-message">התהליך בוטל על ידי המשתמש</div>';
+            } else {
+                this.enhancedResult.innerHTML = `<div class="error-message">שגיאה בהגהה: ${err.message}</div>`;
+                console.error(err);
+            }
         } finally {
             this.enhanceTabBtn.innerHTML = "הגהה חכמה";
+            this.currentProcessingAbortController = null;
         }
     }
 
-
+    /**
+     * ביצוע סיכום חכם
+     */
     async performSummary() {
-        if (!this.GROQ_API_KEY) {
-            alert('נא להזין מפתח API של Groq בהגדרות כדי להשתמש בהגהה חכמה.');
+        const provider = this.summaryProviderSelect?.value || 'openai';
+        const apiKey = this.API_KEYS[provider];
+
+        if (!apiKey) {
+            alert(`נא להזין מפתח API של ${this.getProviderName(provider)} בהגדרות`);
             return;
         }
+
         const text = this.ui.transcriptionResult?.value;
-
         if (!text) {
-            alert('אין טקסט לסיכום. נא להזין טקסט תחילה.');
+            alert('אין טקסט לסיכום');
             return;
         }
 
-        if (!this.summaryResult || !this.summaryTabBtn || !this.generateSummaryBtn) {
-            console.error('חסרים אלמנטים נדרשים לסיכום');
-            return;
-        }
-
-        // הצגת אייקון טעינה 
+        // עדכון ממשק
         this.summaryTabBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> מסכם...';
         this.generateSummaryBtn.disabled = true;
         this.generateSummaryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> מעבד...';
-        this.summaryResult.value = "ממתין לתגובה מהשירות...";
+        this.summaryResult.innerHTML = '<div class="processing-message"><i class="fas fa-brain fa-spin"></i> מתחיל סיכום חכם...</div>';
 
-        // קבלת ערך הבחירה מהתפריט הנפתח
-        const summaryLength = this.summaryLengthSelect?.value || "medium";
-        console.log('סוג סיכום נבחר:', summaryLength);
-
-        // פרומפטים מובנים לפי אורך
-        const prompts = {
-            short: `סכם את הטקסט הבא בעברית פשוטה וקצרה מאוד. כלול רק את הרעיונות המרכזיים ביותר בפסקה אחת.`,
-            medium: `סכם את הטקסט הבא בעברית פשוטה וברורה. חלק את הסיכום לפסקאות לפי נושאים. התמקד ברעיונות העיקריים והנקודות המרכזיות.`,
-            long: `סכם את הטקסט הבא בעברית מפורטת, ברורה וזורמת. סדר את הסיכום לפי נושאים עם כותרות ביניים, פסקאות נפרדות, ודיוק בנקודות העיקריות. נסח את הדברים בצורה ערוכה, ברורה ונעימה לקריאה, בלי לדלג על פרטים חשובים.`,
-            custom: `עבד את הטקסט הבא לפי ההנחיות שתקבל.`
-        };
-
-        // קביעת תוכן הפרומפט בהתאם לבחירה
-        let promptPrefix;
-
-        if (summaryLength === 'custom' && this.customPrompt) {
-            // שימוש בפרומפט החופשי שהוקלד
-            promptPrefix = this.customPrompt.value.trim();
-            if (!promptPrefix) {
-                // אם הפרומפט החופשי ריק, השתמש בברירת מחדל
-                promptPrefix = prompts.medium;
-                console.log('פרומפט חופשי ריק, משתמש בברירת מחדל');
-            }
-        } else {
-            // שימוש בפרומפט מוגדר מראש
-            promptPrefix = prompts[summaryLength] || prompts.medium;
-            console.log('משתמש בפרומפט מובנה:', summaryLength);
-        }
-
-        // חלוקת הטקסט לחלקים אם הוא ארוך מדי
-        const textChunks = this.splitTextIntoChunks(text, 3500); // מגביל ל-3500 תווים לבטיחות
-        let summaryResult = '';
+        // יצירת AbortController לביטול
+        this.currentProcessingAbortController = new AbortController();
 
         try {
-            // אם יש יותר מחלק אחד, נעבד כל אחד בנפרד ואז נסכם את הסיכומים
+            // קבלת הפרומפט
+            const prompt = this.getSummaryPrompt();
+            
+            // חלוקת הטקסט
+            const textChunks = this.splitTextIntoChunks(text, 3500);
+            let summaryResult = '';
+
             if (textChunks.length > 1) {
-                // סיכום ראשוני לכל חלק
+                this.summaryResult.innerHTML = `<div class="processing-message"><i class="fas fa-cut"></i> מחלק טקסט ל-${textChunks.length} חלקים...</div>`;
+                
+                // סיכום חלקי
                 const chunkSummaries = [];
 
                 for (let i = 0; i < textChunks.length; i++) {
-                    // עדכון הממשק
-                    this.summaryResult.value = `מסכם חלק ${i + 1} מתוך ${textChunks.length}...`;
-
-                    // סיכום החלק הנוכחי
-                    const promptContent = `${promptPrefix}\n\nזהו חלק ${i + 1} מתוך ${textChunks.length} של טקסט ארוך. סכם חלק זה בנפרד:\n\n${textChunks[i]}`;
-
-                    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${this.GROQ_API_KEY}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            model: "llama3-70b-8192",
-                            messages: [
-                                {
-                                    role: "system",
-                                    content: promptContent
-                                }
-                            ],
-                            temperature: 0.3
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`שגיאת שרת: ${response.status} ${response.statusText}`);
+                    if (this.currentProcessingAbortController.signal.aborted) {
+                        return;
                     }
 
-                    const data = await response.json();
-                    const chunkSummary = data?.choices?.[0]?.message?.content;
+                    this.summaryResult.innerHTML = `<div class="processing-message"><i class="fas fa-compress fa-spin"></i> מסכם חלק ${i + 1} מתוך ${textChunks.length}...</div>`;
+
+                    const chunkPrompt = `${prompt}\n\nחלק ${i + 1} מתוך ${textChunks.length}:\n${textChunks[i]}`;
+                    const chunkSummary = await this.callAI(provider, apiKey, chunkPrompt, this.currentProcessingAbortController.signal);
 
                     if (chunkSummary) {
                         chunkSummaries.push(chunkSummary);
                     }
+
+                    if (i < textChunks.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
                 }
 
-                // עכשיו סיכום מסכם לכל החלקים יחד
+                // סיכום סופי
                 if (chunkSummaries.length > 0) {
-                    this.summaryResult.value = `יוצר סיכום סופי מכל החלקים...`;
+                    this.summaryResult.innerHTML = '<div class="processing-message"><i class="fas fa-magic fa-spin"></i> יוצר סיכום סופי...</div>';
 
-                    const combinedSummaries = chunkSummaries.join("\n\n--- חלק נוסף ---\n\n");
-                    const finalPrompt = `הנה סיכומים נפרדים של חלקים שונים מטקסט ארוך יותר. 
-                    אנא שלב אותם לסיכום אחד קוהרנטי וזורם, בהתאם להנחיות הבאות:
-                    ${promptPrefix}
-                    
-                    הסיכומים הנפרדים:
-                    ${combinedSummaries}`;
+                    const combinedSummaries = chunkSummaries.join("\n\n");
+                    const finalPrompt = `שלב את הסיכומים הבאים לסיכום אחד קוהרנטי:\n\n${combinedSummaries}`;
 
-                    const finalResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${this.GROQ_API_KEY}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            model: "llama3-70b-8192",
-                            messages: [
-                                {
-                                    role: "system",
-                                    content: finalPrompt
-                                }
-                            ],
-                            temperature: 0.3
-                        })
-                    });
-
-                    if (!finalResponse.ok) {
-                        throw new Error(`שגיאת שרת בסיכום הסופי: ${finalResponse.status}`);
-                    }
-
-                    const finalData = await finalResponse.json();
-                    summaryResult = finalData?.choices?.[0]?.message?.content || "לא התקבל סיכום סופי.";
-                } else {
-                    throw new Error("לא הצלחנו לקבל סיכומים לחלקי הטקסט");
+                    summaryResult = await this.callAI(provider, apiKey, finalPrompt, this.currentProcessingAbortController.signal);
                 }
             } else {
-                // אם יש רק חלק אחד, נסכם אותו ישירות
-                const promptContent = `${promptPrefix}\n\n${text}`;
-
-                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${this.GROQ_API_KEY}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        model: "llama3-70b-8192",
-                        messages: [
-                            {
-                                role: "system",
-                                content: promptContent
-                            }
-                        ],
-                        temperature: 0.3
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`שגיאת שרת: ${response.status} ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                summaryResult = data?.choices?.[0]?.message?.content || "לא התקבל סיכום.";
+                // טקסט קצר - סיכום ישיר
+                const fullPrompt = `${prompt}\n\n${text}`;
+                summaryResult = await this.callAI(provider, apiKey, fullPrompt, this.currentProcessingAbortController.signal);
             }
 
-            // הצגת התוצאה הסופית
-            this.summaryResult.value = summaryResult;
+            this.summaryResult.innerHTML = this.formatTextWithMarkdown(summaryResult || "לא התקבל סיכום.");
             this.summaryPerformed = true;
 
-            // החלפת הטאב הפעיל לסיכום
+            // מעבר לטאב הסיכום
             const summaryTabBtn = document.querySelector('[data-result-tab="summary"]');
             const summaryTabContent = document.getElementById('summary-content');
 
@@ -482,21 +349,198 @@ class EnhancementHandler {
             }
 
         } catch (err) {
-            console.error('שגיאה בתהליך הסיכום:', err);
-            this.summaryResult.value = `שגיאה בעת ניסיון הסיכום: ${err.message}`;
-            if (this.ui && typeof this.ui.showError === 'function') {
-                this.ui.showError(err.message);
+            if (err.name === 'AbortError') {
+                this.summaryResult.innerHTML = '<div class="error-message">התהליך בוטל על ידי המשתמש</div>';
+            } else {
+                console.error('שגיאה בסיכום:', err);
+                this.summaryResult.innerHTML = `<div class="error-message">שגיאה בסיכום: ${err.message}</div>`;
             }
         } finally {
-            // איפוס כפתורים וטאבים
-            if (this.summaryTabBtn) {
-                this.summaryTabBtn.innerHTML = "סיכום AI";
-            }
-            if (this.generateSummaryBtn) {
-                this.generateSummaryBtn.disabled = false;
-                this.generateSummaryBtn.innerHTML = '<i class="fas fa-magic"></i> צור סיכום';
-            }
+            this.summaryTabBtn.innerHTML = "סיכום AI";
+            this.generateSummaryBtn.disabled = false;
+            this.generateSummaryBtn.innerHTML = '<i class="fas fa-magic"></i> צור סיכום';
+            this.currentProcessingAbortController = null;
         }
+    }
+
+    /**
+     * קבלת פרומפט הגהה
+     */
+    getEnhancementPrompt() {
+        const mode = this.enhanceModeSelect?.value || 'default';
+        
+        if (mode === 'custom' && this.enhanceCustomPrompt?.value?.trim()) {
+            return this.enhanceCustomPrompt.value.trim();
+        }
+
+        return `הטקסט הבא הוא תמלול חופשי בעברית. בצע עליו הגהה מלאה:
+
+🔧 משימות הגהה:
+• תקן שגיאות כתיב, תחביר ופיסוק
+• הפוך את הטקסט לזורם ונעים לקריאה
+• סדר בפסקאות ברורות לפי נושאים
+• הסר חזרות מיותרות וביטויים מסורבלים
+• שמור על המשמעות המקורית של הדברים
+• השתמש בעברית תקנית בלבד
+
+📝 עקרונות עיצוב:
+• הוסף כותרות משנה רלוונטיות (##)
+• השתמש ברשימות מסודרות בהתאם לצורך
+• הדגש נקודות חשובות עם **טקסט מודגש**
+• הוסף אמוג'ים רלוונטיים לשיפור הקריאות
+
+התוצאה צריכה להיות טקסט ערוך, מובנה וקריא.`;
+    }
+
+    /**
+     * קבלת פרומפט סיכום
+     */
+    getSummaryPrompt() {
+        const length = this.summaryLengthSelect?.value || 'medium';
+        
+        if (length === 'custom' && this.customPrompt?.value?.trim()) {
+            return this.customPrompt.value.trim();
+        }
+
+        const prompts = {
+            short: `סכם את הטקסט הבא בעברית קצרה וחדה. כלול רק את הרעיונות המרכזיים ביותר:
+• הצג את העיקרי בפסקה אחת
+• הדגש נקודות מפתח עם **טקסט מודגש**
+• השתמש באמוג'ים רלוונטיים`,
+
+            medium: `סכם את הטקסט הבא בעברית ברורה ומאורגנת:
+• חלק לפסקאות לפי נושאים
+• השתמש בכותרות משנה (##) לנושאים עיקריים
+• הדגש נקודות חשובות עם **טקסט מודגש**
+• הוסף אמוג'ים רלוונטיים לשיפור הקריאות
+• שמור על איזון בין פירוט לתמציתיות`,
+
+            long: `צור סיכום מפורט ומובנה של הטקסט הבא:
+• חלק לסעיפים עם כותרות משנה ברורות (##)
+• השתמש ברשימות מסודרות לנקודות מרובות
+• הוסף **הדגשות** לנקודות חשובות
+• כלול אמוג'ים רלוונטיים
+• שמור על הקשר מלא ופרטים משמעותיים
+• סיים עם סיכום של המסקנות העיקריות`
+        };
+
+        return prompts[length] || prompts.medium;
+    }
+
+    /**
+     * קריאה לשירות AI
+     */
+    async callAI(provider, apiKey, prompt, signal) {
+        const apis = {
+            openai: {
+                url: 'https://api.openai.com/v1/chat/completions',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: {
+                    model: 'gpt-3.5-turbo',
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0.3
+                }
+            },
+            groq: {
+                url: 'https://api.groq.com/openai/v1/chat/completions',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: {
+                    model: 'llama3-70b-8192',
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0.3
+                }
+            },
+            anthropic: {
+                url: 'https://api.anthropic.com/v1/messages',
+                headers: {
+                    'x-api-key': apiKey,
+                    'Content-Type': 'application/json',
+                    'anthropic-version': '2023-06-01'
+                },
+                body: {
+                    model: 'claude-3-sonnet-20240229',
+                    max_tokens: 4000,
+                    messages: [{ role: 'user', content: prompt }]
+                }
+            }
+        };
+
+        const config = apis[provider];
+        if (!config) {
+            throw new Error(`ספק AI לא נתמך: ${provider}`);
+        }
+
+        const response = await fetch(config.url, {
+            method: 'POST',
+            headers: config.headers,
+            body: JSON.stringify(config.body),
+            signal
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(`שגיאת API (${response.status}): ${error.error?.message || 'שגיאה לא ידועה'}`);
+        }
+
+        const data = await response.json();
+
+        // טיפול בתגובות שונות לפי ספק
+        if (provider === 'anthropic') {
+            return data.content?.[0]?.text || '';
+        } else {
+            return data.choices?.[0]?.message?.content || '';
+        }
+    }
+
+    /**
+     * פורמט טקסט עם Markdown
+     */
+    formatTextWithMarkdown(text) {
+        if (!text) return '';
+
+        return text
+            // כותרות משנה
+            .replace(/^## (.+)$/gm, '<h3 class="section-title">$1</h3>')
+            .replace(/^# (.+)$/gm, '<h2 class="main-title">$1</h2>')
+            
+            // טקסט מודגש
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="highlight">$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            
+            // רשימות
+            .replace(/^• (.+)$/gm, '<li class="bullet-item">$1</li>')
+            .replace(/^- (.+)$/gm, '<li class="bullet-item">$1</li>')
+            
+            // שורות ריקות לפסקאות
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/^/, '<p>')
+            .replace(/$/, '</p>')
+            
+            // קווים מפרידים
+            .replace(/^---$/gm, '<hr class="section-divider">')
+            
+            // ניקוי HTML שבור
+            .replace(/<p><\/p>/g, '')
+            .replace(/<p>(<h[23])/g, '$1')
+            .replace(/(<\/h[23]>)<\/p>/g, '$1');
+    }
+
+    /**
+     * קבלת שם ספק
+     */
+    getProviderName(provider) {
+        const names = {
+            openai: 'OpenAI',
+            groq: 'Groq',
+            anthropic: 'Anthropic Claude'
+        };
+        return names[provider] || provider;
     }
 }
 
