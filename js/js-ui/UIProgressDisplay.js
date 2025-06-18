@@ -1,5 +1,5 @@
 /**
- * מודול לטיפול בתצוגת התקדמות בממשק - עם זמן מוערך מעודכן לפי הנתונים שלך
+ * מודול לטיפול בתצוגת התקדמות בממשק - עם הערכת זמן ועלות מעודכנת
  */
 class UIProgressDisplay extends UIAPIManagement {
     /**
@@ -41,65 +41,59 @@ class UIProgressDisplay extends UIAPIManagement {
     }
 
     /**
-     * מעדכן את הזמן המשוער לתמלול בהתבסס על הנתונים שלך
+     * מעדכן את הזמן והעלות המשוערים לתמלול בהתבסס על הנתונים החדשים
      * @param {number} durationInSeconds - אורך האודיו בשניות (לא בשימוש כרגע)
      */
     updateEstimatedTime(durationInSeconds) {
         if (!this.timeEstimate || !this.selectedFile) return;
 
-        // הערכת זמן מבוססת הנתונים שלך: 53.9MB לקח 8:28 דקות (508 שניות)
-        // זה נותן לנו קצב של כ-0.11MB לשנייה
         const fileSizeMB = this.selectedFile.size / (1024 * 1024);
         
-        // נתונים מבוססי הניסיון שלך:
-        // קובץ 53.9MB = 508 שניות = 0.106MB לשנייה
-        // אבל זה כולל חילוק ל-3 חלקים, אז נתחשב גם בזה
+        // חישוב זמן תמלול בהתבסס על הנתונים שלך:
+        // 30MB = 6 דקות (360 שניות)
+        // 20MB = 4.5 דקות (270 שניות)
+        // זה נותן לנו קצב של בערך 12 שניות לכל MB
         
-        const needsSplitting = fileSizeMB > 24;
         let estimatedSeconds;
         
-        if (needsSplitting) {
-            // קובץ גדול שיחולק
-            const chunks = Math.ceil(fileSizeMB / 24);
-            
-            // זמן חילוק: כ-10 שניות + 2 שניות לכל MB
-            const splittingTime = Math.max(10, fileSizeMB * 2);
-            
-            // זמן תמלול: בהתבסס על הנתונים שלך - כ-9 שניות לכל MB
-            const transcriptionTime = fileSizeMB * 9;
-            
-            // זמן נוסף לעיבוד מקבילי של חלקים
-            const parallelProcessingOverhead = chunks * 5;
-            
-            estimatedSeconds = splittingTime + transcriptionTime + parallelProcessingOverhead;
+        if (fileSizeMB <= 5) {
+            // קבצים קטנים - מהירים יותר
+            estimatedSeconds = Math.max(30, fileSizeMB * 8);
+        } else if (fileSizeMB <= 15) {
+            // קבצים בינוניים
+            estimatedSeconds = fileSizeMB * 10;
+        } else if (fileSizeMB <= 25) {
+            // קבצים גדולים
+            estimatedSeconds = fileSizeMB * 12;
         } else {
-            // קובץ קטן - מהיר יותר
-            if (fileSizeMB <= 5) {
-                // קבצים קטנים: כ-15 שניות + 3 שניות לכל MB
-                estimatedSeconds = 15 + (fileSizeMB * 3);
-            } else if (fileSizeMB <= 15) {
-                // קבצים בינוניים: כ-30 שניות + 4 שניות לכל MB
-                estimatedSeconds = 30 + (fileSizeMB * 4);
-            } else {
-                // קבצים גדולים אבל לא מחולקים: כ-45 שניות + 5 שניות לכל MB
-                estimatedSeconds = 45 + (fileSizeMB * 5);
-            }
+            // קבצים מאוד גדולים - הזמן גדל מעט יותר
+            estimatedSeconds = fileSizeMB * 14;
         }
 
-        // פורמט התצוגה
-        let displayText = this.formatTimeEstimate(estimatedSeconds);
+        // חישוב עלות משוערת
+        // OpenAI Whisper: $0.006 לדקה
+        const estimatedMinutes = estimatedSeconds / 60;
+        const costUSD = estimatedMinutes * 0.006;
+        const costILS = costUSD * 3.7; // שער דולר משוער
 
-        // הוספת הערה לקבצים גדולים
-        if (needsSplitting) {
-            const chunks = Math.ceil(fileSizeMB / 24);
-            displayText += ` (${chunks} חלקים)`;
+        // פורמט התצוגה - בדיקה שהעלות לא 0
+        const timeText = this.formatTimeEstimate(estimatedSeconds);
+        let costText;
+        
+        if (costUSD < 0.001) {
+            costText = 'פחות מ-0.01 ₪';
+        } else {
+            costText = `${costUSD.toFixed(3)} (${costILS.toFixed(2)} ₪)`;
         }
 
-        this.timeEstimate.textContent = displayText;
+        // עדכון התצוגה
+        this.timeEstimate.innerHTML = `
+            <strong>${timeText}</strong> | 
+            עלות משוערת: <strong>${costText}</strong>
+        `;
         
         // הוספת מידע נוסף בכלי עזרה
-        const speedEstimate = (fileSizeMB / estimatedSeconds).toFixed(2);
-        this.timeEstimate.title = `הערכה: ${fileSizeMB.toFixed(1)}MB ב-~${speedEstimate}MB/s`;
+        this.timeEstimate.title = `הערכה: ${fileSizeMB.toFixed(1)}MB | זמן: ${timeText} | עלות: ${costText}`;
     }
 
     /**

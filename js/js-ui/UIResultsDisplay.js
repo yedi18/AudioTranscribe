@@ -1,5 +1,5 @@
 /**
- * מודול לטיפול בהצגת תוצאות בממשק - עם תמיכה בהגהה וסיכום AI
+ * מודול לטיפול בהצגת תוצאות בממשק - עם תמיכה בהגהה וסיכום AI - תוקן
  */
 class UIResultsDisplay extends UIProgressDisplay {
     constructor() {
@@ -18,7 +18,7 @@ class UIResultsDisplay extends UIProgressDisplay {
         this.loadingSpinner.style.display = 'none';
         this.progressContainer.style.display = 'none';
 
-        // מציג את התמלול (ללא דוח בטקסט)
+        // מציג את התמלול
         this.transcriptionResult.value = transcription || "לא התקבל תמלול. נא לנסות שוב.";
 
         // אתחול מנהל הגהה וסיכום אם עדיין לא קיים
@@ -92,7 +92,6 @@ class UIResultsDisplay extends UIProgressDisplay {
                         newCopyBtn.style.background = '';
                     }, 2000);
                 }).catch(err => {
-                    console.error('שגיאה בהעתקה:', err);
                     alert('שגיאה בהעתקת הטקסט');
                 });
             } else {
@@ -157,11 +156,23 @@ class UIResultsDisplay extends UIProgressDisplay {
         if (originalTab && originalContent) {
             // הסרת active מכל הטאבים
             document.querySelectorAll('.result-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.result-tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.result-tab-content').forEach(tab => tab.classList.remove('active'));
             
             // הפעלת הטאב המקורי
             originalTab.classList.add('active');
             originalContent.classList.add('active');
+        }
+
+        // איפוס תוכן טאבי הגהה וסיכום
+        const enhancedResult = document.getElementById('enhanced-result');
+        const summaryResult = document.getElementById('summary-result');
+        
+        if (enhancedResult) {
+            enhancedResult.innerHTML = '<div class="processing-message"><i class="fas fa-magic"></i>לחץ על "בצע הגהה" כדי לשפר את הטקסט באמצעות AI</div>';
+        }
+        
+        if (summaryResult) {
+            summaryResult.innerHTML = '<div class="processing-message"><i class="fas fa-brain"></i>לחץ על "צור סיכום" כדי לקבל סיכום חכם של הטקסט</div>';
         }
     }
 
@@ -171,14 +182,14 @@ class UIResultsDisplay extends UIProgressDisplay {
      */
     onTranscribeClick() {
         // פונקציה זו תמולא בקובץ main.js
-        console.log("פונקציית onTranscribeClick צריכה להיות מוגדרת בקובץ main.js");
     }
 
+    /**
+     * עדכון כפתור התחלה מחדש לפי מקור הקובץ
+     */
     updateRestartButton() {
         const restartBtn = document.getElementById('new-btn');
         if (!restartBtn || !this.selectedFile?.source) return;
-
-        console.log('מקור הקובץ:', this.selectedFile?.source);
 
         // איפוס כל הקלאסים הקיימים ושמירה רק על btn
         restartBtn.className = 'btn new-btn';
@@ -217,6 +228,196 @@ class UIResultsDisplay extends UIProgressDisplay {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 };
         }
+    }
+
+    /**
+     * שחזור תמלול מההיסטוריה עם גישה מלאה לטאבים
+     */
+    restoreFromHistoryWithTabs(historyItem) {
+        // הסתרת ההיסטוריה
+        if (this.transcriptionHistory?.historyContainer) {
+            this.transcriptionHistory.historyContainer.style.display = 'none';
+        }
+
+        // מעבר לתצוגת התוצאות
+        this.uploadContainer.style.display = 'none';
+        this.resultContainer.style.display = 'block';
+        this.progressContainer.style.display = 'none';
+
+        // עדכון התמלול המקורי
+        if (this.transcriptionResult) {
+            this.transcriptionResult.value = historyItem.transcription || '';
+        }
+
+        // שחזור selectedFile מנתוני ההיסטוריה
+        this.selectedFile = {
+            name: historyItem.fileName,
+            source: historyItem.source,
+            size: historyItem.fileSize
+        };
+
+        // אתחול מנהל הגהה וסיכום אם עדיין לא קיים
+        if (!this.enhancementHandler && window.EnhancementHandler) {
+            this.enhancementHandler = new EnhancementHandler(this);
+        }
+
+        // שחזור תוכן הגהה אם קיים
+        if (historyItem.enhanced) {
+            const enhancedResult = document.getElementById('enhanced-result');
+            if (enhancedResult) {
+                enhancedResult.innerHTML = this.formatTextWithMarkdown(historyItem.enhanced);
+            }
+            
+            // הפעלת טאב הגהה
+            const enhancedTab = document.querySelector('[data-result-tab="enhanced"]');
+            if (enhancedTab) {
+                enhancedTab.style.display = 'flex';
+                enhancedTab.classList.remove('disabled');
+            }
+        }
+
+        // שחזור תוכן סיכום אם קיים
+        if (historyItem.summary) {
+            const summaryResult = document.getElementById('summary-result');
+            if (summaryResult) {
+                summaryResult.innerHTML = this.formatTextWithMarkdown(historyItem.summary);
+            }
+            
+            // הפעלת טאב סיכום
+            const summaryTab = document.querySelector('[data-result-tab="summary"]');
+            if (summaryTab) {
+                summaryTab.style.display = 'flex';
+                summaryTab.classList.remove('disabled');
+            }
+        }
+
+        // איפוס לטאב המקורי
+        const originalTab = document.querySelector('[data-result-tab="original"]');
+        const originalContent = document.getElementById('original-content');
+        
+        if (originalTab && originalContent) {
+            // הסרת active מכל הטאבים
+            document.querySelectorAll('.result-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.result-tab-content').forEach(tab => tab.classList.remove('active'));
+            
+            // הפעלת הטאב המקורי
+            originalTab.classList.add('active');
+            originalContent.classList.add('active');
+        }
+
+        // עדכון כפתור הפעולה
+        this.updateRestartButton();
+
+        // הוספת פונקציונליות העתקה
+        this.bindCopyFunctionality();
+
+        // הצגת הודעה על זמינות טאבים
+        this.showTabsAvailability(historyItem);
+
+        // גלילה לתוצאות
+        this.resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /**
+     * פורמט טקסט עם Markdown (העתקה מ-EnhancementHandler)
+     */
+    formatTextWithMarkdown(text) {
+        if (!text) return '';
+
+        return text
+            // כותרות משנה
+            .replace(/^## (.+)$/gm, '<h3 class="section-title">$1</h3>')
+            .replace(/^# (.+)$/gm, '<h2 class="main-title">$1</h2>')
+            
+            // טקסט מודגש
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="highlight">$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            
+            // רשימות
+            .replace(/^• (.+)$/gm, '<li class="bullet-item">$1</li>')
+            .replace(/^- (.+)$/gm, '<li class="bullet-item">$1</li>')
+            
+            // שורות ריקות לפסקאות
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/^/, '<p>')
+            .replace(/$/, '</p>')
+            
+            // קווים מפרידים
+            .replace(/^---$/gm, '<hr class="section-divider">')
+            
+            // ניקוי HTML שבור
+            .replace(/<p><\/p>/g, '')
+            .replace(/<p>(<h[23])/g, '$1')
+            .replace(/(<\/h[23]>)<\/p>/g, '$1');
+    }
+
+    /**
+     * הצגת זמינות טאבים
+     */
+    showTabsAvailability(historyItem) {
+        const hasEnhanced = !!(historyItem.enhanced);
+        const hasSummary = !!(historyItem.summary);
+        
+        if (!hasEnhanced || !hasSummary) {
+            let message = 'תמלול זה נטען מההיסטוריה. ';
+            const missing = [];
+            
+            if (!hasEnhanced) missing.push('הגהה חכמה');
+            if (!hasSummary) missing.push('סיכום AI');
+            
+            if (missing.length > 0) {
+                message += `ניתן ליצור: ${missing.join(' ו')} לתמלול זה.`;
+                this.showTemporaryNotification(message, 'info', 5000);
+            }
+        }
+    }
+
+    /**
+     * הצגת הודעה זמנית
+     */
+    showTemporaryNotification(message, type = 'info', duration = 3000) {
+        const notification = document.createElement('div');
+        notification.className = `temp-notification temp-notification-${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-info-circle"></i>
+            <span>${message}</span>
+        `;
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: ${type === 'info' ? '#17a2b8' : '#28a745'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1500;
+            max-width: 300px;
+            font-size: 14px;
+            animation: slideInRight 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease-out forwards';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, duration);
+    }
+
+    /**
+     * שחזור מההיסטוריה (תמיכה לאחור)
+     */
+    restoreFromHistory(historyItem) {
+        this.restoreFromHistoryWithTabs(historyItem);
     }
 }
 

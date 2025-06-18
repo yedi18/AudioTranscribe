@@ -11,10 +11,7 @@ class AudioSplitter {
      */
     static async splitBySize(audioFile, maxSizeBytes = 24 * 1024 * 1024, onProgress = null) {
         try {
-            console.log(`מחלק קובץ בגודל ${(audioFile.size / 1024 / 1024).toFixed(2)}MB לחלקים של ${(maxSizeBytes / 1024 / 1024).toFixed(2)}MB`);
-
             if (audioFile.size <= maxSizeBytes) {
-                console.log("הקובץ קטן מספיק - מחזיר אותו כמו שהוא");
                 if (onProgress) onProgress({ status: 'complete', progress: 100 });
                 return [audioFile];
             }
@@ -23,8 +20,6 @@ class AudioSplitter {
             const arrayBuffer = await audioFile.arrayBuffer();
             const totalSize = arrayBuffer.byteLength;
             const numChunks = Math.ceil(totalSize / maxSizeBytes);
-            
-            console.log(`מחלק ל-${numChunks} חלקים`);
 
             const chunks = [];
             
@@ -66,7 +61,6 @@ class AudioSplitter {
             return chunks;
 
         } catch (error) {
-            console.error('שגיאה בחילוק הקובץ:', error);
             throw error;
         }
     }

@@ -26,8 +26,6 @@ class Transcription {
                 { type: audioFile.type || 'audio/mpeg' }
             );
 
-            console.log(`🎧 שולח לOpenAI Whisper: ${audioFileClone.name}, גודל: ${(audioFileClone.size / 1024 / 1024).toFixed(2)}MB, סוג: ${audioFileClone.type}`);
-
             // יצירת FormData לשליחת הקובץ
             const formData = new FormData();
             formData.append("file", audioFileClone);
@@ -64,7 +62,6 @@ class Transcription {
             return text.trim();
 
         } catch (error) {
-            console.error('Error in OpenAI transcription:', error);
             throw error;
         }
     }
@@ -78,8 +75,6 @@ class Transcription {
      */
     static async transcribeLargeFile(audioFile, apiKey, onProgress = null) {
         try {
-            console.log(`מתחיל תמלול קובץ גדול: ${audioFile.name}, גודל: ${(audioFile.size / 1024 / 1024).toFixed(2)}MB`);
-
             // חילוק הקובץ לחלקים של 24MB
             const chunks = await AudioSplitter.splitBySize(audioFile, 24 * 1024 * 1024, (splitProgress) => {
                 if (onProgress) {
@@ -90,8 +85,6 @@ class Transcription {
                     });
                 }
             });
-
-            console.log(`הקובץ חולק ל-${chunks.length} חלקים`);
 
             // תמלול כל חלק בנפרד
             const transcriptions = [];
@@ -112,8 +105,6 @@ class Transcription {
                         totalChunks: chunks.length
                     });
                 }
-
-                console.log(`מתמלל חלק ${i + 1}/${chunks.length}: ${chunk.name} (${(chunk.size / 1024 / 1024).toFixed(2)}MB)`);
                 
                 try {
                     const transcription = await Transcription.transcribeSingle(chunk, apiKey);
@@ -125,7 +116,6 @@ class Transcription {
                     }
                     
                 } catch (chunkError) {
-                    console.error(`שגיאה בתמלול חלק ${i + 1}:`, chunkError);
                     transcriptions.push(`[שגיאה בתמלול חלק ${i + 1}: ${chunkError.message}]`);
                 }
             }
@@ -141,12 +131,9 @@ class Transcription {
             // חיבור כל התמלולים לטקסט אחד
             const fullTranscription = transcriptions.join(' ');
             
-            console.log(`תמלול הושלם. אורך טקסט: ${fullTranscription.length} תווים`);
-            
             return fullTranscription;
 
         } catch (error) {
-            console.error('שגיאה בתמלול קובץ גדול:', error);
             throw error;
         }
     }
@@ -163,8 +150,6 @@ class Transcription {
 
         if (audioFile.size <= maxSingleFileSize) {
             // קובץ קטן - תמלול רגיל
-            console.log('קובץ קטן, תמלול רגיל');
-            
             if (onProgress) {
                 onProgress({
                     status: 'transcribing',
@@ -186,7 +171,6 @@ class Transcription {
             return result;
         } else {
             // קובץ גדול - תמלול עם חילוק
-            console.log('קובץ גדול, תמלול עם חילוק');
             return await Transcription.transcribeLargeFile(audioFile, apiKey, onProgress);
         }
     }
@@ -233,12 +217,10 @@ class Transcription {
                     audio.src = URL.createObjectURL(audioFile);
                     audio.load();
                 } catch (error) {
-                    console.warn('לא ניתן לבדוק עם אלמנט אודיו, מניח שהקובץ תקין:', error);
                     resolve(true);
                 }
             });
         } catch (error) {
-            console.warn('שגיאה בבדיקת תקינות קובץ האודיו:', error);
             return true; // במקרה של ספק, נניח שהקובץ תקין
         }
     }

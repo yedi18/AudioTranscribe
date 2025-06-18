@@ -1,29 +1,17 @@
 /**
- * מודול לטיפול בממשק המשתמש - קובץ ראשי מעודכן לOpenAI בלבד
+ * מודול לטיפול בממשק המשתמש - קובץ ראשי מעודכן לכל הספקים
  */
 class UI extends UIResultsDisplay {
     constructor() {
         super();
-        console.log('מחלקת UI הוטענה בהצלחה - מעודכן לOpenAI Whisper');
+        // הסרת הלוג מהקונסטרקטור
     }
 }
 
-// הוספת פונקציית דיבוג לבדיקת localStorage
+// הוספת פונקציית דיבוג לבדיקת localStorage (מוסתרת)
 function debugLocalStorage() {
-    console.group('Local Storage Debug');
-
-    // בדיקת מפתח OpenAI
-    const openaiKey = localStorage.getItem('openai_api_key');
-    console.log('OpenAI API Key:', openaiKey ? 'Exists' : 'Not Found');
-
-    // הדפסת כל המפתחות ב-localStorage
-    console.log('All localStorage keys:');
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        console.log(`${key}: ${localStorage.getItem(key)}`);
-    }
-
-    console.groupEnd();
+    // הסרת כל הלוגים מהפונקציה
+    // הפונקציה עדיין קיימת אבל לא מדפיסה כלום
 }
 
 function resetUploadUI() {
@@ -37,7 +25,7 @@ function resetUploadUI() {
     this.errorMessage.style.display = 'none';
 }
 
-// הוספת פונקציית דיבוג לאירועים
+// הוספת פונקציית דיבוג לאירועים (מוסתרת)
 document.addEventListener('DOMContentLoaded', () => {
     const helpBtn = document.getElementById('help-btn');
     const helpPopup = document.getElementById('help-popup');
@@ -49,16 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function scrollToApiSettings() {
-        const apiSettingsElement = document.getElementById('api-settings');
-        if (apiSettingsElement) {
-            apiSettingsElement.scrollIntoView({ behavior: 'smooth' });
-            // פתיחת ההגדרות אם הן סגורות
-            const apiSettingsDetails = apiSettingsElement.querySelector('details');
-            if (apiSettingsDetails) {
-                apiSettingsDetails.open = true;
-            }
-            // סגירת תיבת העזרה
-            toggleHelpPopup();
+        const apiSettingsBtn = document.getElementById('api-settings-btn');
+        if (apiSettingsBtn) {
+            apiSettingsBtn.click(); // פתיחת popup ההגדרות
+            toggleHelpPopup(); // סגירת העזרה
         }
     }
 
@@ -75,10 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // הדפסת מפתחות localStorage בעת טעינת הדף
+    // הסרת הדפסת מפתחות localStorage בעת טעינת הדף
     debugLocalStorage();
 
-    // שיפור הטיפול בשמירת המפתח
+    // שיפור הטיפול בשמירת המפתח (עדיין עובד אבל ללא לוגים)
     const openaiInput = document.getElementById('openai-api-key');
     const saveOpenaiKeyBtn = document.getElementById('save-openai-key');
 
@@ -86,12 +68,35 @@ document.addEventListener('DOMContentLoaded', () => {
         saveOpenaiKeyBtn.addEventListener('click', () => {
             if (openaiInput) {
                 const apiKey = openaiInput.value.trim();
-                console.log('Saving OpenAI API Key', apiKey);
                 localStorage.setItem('openai_api_key', apiKey);
-                debugLocalStorage(); // הדפסת המצב לאחר השמירה
+                debugLocalStorage(); // עדיין קורא לפונקציה אבל היא לא מדפיסה
             }
         });
     }
+
+    // הוספת טיפול בשמירת שאר המפתחות
+    const apiKeys = [
+        { input: 'huggingface-api-key', key: 'huggingface_api_key', btn: 'save-huggingface-key' },
+        { input: 'groq-api-key', key: 'groq_api_key', btn: 'save-groq-key' },
+        { input: 'gemini-api-key', key: 'gemini_api_key', btn: 'save-gemini-key' },
+        { input: 'anthropic-api-key', key: 'anthropic_api_key', btn: 'save-anthropic-key' }
+    ];
+
+    apiKeys.forEach(({ input, key, btn }) => {
+        const inputElement = document.getElementById(input);
+        const btnElement = document.getElementById(btn);
+        
+        if (inputElement && btnElement) {
+            btnElement.addEventListener('click', () => {
+                const apiKey = inputElement.value.trim();
+                if (apiKey) {
+                    localStorage.setItem(key, apiKey);
+                } else {
+                    localStorage.removeItem(key);
+                }
+            });
+        }
+    });
 });
 
 // ייצוא המחלקה

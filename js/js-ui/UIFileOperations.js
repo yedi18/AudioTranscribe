@@ -1,10 +1,118 @@
 /**
- * מודול לטיפול בפעולות על קבצים בממשק - מעודכן עם בדיקת גודל 24MB
+ * מודול לטיפול בפעולות על קבצים בממשק - מעודכן עם בדיקת גודל 24MB והודעת אישור עלות
  */
 class UIFileOperations extends UIHandlers {
     constructor(ui) {
         super();
         this.ui = ui;
+        this.initCostConfirmationHandlers();
+    }
+
+    /**
+     * אתחול מטפלים לאישור עלות
+     */
+    initCostConfirmationHandlers() {
+        const confirmBtn = document.getElementById('confirm-transcription');
+        const cancelBtn = document.getElementById('cancel-transcription');
+        const dontShowAgain = document.getElementById('dont-show-cost-again');
+        const costPopup = document.getElementById('cost-confirmation-popup');
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', () => {
+                // שמירת העדפת "אל תציג שוב" אם נבחרה
+                if (dontShowAgain && dontShowAgain.checked) {
+                    localStorage.setItem('dont_show_cost_confirmation', 'true');
+                }
+                
+                // סגירת הpopup והמשך בתמלול
+                if (costPopup) {
+                    costPopup.style.display = 'none';
+                }
+                
+                // קריאה לפונקציית התמלול בפועל
+                if (this.pendingTranscriptionCallback) {
+                    this.pendingTranscriptionCallback();
+                    this.pendingTranscriptionCallback = null;
+                }
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                // סגירת הpopup וביטול התמלול
+                if (costPopup) {
+                    costPopup.style.display = 'none';
+                }
+                this.pendingTranscriptionCallback = null;
+            });
+        }
+
+        // סגירה בלחיצה מחוץ לpopup
+        if (costPopup) {
+            costPopup.addEventListener('click', (e) => {
+                if (e.target === costPopup) {
+                    costPopup.style.display = 'none';
+                    this.pendingTranscriptionCallback = null;
+                }
+            });
+        }
+    }
+
+    /**
+     * בדיקה האם להציג אישור עלות
+     * @param {File} file - הקובץ לבדיקה
+     * @param {Function} transcriptionCallback - פונקציה לביצוע התמלול
+     * @returns {boolean} - האם הוצג אישור עלות
+     */
+    checkAndShowCostConfirmation(file, transcriptionCallback) {
+        // בדיקה אם המשתמש ביקש לא להציג שוב
+        const dontShow = localStorage.getItem('dont_show_cost_confirmation') === 'true';
+        if (dontShow) {
+            return false;
+        }
+
+        const fileSizeMB = file.size / (1024 * 1024);
+        const shouldShowConfirmation = fileSizeMB > 5; // הצגת אישור לקבצים מעל 5MB
+
+        if (shouldShowConfirmation) {
+            this.showCostConfirmation(file, transcriptionCallback);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * הצגת חלון אישור עלות
+     * @param {File} file - הקובץ לתמלול
+     * @param {Function} transcriptionCallback - פונקציה לביצוע התמלול
+     */
+    showCostConfirmation(file, transcriptionCallback) {
+        this.pendingTranscriptionCallback = transcriptionCallback;
+
+        const costPopup = document.getElementById('cost-confirmation-popup');
+        const fileNameSpan = document.getElementById('cost-file-name');
+        const fileSizeSpan = document.getElementById('cost-file-size');
+        const estimatedTimeSpan = document.getElementById('cost-estimated-time');
+        const costUsdSpan = document.getElementById('cost-usd');
+        const costIlsSpan = document.getElementById('cost-ils');
+
+        if (!costPopup) return;
+
+        // חישוב נתוני עלות
+        const fileSizeMB = file.size / (1024 * 1024);
+        const costInfo = AudioSplitter.estimateCost(file);
+        const timeInfo = AudioSplitter.estimateTranscriptionTime(file);
+
+        // עדכון נתונים בpopup
+        if (fileNameSpan) fileNameSpan.textContent = file.name;
+        if (fileSizeSpan) fileSizeSpan.textContent = this.formatFileSize(file.size);
+        if (estimatedTimeSpan) estimatedTimeSpan.textContent = timeInfo.displayText;
+        if (costUsdSpan) costUsdSpan.textContent = costInfo.estimatedCostUSD.toFixed(3);
+        if (costIlsSpan) costIlsSpan.textContent = costInfo.estimatedCostILS.toFixed(2);
+
+        // הצגת הpopup
+        costPopup.style.display = 'flex';
     }
 
     /**
@@ -36,18 +144,18 @@ class UIFileOperations extends UIHandlers {
                 const sizeWarningBox = document.createElement('div');
                 sizeWarningBox.className = 'size-warning-message';
                 sizeWarningBox.style.cssText = `
-                    background: #fff3cd;
-                    border: 1px solid #ffeb3b;
+                    background: #e8f4fd;
+                    border: 1px solid #007bff;
                     border-radius: 8px;
                     padding: 15px;
                     margin: 15px 0;
-                    color: #856404;
+                    color: #004085;
                     font-size: 14px;
                 `;
                 
                 sizeWarningBox.innerHTML = `
                     <div style="display: flex; align-items: flex-start; gap: 10px;">
-                        <i class="fas fa-info-circle" style="color: #ff9800; font-size: 18px; margin-top: 2px;"></i>
+                        <i class="fas fa-info-circle" style="color: #007bff; font-size: 18px; margin-top: 2px;"></i>
                         <div>
                             <strong>קובץ גדול מזוהה (${fileSizeMB.toFixed(1)}MB)</strong><br>
                             הקובץ יחולק ל-<strong>${expectedChunks} חלקים</strong> לצורך התמלול<br>
@@ -83,11 +191,6 @@ class UIFileOperations extends UIHandlers {
      * @param {string} source - מקור הקובץ ('upload', 'recording', 'youtube')
      */
     handleNewFile(file, source) {
-        console.log("מתחיל טיפול בקובץ חדש ממקור:", source,
-            "שם:", file.name,
-            "גודל:", file.size, "bytes",
-            "סוג:", file.type);
-
         try {
             // שמירת הקובץ והמקור
             this.selectedFile = file;
@@ -97,8 +200,6 @@ class UIFileOperations extends UIHandlers {
             if (this.fileName) {
                 this.fileName.textContent = file.name || (source === 'recording' ? 'הקלטה חדשה' :
                     (source === 'youtube' ? 'אודיו מיוטיוב' : 'קובץ לא מזוהה'));
-            } else {
-                console.error("אלמנט fileName לא נמצא");
             }
 
             if (this.fileSize) {
@@ -107,27 +208,19 @@ class UIFileOperations extends UIHandlers {
                 
                 // הוספת התרעה אם הקובץ גדול
                 if (fileSizeMB > 24) {
-                    this.fileSize.innerHTML = `${sizeText} <span style="color: #ff9800; font-weight: bold;">(יחולק לחלקים)</span>`;
+                    this.fileSize.innerHTML = `${sizeText} <span style="color: #007bff; font-weight: bold;">(יחולק לחלקים)</span>`;
                 } else {
                     this.fileSize.textContent = sizeText;
                 }
-            } else {
-                console.error("אלמנט fileSize לא נמצא");
             }
 
             // הצגת אזור מידע הקובץ עם אנימציה
             if (this.fileInfo) {
-                console.log("מציג fileInfo");
                 this.fileInfo.style.display = 'block';
-            } else {
-                console.error("אלמנט fileInfo לא נמצא");
             }
 
             if (this.uploadArea) {
-                console.log("מסתיר uploadArea");
                 this.uploadArea.style.display = 'none';
-            } else {
-                console.error("אלמנט uploadArea לא נמצא");
             }
 
             if (this.resultContainer) {
@@ -141,15 +234,12 @@ class UIFileOperations extends UIHandlers {
             const downloadBtn = document.getElementById('download-source-btn');
             if (downloadBtn) {
                 if (source === 'recording' || source === 'youtube') {
-                    console.log("מציג כפתור הורדה עבור קובץ ממקור:", source);
                     downloadBtn.href = URL.createObjectURL(file);
                     downloadBtn.download = file.name || 'audio.mp3';
                     downloadBtn.style.display = 'inline-block';
                 } else {
                     downloadBtn.style.display = 'none';
                 }
-            } else {
-                console.error("אלמנט download-source-btn לא נמצא");
             }
 
             this.checkFileDurationAndUpdateEstimate();
@@ -159,10 +249,7 @@ class UIFileOperations extends UIHandlers {
                 this.errorMessage.style.display = 'none';
             }
 
-            console.log("✅ טיפול בקובץ חדש הושלם בהצלחה");
-
         } catch (error) {
-            console.error("❌ שגיאה בטיפול בקובץ חדש:", error);
             if (this.showError) {
                 this.showError('שגיאה בטיפול בקובץ: ' + error.message);
             }
@@ -177,11 +264,9 @@ class UIFileOperations extends UIHandlers {
             getAudioDuration(this.selectedFile).then(duration => {
                 this.updateEstimatedTime(duration);
             }).catch(error => {
-                console.error('שגיאה בקריאת אורך הקובץ:', error);
                 this.updateEstimatedTime(60); // הערכה ברירת מחדל של דקה
             });
         } else {
-            console.error('פונקציית getAudioDuration לא נמצאה');
             this.updateEstimatedTime(60);
         }
     }

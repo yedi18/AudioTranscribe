@@ -22,15 +22,12 @@ class RecordingHandler {
         this.stopRecordBtn = document.getElementById('stop-record-btn');
         this.recordTimer = document.getElementById('record-timer');
         this.recordWave = document.getElementById('record-wave');
-        console.log('🎯 recordWave element:', this.recordWave);
-
 
         // קישור אירועים
         this.bindEvents();
 
         // אתחול האנימציה עם קו סטטי
         this.createStaticWaveform();
-
     }
 
     /**
@@ -38,7 +35,6 @@ class RecordingHandler {
    */
     createStaticWaveform() {
         if (!this.recordWave) {
-            console.warn("אלמנט record-wave לא נמצא");
             return;
         }
 
@@ -78,7 +74,6 @@ class RecordingHandler {
         try {
             // בדיקה אם כבר מקליט
             if (this.isRecording) {
-                console.log("כבר בהקלטה, מתעלם מהקריאה");
                 return;
             }
 
@@ -98,14 +93,11 @@ class RecordingHandler {
                     channelCount: 1
                 }
             });
-            console.log("✅ קיבלנו גישה למיקרופון:", stream);
 
             this.recordingStream = stream;
 
             // התחלת אנימציית הגלים
             this.startWaveformAnimation(stream);
-            console.log("🌊 מנסה להפעיל אנימציית גלים");
-
 
             // יצירת AudioContext לניתוח אודיו
             this.audioContext = new AudioContext({
@@ -129,17 +121,13 @@ class RecordingHandler {
 
             // אירועי המקליט
             this.recorder.onstart = () => {
-                console.log("🎙 ההקלטה התחילה בהצלחה!", this.recorder.mimeType);
                 this.recordedChunks = [];
                 this.isRecording = true;
             };
 
             this.recorder.ondataavailable = (e) => {
                 if (e.data.size > 0) {
-                    console.log("📦 התקבל chunk של הקלטה:", e.data.size, "bytes");
                     this.recordedChunks.push(e.data);
-                } else {
-                    console.warn("⚠️ התקבל chunk ריק");
                 }
             };
 
@@ -199,7 +187,6 @@ class RecordingHandler {
                 }
             }, 1000);
         } catch (error) {
-            console.error('שגיאה בהקלטה:', error);
             if (this.ui && this.ui.showError) {
                 this.ui.showError('לא הצלחנו לגשת למיקרופון. אנא ודא שאישרת גישה למיקרופון ונסה שוב.');
             } else {
@@ -209,15 +196,12 @@ class RecordingHandler {
     }
 
     async stopRecording() {
-        console.log("🛑 עצירת הקלטה");
-
         if (this.recorder && this.recorder.state !== 'inactive') {
             // בקשת דגימה אחרונה לפני העצירה
             if (this.recorder.state === 'recording') {
                 this.recorder.requestData();
             }
 
-            console.log("📼 עוצר את המקליט");
             this.recorder.stop();
 
             // עדכון UI
@@ -230,19 +214,15 @@ class RecordingHandler {
 
             // עצירת הטיימר - חשוב!
             if (this.recordingInterval) {
-                console.log("⏱️ עוצר את הטיימר");
                 clearInterval(this.recordingInterval);
                 this.recordingInterval = null;
             }
-
-
 
             // עצירת האנימציה
             this.stopWaveformAnimation();
 
             // עצירת סטרים המיקרופון
             if (this.recordingStream) {
-                console.log("🎤 עוצר את סטרים המיקרופון");
                 this.recordingStream.getTracks().forEach(track => track.stop());
                 this.recordingStream = null;
             }
@@ -255,15 +235,12 @@ class RecordingHandler {
 
                 // יצירת blob מהקטעים שהוקלטו
                 const webmBlob = new Blob(this.recordedChunks, { type: 'audio/webm' });
-                console.log("📁 Blob ראשוני שנוצר:", webmBlob.size, "bytes");
 
                 // המרה ל-MP3 תקין
                 const mp3Blob = await this.convertToMp3(webmBlob);
-                console.log("🔄 המרה הושלמה, גודל ה-MP3:", mp3Blob.size, "bytes");
 
                 // בדיקה אם ההקלטה ריקה או שקטה
                 const isSilent = this.checkIfRecordingIsSilent();
-                console.log("האם חלש", isSilent);
 
                 if (isSilent) {
                     this.ui.showError('אין קובץ לתמלול: לא זוהה שמע בהקלטה. נא לנסות שוב ולדבר ברור יותר.');
@@ -282,23 +259,18 @@ class RecordingHandler {
                     type: 'audio/mp3',
                     lastModified: Date.now()
                 });
-                console.log("קובץ נוצר");
 
                 // וידוא תקינות הקובץ
                 const isValid = await this.validateAudioFile(recordedFile);
                 if (!isValid) {
-                    this.ui.showError('ההקלטה לא הצליחה ליצור קובץ תקין     . נסה שוב.');
+                    this.ui.showError('ההקלטה לא הצליחה ליצור קובץ תקין. נסה שוב.');
                     return;
                 }
-                console.log("קובץ תקין")
 
                 // טיפול בקובץ כאילו הועלה
-                console.log("📝 שולח לתמלול");
                 this.handleRecordedFile(recordedFile);
-                //const blobUrl = URL.createObjectURL(recordedFile);
 
             } catch (error) {
-                console.error("🔴 שגיאה בעיבוד ההקלטה:", error);
                 if (this.ui && this.ui.showError) {
                     this.ui.showError(`שגיאה בעיבוד ההקלטה: ${error.message}`);
                 } else {
@@ -310,7 +282,6 @@ class RecordingHandler {
 
     startWaveformAnimation(stream) {
         if (!this.recordWave) {
-            console.warn("⚠️ אלמנט record-wave לא נמצא");
             return;
         }
 
@@ -362,7 +333,7 @@ class RecordingHandler {
 
             // קו אופקי באמצע
             ctx.beginPath();
-            ctx.strokeStyle = '#4c6ef5';
+            ctx.strokeStyle = '#007bff';
             ctx.lineWidth = 1;
             ctx.moveTo(0, centerY);
             ctx.lineTo(canvas.width, centerY);
@@ -373,7 +344,7 @@ class RecordingHandler {
                 const h = this.waveformHistory[i];
                 const x = canvas.width - i * (barWidth + spacing);
                 ctx.beginPath();
-                ctx.strokeStyle = '#4c6ef5';
+                ctx.strokeStyle = '#007bff';
                 ctx.lineWidth = barWidth;
                 ctx.moveTo(x, centerY);
                 ctx.lineTo(x, centerY + h);
@@ -400,7 +371,6 @@ class RecordingHandler {
             cancelAnimationFrame(this.waveformAnimationId);
             this.waveformAnimationId = null;
         }
-
     }
 
     drawStaticLine(canvas, ctx) {
@@ -411,13 +381,12 @@ class RecordingHandler {
         const centerY = canvas.height / 2;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
-        ctx.strokeStyle = '#4c6ef5';
+        ctx.strokeStyle = '#007bff';
         ctx.lineWidth = 1;
         ctx.moveTo(0, centerY);
         ctx.lineTo(canvas.width, centerY);
         ctx.stroke();
     }
-
 
     /**
      * המרת WebM ל-MP3 באמצעות AudioContext
@@ -454,79 +423,15 @@ class RecordingHandler {
         if (finalBuffer.length > 0) {
             mp3Data.push(new Uint8Array(finalBuffer));
         }
-        console.log("🎼 מה מחזיר convertToMp3:", new Blob(mp3Data, { type: 'audio/mp3' }));
 
         return new Blob(mp3Data, { type: 'audio/mp3' });
     }
-
-
-    /**
-     * המרת AudioBuffer לקובץ WAV
-     * @param {AudioBuffer} audioBuffer - ה-AudioBuffer להמרה
-     * @return {Blob} קובץ WAV כ-Blob
-     */
-    audioBufferToWav(audioBuffer) {
-        const numOfChannels = audioBuffer.numberOfChannels;
-        const length = audioBuffer.length * numOfChannels * 2; // כל דגימה היא 2 בתים
-        const sampleRate = audioBuffer.sampleRate;
-
-        // יצירת מערך הבתים של קובץ ה-WAV
-        const buffer = new ArrayBuffer(44 + length);
-        const view = new DataView(buffer);
-
-        // כתיבת ה-WAV header
-        // "RIFF" chunk descriptor
-        writeString(view, 0, 'RIFF');
-        view.setUint32(4, 36 + length, true);
-        writeString(view, 8, 'WAVE');
-
-        // "fmt " sub-chunk
-        writeString(view, 12, 'fmt ');
-        view.setUint32(16, 16, true); // fmt chunk size
-        view.setUint16(20, 1, true); // audio format (1 for PCM)
-        view.setUint16(22, numOfChannels, true);
-        view.setUint32(24, sampleRate, true);
-        view.setUint32(28, sampleRate * numOfChannels * 2, true); // byte rate
-        view.setUint16(32, numOfChannels * 2, true); // block align
-        view.setUint16(34, 16, true); // bits per sample
-
-        // "data" sub-chunk
-        writeString(view, 36, 'data');
-        view.setUint32(40, length, true);
-
-        // כתיבת נתוני האודיו
-        let offset = 44;
-        for (let i = 0; i < audioBuffer.length; i++) {
-            for (let channel = 0; channel < numOfChannels; channel++) {
-                const sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(channel)[i]));
-                const value = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
-                view.setInt16(offset, value, true);
-                offset += 2;
-            }
-        }
-
-        // יצירת ה-Blob
-        return new Blob([buffer], { type: 'audio/wav' });
-
-        // פונקציה פנימית לכתיבת מחרוזת ל-DataView
-        function writeString(view, offset, string) {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        }
-    }
-
-
-
-
 
     /**
      * בדיקה אם ההקלטה שקטה (ללא שמע משמעותי)
      * @returns {boolean} האם ההקלטה שקטה
      */
     checkIfRecordingIsSilent() {
-
-
         // אם ההקלטה קצרה מדי (פחות מ-2 שניות)
         if (this.recordingTime < 2) {
             return true;
@@ -534,7 +439,6 @@ class RecordingHandler {
 
         // אם אין מספיק דגימות קול
         if (!this.volumeSamples || this.volumeSamples.length < 10) {
-
             return false; // במקרה של ספק, נניח שיש שמע
         }
 
@@ -555,7 +459,6 @@ class RecordingHandler {
             try {
                 // בדיקה בסיסית של גודל הקובץ
                 if (!audioFile || audioFile.size < 1000) {
-                    console.error('❌ קובץ האודיו קטן מדי:', audioFile?.size);
                     resolve(false);
                     return;
                 }
@@ -566,21 +469,18 @@ class RecordingHandler {
                 audio.oncanplay = () => {
                     clearTimeout(timeoutId);
                     URL.revokeObjectURL(audio.src);
-                    console.log('✅ קובץ האודיו תקין, אורך:', audio.duration);
                     resolve(true);
                 };
 
                 audio.onerror = (e) => {
                     clearTimeout(timeoutId);
                     URL.revokeObjectURL(audio.src);
-                    console.error('❌ שגיאה בקובץ האודיו:', e);
                     resolve(false);
                 };
 
                 // טיימאאוט למקרה שאין תגובה
                 timeoutId = setTimeout(() => {
                     URL.revokeObjectURL(audio.src);
-                    console.warn('⏱️ תם הזמן לבדיקת קובץ האודיו');
                     resolve(false);
                 }, 5000);
 
@@ -588,7 +488,6 @@ class RecordingHandler {
                 audio.src = URL.createObjectURL(audioFile);
                 audio.load();
             } catch (error) {
-                console.error('❌ שגיאה בבדיקת קובץ האודיו:', error);
                 resolve(false);
             }
         });
@@ -599,53 +498,40 @@ class RecordingHandler {
     * @param {File} recordedFile - קובץ ההקלטה
      */
     handleRecordedFile(recordedFile) {
-        console.log('✅ מתחיל טיפול בקובץ הקלטה:', recordedFile.name, recordedFile.size, "bytes");
-
         try {
             // שמירת התייחסות לקובץ המוקלט ומקורו
             const audioFile = recordedFile;
 
             // מעבר ללשונית העלאת קובץ ראשית
-            console.log('מעבר ללשונית העלאת קובץ');
             const uploadTab = document.querySelector('[data-tab="upload-file"]');
             if (uploadTab) {
                 uploadTab.click();
-            } else {
-                console.error('לא נמצאה לשונית "העלאת קובץ"');
             }
 
             // המתנה קצרה לאחר המעבר ללשונית
             setTimeout(() => {
                 try {
-                    // קריאה לפונקציה האחידה
                     if (!this.ui) {
                         throw new Error('this.ui לא מוגדר בתוך handleRecordedFile');
                     }
 
-                    console.log('קריאה ל-handleNewFile עם מקור:', 'recording');
                     this.ui.handleNewFile(audioFile, 'recording');
 
                     // וידוא תצוגת אזורים
                     if (this.ui.uploadArea) {
-                        console.log('מצב תצוגה של uploadArea לפני:',
-                            window.getComputedStyle(this.ui.uploadArea).display);
                         this.ui.uploadArea.style.display = 'none';
                     }
 
                     if (this.ui.fileInfo) {
-                        console.log('מצב תצוגה של fileInfo לפני:',
-                            window.getComputedStyle(this.ui.fileInfo).display);
                         this.ui.fileInfo.style.display = 'block';
                     }
 
                     // עדכון זמן משוער לתמלול
                     this.getRecordingDuration(audioFile)
                         .then(duration => {
-                            console.log("📏 זמן שנמדד:", duration, "שניות");
                             this.ui.updateEstimatedTime(duration);
                         })
                         .catch(err => {
-                            console.error("⛔ שגיאה בזמן:", err);
                             this.ui.updateEstimatedTime(15); // ברירת מחדל
                         });
 
@@ -657,16 +543,9 @@ class RecordingHandler {
                         if (this.ui.transcribeBtn) {
                             this.ui.transcribeBtn.focus();
                         }
-
-                        // וידוא סופי שהאזורים מוצגים כראוי
-                        console.log('מצב סופי - fileInfo:',
-                            this.ui.fileInfo ? window.getComputedStyle(this.ui.fileInfo).display : 'לא קיים',
-                            'uploadArea:',
-                            this.ui.uploadArea ? window.getComputedStyle(this.ui.uploadArea).display : 'לא קיים');
                     }, 300);
 
                 } catch (innerError) {
-                    console.error('❌ שגיאה בטיפול בקובץ לאחר מעבר לשונית:', innerError);
                     if (this.ui && typeof this.ui.showError === 'function') {
                         this.ui.showError('שגיאה בטיפול בקובץ לאחר מעבר לשונית: ' + innerError.message);
                     }
@@ -676,10 +555,7 @@ class RecordingHandler {
             // ניקוי משאבי הקלטה
             this.cleanupRecordingResources();
 
-            console.log('✅ טיפול ראשוני בקובץ המוקלט הושלם');
-
         } catch (error) {
-            console.error('❌ שגיאה בטיפול בקובץ ההקלטה:', error);
             if (this.ui && typeof this.ui.showError === 'function') {
                 this.ui.showError('שגיאה בטיפול בקובץ ההקלטה: ' + error.message);
             }
@@ -779,7 +655,6 @@ class RecordingHandler {
                         resolve(decodedData.duration); // ⬅️ זה הזמן האמיתי
                     })
                     .catch((error) => {
-                        console.error("❌ שגיאה בפענוח אודיו:", error);
                         reject(error);
                     });
             };
