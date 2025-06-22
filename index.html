@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>שירות תמלול קבצי אודיו | המרת קול לטקסט מדויק</title>
     <meta name="description" content="המר קבצי אודיו לטקסט בעברית בקלות. שירות תמלול אודיו מהיר ומדויק.">
-    
+
     <!-- קבצי CSS המפוצלים במקום קובץ components.css -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/buttons.css">
@@ -19,8 +19,10 @@
     <link rel="stylesheet" href="css/modals.css">
     <link rel="stylesheet" href="css/badges.css">
     <link rel="stylesheet" href="css/utilities.css">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/png" href="icon.png" />
 
@@ -41,7 +43,7 @@
                     <i class="fas fa-cog"></i>
                     <span>הגדרות API</span>
                 </button>
-                
+
                 <button id="view-recent-transcriptions-btn" class="control-btn recent-btn">
                     <i class="fas fa-history"></i>
                     <span>תמלולים אחרונים</span>
@@ -49,172 +51,6 @@
                 </button>
             </div>
 
-            <!-- Popup הגדרות API -->
-            <div id="api-settings-popup" class="settings-popup-overlay">
-                <div class="settings-popup">
-                    <div class="popup-header">
-                        <h3><i class="fas fa-cog"></i> הגדרות API</h3>
-                        <button id="close-settings-popup" class="close-popup-btn">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="popup-content">
-                        <div class="api-section" style="margin-bottom: 2rem;">
-                            <h4>מצב תמלול:</h4>
-                            <label for="transcription-mode">בחר כיצד יבוצע התמלול:</label>
-                            <span class="tooltip-icon">
-                                <i class="fas fa-info-circle"></i>
-                                <span class="tooltip-text">
-                                    <strong>OpenAI Whisper:</strong> תמלול מדויק באיכות גבוהה<br>
-                                    <strong>Hugging Face:</strong> תמלול חינמי בסיסי<br>
-                                    <strong>Groq:</strong> תמלול מהיר עם Whisper<br>
-                                    <strong>Google Gemini:</strong> תמלול וניתוח חכם<br>
-                                    <strong>Anthropic Claude:</strong> תמלול עם הבנה מתקדמת
-                                </span>
-                            </span>
-                            <select id="transcription-mode" class="styled-select">
-                                <option value="openai" selected>OpenAI Whisper – תמלול מדויק</option>
-                                <option value="huggingface">Hugging Face – תמלול חינמי</option>
-                                <option value="groq">Groq – תמלול מהיר</option>
-                                <option value="gemini">Google Gemini – תמלול חכם</option>
-                                <option value="claude">Anthropic Claude – תמלול מתקדם</option>
-                            </select>
-                            
-                            <div class="provider-capabilities" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
-                                <div class="capability-legend">
-                                    <h5 style="margin: 0 0 12px 0; color: #495057; font-size: 15px;">יכולות כל ספק:</h5>
-                                    <div class="capability-grid">
-                                        <div class="capability-item">
-                                            <div class="capability-header">🎙️ <strong>תמלול אודיו:</strong></div>
-                                            <div class="capability-list">OpenAI, Hugging Face, Groq, Gemini, Claude</div>
-                                        </div>
-                                        <div class="capability-item">
-                                            <div class="capability-header">✏️ <strong>הגהה וסיכום:</strong></div>
-                                            <div class="capability-list">OpenAI, Groq, Gemini, Claude</div>
-                                        </div>
-                                        <div class="capability-item">
-                                            <div class="capability-header">⚡ <strong>מהירות גבוהה:</strong></div>
-                                            <div class="capability-list">Groq (הכי מהיר)</div>
-                                        </div>
-                                        <div class="capability-item">
-                                            <div class="capability-header">🆓 <strong>חינמי:</strong></div>
-                                            <div class="capability-list">Hugging Face</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- חלק חובה - OpenAI -->
-                        <div class="api-section required">
-                            <h4>OpenAI Whisper – תמלול מדויק בעזרת AI מתקדם <span class="recommended-badge">מומלץ</span></h4>
-                            <label for="openai-api-key">מפתח API של OpenAI</label>
-                            <p class="api-description">נדרש לתמלול באיכות גבוהה עם Whisper API. ניתן לקבל מפתח באתר <a href="https://platform.openai.com" target="_blank">platform.openai.com</a></p>
-                            <div class="api-input-group">
-                                <input type="password" id="openai-api-key" placeholder="הדבק את מפתח ה-API של OpenAI כאן">
-                                <button id="save-openai-key" class="btn"><i class="fas fa-save"></i> שמור</button>
-                            </div>
-                            <div style="margin-top: 10px;">
-                                <input type="checkbox" id="show-openai-key" style="margin-left: 8px;">
-                                <label for="show-openai-key">הצג/הסתר מפתח API</label>
-                            </div>
-                            <div id="openai-key-status" class="api-key-status"></div>
-                            <div class="api-help-icon" id="openai-help-icon">
-                                <i class="fas fa-question-circle"></i>
-                            </div>
-                        </div>
-
-                        <!-- Toggle לאפשרויות נוספות -->
-                        <div class="additional-options-toggle">
-                            <button id="toggle-additional-options" class="toggle-additional-btn">
-                                <i class="fas fa-plus"></i>
-                                <span>הצג אפשרויות נוספות (אופציונלי)</span>
-                                <i class="fas fa-chevron-down toggle-arrow"></i>
-                            </button>
-                        </div>
-
-                        <!-- אפשרויות נוספות - מוסתרות בברירת מחדל -->
-                        <div id="additional-options" class="additional-options" style="display: none;">
-                            <!-- Hugging Face -->
-                            <div class="api-section optional">
-                                <h4>Hugging Face – תמלול חינמי <span class="optional-badge">אופציונלי</span></h4>
-                                <label for="huggingface-api-key">מפתח API של Hugging Face</label>
-                                <p class="api-description">עבור תמלול חינמי עם מודלי Hugging Face. ניתן לקבל מפתח באתר <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co</a></p>
-                                <div class="api-input-group">
-                                    <input type="password" id="huggingface-api-key" placeholder="הדבק את מפתח ה-API של Hugging Face כאן">
-                                    <button id="save-huggingface-key" class="btn"><i class="fas fa-save"></i> שמור</button>
-                                </div>
-                                <div style="margin-top: 10px;">
-                                    <input type="checkbox" id="show-huggingface-key" style="margin-left: 8px;">
-                                    <label for="show-huggingface-key">הצג/הסתר מפתח API</label>
-                                </div>
-                                <div id="huggingface-key-status" class="api-key-status"></div>
-                                <div class="api-help-icon" id="huggingface-help-icon">
-                                    <i class="fas fa-question-circle"></i>
-                                </div>
-                            </div>
-
-                            <!-- Groq -->
-                            <div class="api-section optional">
-                                <h4>Groq – תמלול והגהה מהירים <span class="optional-badge">אופציונלי</span></h4>
-                                <label for="groq-api-key">מפתח API של Groq</label>
-                                <p class="api-description">לתמלול מהיר עם Whisper ויכולות הגהה וסיכום חכמה מבוססי AI. ניתן לקבל מפתח באתר <a href="https://groq.com" target="_blank">groq.com</a></p>
-                                <div class="api-input-group">
-                                    <input type="password" id="groq-api-key" placeholder="הדבק את מפתח ה-API של Groq כאן">
-                                    <button id="save-groq-key" class="btn"><i class="fas fa-save"></i> שמור</button>
-                                </div>
-                                <div style="margin-top: 10px;">
-                                    <input type="checkbox" id="show-groq-key" style="margin-left: 8px;">
-                                    <label for="show-groq-key">הצג/הסתר מפתח API</label>
-                                </div>
-                                <div id="groq-key-status" class="api-key-status"></div>
-                                <div class="api-help-icon" id="groq-help-icon">
-                                    <i class="fas fa-question-circle"></i>
-                                </div>
-                            </div>
-
-                            <!-- Gemini -->
-                            <div class="api-section optional">
-                                <h4>Google Gemini – תמלול ועיבוד חכם <span class="optional-badge">אופציונלי</span></h4>
-                                <label for="gemini-api-key">מפתח API של Google Gemini</label>
-                                <p class="api-description">עבור תמלול מתקדם עם יכולות ניתוח, הגהה וסיכום. ניתן לקבל מפתח באתר <a href="https://ai.google.dev/" target="_blank">ai.google.dev</a></p>
-                                <div class="api-input-group">
-                                    <input type="password" id="gemini-api-key" placeholder="הדבק את מפתח ה-API של Gemini כאן">
-                                    <button id="save-gemini-key" class="btn"><i class="fas fa-save"></i> שמור</button>
-                                </div>
-                                <div style="margin-top: 10px;">
-                                    <input type="checkbox" id="show-gemini-key" style="margin-left: 8px;">
-                                    <label for="show-gemini-key">הצג/הסתר מפתח API</label>
-                                </div>
-                                <div id="gemini-key-status" class="api-key-status"></div>
-                                <div class="api-help-icon" id="gemini-help-icon">
-                                    <i class="fas fa-question-circle"></i>
-                                </div>
-                            </div>
-
-                            <!-- Anthropic -->
-                            <div class="api-section optional">
-                                <h4>Anthropic Claude – הגהה וסיכום מתקדמים <span class="optional-badge">אופציונלי</span></h4>
-                                <label for="anthropic-api-key">מפתח API של Anthropic</label>
-                                <p class="api-description">עבור הגהה וסיכום באיכות גבוהה עם Claude. לא תומך בתמלול ישיר. ניתן לקבל מפתח באתר <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
-                                <div class="api-input-group">
-                                    <input type="password" id="anthropic-api-key" placeholder="הדבק את מפתח ה-API של Anthropic כאן">
-                                    <button id="save-anthropic-key" class="btn"><i class="fas fa-save"></i> שמור</button>
-                                </div>
-                                <div style="margin-top: 10px;">
-                                    <input type="checkbox" id="show-anthropic-key" style="margin-left: 8px;">
-                                    <label for="show-anthropic-key">הצג/הסתר מפתח API</label>
-                                </div>
-                                <div id="anthropic-key-status" class="api-key-status"></div>
-                                <div class="api-help-icon" id="anthropic-help-icon">
-                                    <i class="fas fa-question-circle"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- לשוניות אפשרויות העלאה -->
             <div class="upload-tabs">
@@ -240,12 +76,15 @@
                                 </div>
                                 <h3>גרור לכאן קובץ אודיו</h3>
                                 <p>או לחץ כדי לבחור קובץ (MP3, WAV, M4A, OGG ועוד)</p>
-                                <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.webm,.ogg,.m4a" style="display: none;">
-                                <button class="btn" id="select-file-btn"><i class="fas fa-file-audio"></i> בחר קובץ אודיו</button>
+                                <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.webm,.ogg,.m4a"
+                                    style="display: none;">
+                                <button class="btn" id="select-file-btn"><i class="fas fa-file-audio"></i> בחר קובץ
+                                    אודיו</button>
                             </div>
 
                             <div id="file-info" class="file-info">
-                                <p><i class="fas fa-file-audio"></i> הקובץ שנבחר: <span id="file-name" class="file-name"></span></p>
+                                <p><i class="fas fa-file-audio"></i> הקובץ שנבחר: <span id="file-name"
+                                        class="file-name"></span></p>
                                 <p id="file-size"></p>
 
                                 <div id="estimated-time-container" class="estimated-time-box">
@@ -255,7 +94,8 @@
                                 </div>
 
                                 <div class="button-group">
-                                    <button class="btn" id="transcribe-btn"><i class="fas fa-magic"></i> התחל תמלול</button>
+                                    <button class="btn" id="transcribe-btn"><i class="fas fa-magic"></i> התחל
+                                        תמלול</button>
                                     <a href="#" id="download-source-btn" class="btn download-btn">
                                         <i class="fas fa-download"></i> הורד את קובץ האודיו
                                     </a>
@@ -289,15 +129,17 @@
                                     <i class="fas fa-magic"></i> תמלל סרטון
                                 </button>
                             </div>
-                            
+
                             <div class="youtube-info" style="display: none;"></div>
 
                             <div id="youtube-loading" style="display: none; margin-top: 1rem; text-align: center;">
-                                <i class="fas fa-spinner fa-spin" style="font-size: 18px; color: #007bff; margin-left: 6px;"></i>
+                                <i class="fas fa-spinner fa-spin"
+                                    style="font-size: 18px; color: #007bff; margin-left: 6px;"></i>
                                 <span style="font-size: 15px; color: #333;">התהליך עשוי להימשך מספר רגעים...</span>
                             </div>
 
-                            <p class="note"><i class="fas fa-info-circle"></i> הערה: יש להשתמש בקישור ישיר לסרטון YouTube</p>
+                            <p class="note"><i class="fas fa-info-circle"></i> הערה: יש להשתמש בקישור ישיר לסרטון
+                                YouTube</p>
                         </div>
                     </div>
 
@@ -390,12 +232,15 @@
                             </div>
 
                             <!-- פרומפט מותאם אישית להגהה -->
-                            <div id="enhance-custom-prompt-container" class="custom-prompt-container" style="display: none;">
-                                <textarea id="enhance-custom-prompt" placeholder="כתוב כאן הוראות מותאמות אישית להגהה..." rows="3"></textarea>
+                            <div id="enhance-custom-prompt-container" class="custom-prompt-container"
+                                style="display: none;">
+                                <textarea id="enhance-custom-prompt"
+                                    placeholder="כתוב כאן הוראות מותאמות אישית להגהה..." rows="3"></textarea>
                             </div>
                         </div>
 
-                        <div id="enhanced-result" style="min-height: 300px; padding: 15px; border: 1px solid #ced4da; border-radius: 8px; background: white; overflow-y: auto;">
+                        <div id="enhanced-result"
+                            style="min-height: 300px; padding: 15px; border: 1px solid #ced4da; border-radius: 8px; background: white; overflow-y: auto;">
                             <div class="processing-message">
                                 <i class="fas fa-magic"></i>
                                 לחץ על "בצע הגהה" כדי לשפר את הטקסט באמצעות AI
@@ -446,11 +291,13 @@
 
                             <!-- פרומפט מותאם אישית לסיכום -->
                             <div id="custom-prompt-container" class="custom-prompt-container" style="display: none;">
-                                <textarea id="custom-prompt" placeholder="הקלד הוראות מותאמות אישית לסיכום..." rows="3"></textarea>
+                                <textarea id="custom-prompt" placeholder="הקלד הוראות מותאמות אישית לסיכום..."
+                                    rows="3"></textarea>
                             </div>
                         </div>
 
-                        <div id="summary-result" style="min-height: 300px; padding: 15px; border: 1px solid #ced4da; border-radius: 8px; background: white; overflow-y: auto;">
+                        <div id="summary-result"
+                            style="min-height: 300px; padding: 15px; border: 1px solid #ced4da; border-radius: 8px; background: white; overflow-y: auto;">
                             <div class="processing-message">
                                 <i class="fas fa-brain"></i>
                                 לחץ על "צור סיכום" כדי לקבל סיכום חכם של הטקסט
@@ -473,12 +320,18 @@
                                 <i class="fas fa-download"></i> הורד כ-
                             </button>
                             <div class="dropdown-menu" id="download-options">
-                                <button class="dropdown-item" data-format="txt"><i class="fas fa-file-alt"></i> קובץ טקסט (TXT)</button>
-                                <button class="dropdown-item" data-format="srt"><i class="fas fa-closed-captioning"></i> כתוביות (SRT)</button>
-                                <button class="dropdown-item" data-format="word"><i class="fas fa-file-word"></i> מסמך Word</button>
-                                <button class="dropdown-item" data-format="pdf"><i class="fas fa-file-pdf"></i> קובץ PDF</button>
-                                <button class="dropdown-item" data-format="mp3"><i class="fas fa-music"></i> אודיו MP3</button>
-                                <button class="dropdown-item" data-format="wav"><i class="fas fa-volume-up"></i> אודיו WAV</button>
+                                <button class="dropdown-item" data-format="txt"><i class="fas fa-file-alt"></i> קובץ
+                                    טקסט (TXT)</button>
+                                <button class="dropdown-item" data-format="srt"><i class="fas fa-closed-captioning"></i>
+                                    כתוביות (SRT)</button>
+                                <button class="dropdown-item" data-format="word"><i class="fas fa-file-word"></i> מסמך
+                                    Word</button>
+                                <button class="dropdown-item" data-format="pdf"><i class="fas fa-file-pdf"></i> קובץ
+                                    PDF</button>
+                                <button class="dropdown-item" data-format="mp3"><i class="fas fa-music"></i> אודיו
+                                    MP3</button>
+                                <button class="dropdown-item" data-format="wav"><i class="fas fa-volume-up"></i> אודיו
+                                    WAV</button>
                             </div>
                         </div>
                     </div>
@@ -506,16 +359,195 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
+
                 <div class="popup-content">
                     <div id="recent-transcriptions-list" class="transcriptions-list">
                         <!-- תמלולים יתווספו כאן דינמית -->
                     </div>
-                    
+
                     <div class="popup-actions">
                         <button id="clear-all-transcriptions" class="btn btn-danger">
                             <i class="fas fa-trash-alt"></i> מחק הכל
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup הגדרות API -->
+        <div id="api-settings-popup" class="settings-popup-overlay">
+            <div class="settings-popup">
+                <div class="popup-header">
+                    <h3><i class="fas fa-cog"></i> הגדרות API</h3>
+                    <button id="close-settings-popup" class="close-popup-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="popup-content">
+                    <div class="api-section" style="margin-bottom: 2rem;">
+                        <h4>מצב תמלול:</h4>
+                        <label for="transcription-mode">בחר כיצד יבוצע התמלול:</label>
+                        <span class="tooltip-icon">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">
+                                <strong>OpenAI Whisper:</strong> תמלול מדויק באיכות גבוהה<br>
+                                <strong>Hugging Face:</strong> תמלול חינמי בסיסי<br>
+                                <strong>Groq:</strong> תמלול מהיר עם Whisper<br>
+                                <strong>Google Gemini:</strong> תמלול וניתוח חכם<br>
+                                <strong>Anthropic Claude:</strong> תמלול עם הבנה מתקדמת
+                            </span>
+                        </span>
+                        <select id="transcription-mode" class="styled-select">
+                            <option value="openai" selected>OpenAI Whisper – תמלול מדויק</option>
+                            <option value="huggingface">Hugging Face – תמלול חינמי</option>
+                            <option value="groq">Groq – תמלול מהיר</option>
+                            <option value="gemini">Google Gemini – תמלול חכם</option>
+                            <option value="claude">Anthropic Claude – תמלול מתקדם</option>
+                        </select>
+
+                        <div class="provider-capabilities"
+                            style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
+                            <div class="capability-legend">
+                                <h5 style="margin: 0 0 12px 0; color: #495057; font-size: 15px;">יכולות כל ספק:</h5>
+                                <div class="capability-grid">
+                                    <div class="capability-item">
+                                        <div class="capability-header">🎙️ <strong>תמלול אודיו:</strong></div>
+                                        <div class="capability-list">OpenAI, Hugging Face, Groq, Gemini, Claude</div>
+                                    </div>
+                                    <div class="capability-item">
+                                        <div class="capability-header">✏️ <strong>הגהה וסיכום:</strong></div>
+                                        <div class="capability-list">OpenAI, Groq, Gemini, Claude</div>
+                                    </div>
+                                    <div class="capability-item">
+                                        <div class="capability-header">⚡ <strong>מהירות גבוהה:</strong></div>
+                                        <div class="capability-list">Groq (הכי מהיר)</div>
+                                    </div>
+                                    <div class="capability-item">
+                                        <div class="capability-header">🆓 <strong>חינמי:</strong></div>
+                                        <div class="capability-list">Hugging Face</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- חלק חובה - OpenAI -->
+                    <div class="api-section required">
+                        <h4>OpenAI Whisper – תמלול מדויק בעזרת AI מתקדם <span class="recommended-badge">מומלץ</span>
+                        </h4>
+                        <label for="openai-api-key">מפתח API של OpenAI</label>
+                        <p class="api-description">נדרש לתמלול באיכות גבוהה עם Whisper API. ניתן לקבל מפתח באתר <a
+                                href="https://platform.openai.com" target="_blank">platform.openai.com</a></p>
+                        <div class="api-input-group">
+                            <input type="password" id="openai-api-key" placeholder="הדבק את מפתח ה-API של OpenAI כאן">
+                            <button id="save-openai-key" class="btn"><i class="fas fa-save"></i> שמור</button>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <input type="checkbox" id="show-openai-key" style="margin-left: 8px;">
+                            <label for="show-openai-key">הצג/הסתר מפתח API</label>
+                        </div>
+                        <div id="openai-key-status" class="api-key-status"></div>
+                        <div class="api-help-icon" id="openai-help-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                    </div>
+
+                    <!-- Toggle לאפשרויות נוספות -->
+                    <div class="additional-options-toggle">
+                        <button id="toggle-additional-options" class="toggle-additional-btn">
+                            <i class="fas fa-plus"></i>
+                            <span>הצג אפשרויות נוספות (אופציונלי)</span>
+                            <i class="fas fa-chevron-down toggle-arrow"></i>
+                        </button>
+                    </div>
+
+                    <!-- אפשרויות נוספות - מוסתרות בברירת מחדל -->
+                    <div id="additional-options" class="additional-options" style="display: none;">
+                        <!-- Hugging Face -->
+                        <div class="api-section optional">
+                            <h4>Hugging Face – תמלול חינמי <span class="optional-badge">אופציונלי</span></h4>
+                            <label for="huggingface-api-key">מפתח API של Hugging Face</label>
+                            <p class="api-description">עבור תמלול חינמי עם מודלי Hugging Face. ניתן לקבל מפתח באתר <a
+                                    href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co</a></p>
+                            <div class="api-input-group">
+                                <input type="password" id="huggingface-api-key"
+                                    placeholder="הדבק את מפתח ה-API של Hugging Face כאן">
+                                <button id="save-huggingface-key" class="btn"><i class="fas fa-save"></i> שמור</button>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <input type="checkbox" id="show-huggingface-key" style="margin-left: 8px;">
+                                <label for="show-huggingface-key">הצג/הסתר מפתח API</label>
+                            </div>
+                            <div id="huggingface-key-status" class="api-key-status"></div>
+                            <div class="api-help-icon" id="huggingface-help-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                        </div>
+
+                        <!-- Groq -->
+                        <div class="api-section optional">
+                            <h4>Groq – תמלול והגהה מהירים <span class="optional-badge">אופציונלי</span></h4>
+                            <label for="groq-api-key">מפתח API של Groq</label>
+                            <p class="api-description">לתמלול מהיר עם Whisper ויכולות הגהה וסיכום חכמה מבוססי AI. ניתן
+                                לקבל מפתח באתר <a href="https://groq.com" target="_blank">groq.com</a></p>
+                            <div class="api-input-group">
+                                <input type="password" id="groq-api-key" placeholder="הדבק את מפתח ה-API של Groq כאן">
+                                <button id="save-groq-key" class="btn"><i class="fas fa-save"></i> שמור</button>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <input type="checkbox" id="show-groq-key" style="margin-left: 8px;">
+                                <label for="show-groq-key">הצג/הסתר מפתח API</label>
+                            </div>
+                            <div id="groq-key-status" class="api-key-status"></div>
+                            <div class="api-help-icon" id="groq-help-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                        </div>
+
+                        <!-- Gemini -->
+                        <div class="api-section optional">
+                            <h4>Google Gemini – תמלול ועיבוד חכם <span class="optional-badge">אופציונלי</span></h4>
+                            <label for="gemini-api-key">מפתח API של Google Gemini</label>
+                            <p class="api-description">עבור תמלול מתקדם עם יכולות ניתוח, הגהה וסיכום. ניתן לקבל מפתח
+                                באתר <a href="https://ai.google.dev/" target="_blank">ai.google.dev</a></p>
+                            <div class="api-input-group">
+                                <input type="password" id="gemini-api-key"
+                                    placeholder="הדבק את מפתח ה-API של Gemini כאן">
+                                <button id="save-gemini-key" class="btn"><i class="fas fa-save"></i> שמור</button>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <input type="checkbox" id="show-gemini-key" style="margin-left: 8px;">
+                                <label for="show-gemini-key">הצג/הסתר מפתח API</label>
+                            </div>
+                            <div id="gemini-key-status" class="api-key-status"></div>
+                            <div class="api-help-icon" id="gemini-help-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                        </div>
+
+                        <!-- Anthropic -->
+                        <div class="api-section optional">
+                            <h4>Anthropic Claude – הגהה וסיכום מתקדמים <span class="optional-badge">אופציונלי</span>
+                            </h4>
+                            <label for="anthropic-api-key">מפתח API של Anthropic</label>
+                            <p class="api-description">עבור הגהה וסיכום באיכות גבוהה עם Claude. לא תומך בתמלול ישיר.
+                                ניתן לקבל מפתח באתר <a href="https://console.anthropic.com"
+                                    target="_blank">console.anthropic.com</a></p>
+                            <div class="api-input-group">
+                                <input type="password" id="anthropic-api-key"
+                                    placeholder="הדבק את מפתח ה-API של Anthropic כאן">
+                                <button id="save-anthropic-key" class="btn"><i class="fas fa-save"></i> שמור</button>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <input type="checkbox" id="show-anthropic-key" style="margin-left: 8px;">
+                                <label for="show-anthropic-key">הצג/הסתר מפתח API</label>
+                            </div>
+                            <div id="anthropic-key-status" class="api-key-status"></div>
+                            <div class="api-help-icon" id="anthropic-help-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -527,14 +559,14 @@
                 <div class="popup-header">
                     <h3><i class="fas fa-dollar-sign"></i> אישור עלות תמלול</h3>
                 </div>
-                
+
                 <div class="popup-content">
                     <div class="cost-details">
                         <div class="file-info-cost">
                             <p><strong>שם הקובץ:</strong> <span id="cost-file-name"></span></p>
                             <p><strong>גודל הקובץ:</strong> <span id="cost-file-size"></span></p>
                         </div>
-                        
+
                         <div class="cost-breakdown">
                             <p><strong>זמן משוער לתמלול:</strong> <span id="cost-estimated-time"></span></p>
                             <p><strong>עלות משוערת:</strong></p>
@@ -544,7 +576,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="popup-actions">
                         <button id="confirm-transcription" class="btn btn-confirm">
                             <i class="fas fa-check"></i> אישור והמשך בתמלול
@@ -553,7 +585,7 @@
                             <i class="fas fa-times"></i> ביטול
                         </button>
                     </div>
-                    
+
                     <div class="dont-show-again">
                         <input type="checkbox" id="dont-show-cost-again">
                         <label for="dont-show-cost-again">אל תציג הודעה זו שוב</label>
@@ -563,7 +595,7 @@
         </div>
 
         <!-- מודלים להדרכה -->
-        
+
         <!-- מודל OpenAI -->
         <div id="openai-guide-modal" class="modal">
             <div class="modal-content">
@@ -574,7 +606,8 @@
                         <div class="step-number">1</div>
                         <div class="step-content">
                             <h4>היכנס לאתר OpenAI</h4>
-                            <p>פתח את האתר <a href="https://platform.openai.com/" target="_blank">platform.openai.com</a></p>
+                            <p>פתח את האתר <a href="https://platform.openai.com/"
+                                    target="_blank">platform.openai.com</a></p>
                         </div>
                     </div>
                     <div class="step">
@@ -607,7 +640,8 @@
                     </div>
                 </div>
                 <div class="guide-note">
-                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר מלבד OpenAI.</p>
+                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר
+                        מלבד OpenAI.</p>
                 </div>
             </div>
         </div>
@@ -650,7 +684,8 @@
                         <div class="step-number">5</div>
                         <div class="step-content">
                             <h4>הגדר את המפתח</h4>
-                            <p>תן שם למפתח (לדוגמה "Audio Transcription"), בחר הרשאות "Read" ולחץ על "Generate token"</p>
+                            <p>תן שם למפתח (לדוגמה "Audio Transcription"), בחר הרשאות "Read" ולחץ על "Generate token"
+                            </p>
                         </div>
                     </div>
                     <div class="step">
@@ -662,7 +697,8 @@
                     </div>
                 </div>
                 <div class="guide-note">
-                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר מלבד Huggingface.</p>
+                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר
+                        מלבד Huggingface.</p>
                 </div>
             </div>
         </div>
@@ -710,7 +746,8 @@
                     </div>
                 </div>
                 <div class="guide-note">
-                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר מלבד Groq.</p>
+                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר
+                        מלבד Groq.</p>
                 </div>
             </div>
         </div>
@@ -758,7 +795,8 @@
                     </div>
                 </div>
                 <div class="guide-note">
-                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר מלבד Google.</p>
+                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר
+                        מלבד Google.</p>
                 </div>
             </div>
         </div>
@@ -773,7 +811,8 @@
                         <div class="step-number">1</div>
                         <div class="step-content">
                             <h4>היכנס לאתר Anthropic</h4>
-                            <p>פתח את האתר <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></p>
+                            <p>פתח את האתר <a href="https://console.anthropic.com/"
+                                    target="_blank">console.anthropic.com</a></p>
                         </div>
                     </div>
                     <div class="step">
@@ -806,7 +845,8 @@
                     </div>
                 </div>
                 <div class="guide-note">
-                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר מלבד Anthropic.</p>
+                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר
+                        מלבד Anthropic.</p>
                 </div>
             </div>
         </div>
@@ -833,7 +873,7 @@
                     <i class="fas fa-cog"></i> להסבר נרחב - עבור להגדרות API
                 </button>
             </div>
-            
+
             <div class="help-step">
                 <h3>
                     <span class="step-number">2</span>
@@ -871,7 +911,7 @@
 
                     הקמתי אותו כדי להנגיש תמלול קולי איכותי במיוחד לדוברי עברית, בצורה פשוטה, חינמית וללא צורך בהרשמה.
                     עכשיו עם יכולות AI מתקדמות להגהה וסיכום!
-                    
+
                     אשמח לפידבק והצעות לשיפור!
 
                     <div class="developer-links">
@@ -889,7 +929,8 @@
         </div>
 
         <footer>
-            <p>© 2025 שירות תמלול אודיו - פשוט, מהיר ומדויק עם יכולות AI מתקדמות. <a href="#" id="show-tips">טיפים לשימוש</a></p>
+            <p>© 2025 שירות תמלול אודיו - פשוט, מהיר ומדויק עם יכולות AI מתקדמות. <a href="#" id="show-tips">טיפים
+                    לשימוש</a></p>
         </footer>
 
         <!-- טעינת קבצי JavaScript בסדר הנכון -->
@@ -899,7 +940,7 @@
         <script src="js/recordingHandler.js"></script>
         <script src="js/youtubeHandler.js"></script>
         <script src="js/transcriptionHistory.js"></script>
-        
+
         <!-- מודולי ממשק משתמש -->
         <script src="js/js-ui/UICore.js"></script>
         <script src="js/js-ui/UIHandlers.js"></script>
@@ -926,9 +967,9 @@
                 const toggleArrow = toggleBtn.querySelector('.toggle-arrow');
 
                 if (toggleBtn && additionalOptions) {
-                    toggleBtn.addEventListener('click', function() {
+                    toggleBtn.addEventListener('click', function () {
                         const isOpen = additionalOptions.style.display !== 'none';
-                        
+
                         if (isOpen) {
                             additionalOptions.style.display = 'none';
                             toggleBtn.querySelector('span').textContent = 'הצג אפשרויות נוספות (אופציונלי)';
@@ -949,16 +990,16 @@
                 const closeSettingsBtn = document.getElementById('close-settings-popup');
 
                 if (apiSettingsBtn && apiSettingsPopup && closeSettingsBtn) {
-                    apiSettingsBtn.addEventListener('click', function() {
+                    apiSettingsBtn.addEventListener('click', function () {
                         apiSettingsPopup.style.display = 'flex';
                     });
 
-                    closeSettingsBtn.addEventListener('click', function() {
+                    closeSettingsBtn.addEventListener('click', function () {
                         apiSettingsPopup.style.display = 'none';
                     });
 
                     // סגירה בלחיצה מחוץ לpopup
-                    apiSettingsPopup.addEventListener('click', function(e) {
+                    apiSettingsPopup.addEventListener('click', function (e) {
                         if (e.target === apiSettingsPopup) {
                             apiSettingsPopup.style.display = 'none';
                         }
@@ -971,16 +1012,16 @@
                 const closeRecentBtn = document.getElementById('close-transcriptions-popup');
 
                 if (viewRecentBtn && recentPopup && closeRecentBtn) {
-                    viewRecentBtn.addEventListener('click', function() {
+                    viewRecentBtn.addEventListener('click', function () {
                         recentPopup.style.display = 'flex';
                         loadRecentTranscriptions();
                     });
 
-                    closeRecentBtn.addEventListener('click', function() {
+                    closeRecentBtn.addEventListener('click', function () {
                         recentPopup.style.display = 'none';
                     });
 
-                    recentPopup.addEventListener('click', function(e) {
+                    recentPopup.addEventListener('click', function (e) {
                         if (e.target === recentPopup) {
                             recentPopup.style.display = 'none';
                         }
@@ -1023,7 +1064,7 @@
                 if (window.ui && window.ui.transcriptionHistory) {
                     const transcriptions = window.ui.transcriptionHistory.history || [];
                     const listContainer = document.getElementById('recent-transcriptions-list');
-                    
+
                     if (transcriptions.length === 0) {
                         listContainer.innerHTML = '<div class="no-transcriptions">אין תמלולים שמורים</div>';
                         return;
@@ -1037,10 +1078,10 @@
             function createTranscriptionListItem(item) {
                 const date = new Date(item.timestamp);
                 const timeText = formatTime(date);
-                const preview = item.transcription ? 
-                    (item.transcription.length > 100 ? 
-                        item.transcription.substring(0, 100) + '...' : 
-                        item.transcription) : 
+                const preview = item.transcription ?
+                    (item.transcription.length > 100 ?
+                        item.transcription.substring(0, 100) + '...' :
+                        item.transcription) :
                     'אין תמלול זמין';
 
                 return `
@@ -1112,7 +1153,7 @@
                 if (minutes < 60) return `לפני ${minutes} דקות`;
                 if (hours < 24) return `לפני ${hours} שעות`;
                 if (days < 7) return `לפני ${days} ימים`;
-                
+
                 return date.toLocaleDateString('he-IL', {
                     day: 'numeric',
                     month: 'short',
@@ -1147,12 +1188,12 @@
                 const menu = document.getElementById(`download-menu-${id}`);
                 if (menu) {
                     const isVisible = menu.style.display !== 'none';
-                    
+
                     // סגירת כל התפריטים האחרים
                     document.querySelectorAll('.download-menu').forEach(m => {
                         if (m !== menu) m.style.display = 'none';
                     });
-                    
+
                     menu.style.display = isVisible ? 'none' : 'block';
                 }
             }
@@ -1209,11 +1250,11 @@
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
-                        
+
                         showTempMessage(`הקובץ ${fileName} הורד בהצלחה`, 'success');
                     }
                 }
-                
+
                 // סגירת התפריט
                 document.getElementById(`download-menu-${id}`).style.display = 'none';
             }
@@ -1258,29 +1299,29 @@
             function createSRTContent(text) {
                 const lines = text.split('\n').filter(line => line.trim());
                 let srtContent = '';
-                
+
                 lines.forEach((line, index) => {
                     if (line.trim()) {
                         const startTime = index * 3; // 3 שניות לכל שורה
                         const endTime = (index + 1) * 3;
-                        
+
                         srtContent += `${index + 1}\n`;
                         srtContent += `${formatSRTTime(startTime)} --> ${formatSRTTime(endTime)}\n`;
                         srtContent += `${line}\n\n`;
                     }
                 });
-                
+
                 return srtContent;
             }
 
             function formatSRTTime(seconds) {
                 const date = new Date(0);
                 date.setSeconds(seconds);
-                
+
                 const hours = date.getUTCHours().toString().padStart(2, '0');
                 const minutes = date.getUTCMinutes().toString().padStart(2, '0');
                 const secs = date.getUTCSeconds().toString().padStart(2, '0');
-                
+
                 return `${hours}:${minutes}:${secs},000`;
             }
 
@@ -1331,7 +1372,7 @@
                     const count = window.ui.transcriptionHistory.history.length;
                     const badge = document.getElementById('recent-count');
                     const btn = document.getElementById('view-recent-transcriptions-btn');
-                    
+
                     if (count > 0) {
                         if (badge) {
                             badge.textContent = count;
@@ -1352,7 +1393,7 @@
             }
 
             // סגירת תפריטי הורדה בלחיצה מחוץ
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (!e.target.closest('.download-dropdown')) {
                     document.querySelectorAll('.download-menu').forEach(menu => {
                         menu.style.display = 'none';
@@ -1477,7 +1518,7 @@
                 // פונקציה להצגת/הסתרת שדה API key
                 function toggleApiInput(selectElement, inputContainer, labelElement, inputElement, provider) {
                     const savedKey = localStorage.getItem(`${provider}_api_key`);
-                    
+
                     if (!savedKey) {
                         inputContainer.style.display = 'block';
                         labelElement.textContent = `מפתח API של ${getProviderName(provider)}:`;
@@ -1502,9 +1543,9 @@
                 // פונקציה לעדכון סטטוס API
                 function updateApiStatus(statusElement, isSuccess, provider) {
                     if (!statusElement) return;
-                    
+
                     statusElement.className = `api-status-mini ${isSuccess ? 'success' : 'error'}`;
-                    statusElement.textContent = isSuccess 
+                    statusElement.textContent = isSuccess
                         ? `מפתח ${getProviderName(provider)} פעיל ✓`
                         : `נדרש מפתח ${getProviderName(provider)}`;
                 }
@@ -1518,7 +1559,7 @@
                 const enhanceApiStatus = document.getElementById('enhance-api-status');
 
                 if (enhanceSelect && enhanceApiInput) {
-                    enhanceSelect.addEventListener('change', function() {
+                    enhanceSelect.addEventListener('change', function () {
                         toggleApiInput(this, enhanceApiInput, enhanceApiLabel, enhanceApiKey, this.value);
                     });
 
@@ -1526,20 +1567,20 @@
                 }
 
                 if (saveEnhanceApi) {
-                    saveEnhanceApi.addEventListener('click', function() {
+                    saveEnhanceApi.addEventListener('click', function () {
                         const provider = enhanceSelect.value;
                         const apiKey = enhanceApiKey.value.trim();
-                        
+
                         if (apiKey) {
                             localStorage.setItem(`${provider}_api_key`, apiKey);
                             updateApiStatus(enhanceApiStatus, true, provider);
                             enhanceApiInput.style.display = 'none';
-                            
+
                             const btn = this;
                             const originalText = btn.innerHTML;
                             btn.innerHTML = '<i class="fas fa-check"></i> נשמר!';
                             btn.style.background = '#007bff';
-                            
+
                             setTimeout(() => {
                                 btn.innerHTML = originalText;
                                 btn.style.background = '';
@@ -1559,7 +1600,7 @@
                 const summaryApiStatus = document.getElementById('summary-api-status');
 
                 if (summarySelect && summaryApiInput) {
-                    summarySelect.addEventListener('change', function() {
+                    summarySelect.addEventListener('change', function () {
                         toggleApiInput(this, summaryApiInput, summaryApiLabel, summaryApiKey, this.value);
                     });
 
@@ -1567,20 +1608,20 @@
                 }
 
                 if (saveSummaryApi) {
-                    saveSummaryApi.addEventListener('click', function() {
+                    saveSummaryApi.addEventListener('click', function () {
                         const provider = summarySelect.value;
                         const apiKey = summaryApiKey.value.trim();
-                        
+
                         if (apiKey) {
                             localStorage.setItem(`${provider}_api_key`, apiKey);
                             updateApiStatus(summaryApiStatus, true, provider);
                             summaryApiInput.style.display = 'none';
-                            
+
                             const btn = this;
                             const originalText = btn.innerHTML;
                             btn.innerHTML = '<i class="fas fa-check"></i> נשמר!';
                             btn.style.background = '#007bff';
-                            
+
                             setTimeout(() => {
                                 btn.innerHTML = originalText;
                                 btn.style.background = '';
@@ -1592,7 +1633,7 @@
                 }
 
                 if (enhanceApiKey) {
-                    enhanceApiKey.addEventListener('keypress', function(e) {
+                    enhanceApiKey.addEventListener('keypress', function (e) {
                         if (e.key === 'Enter') {
                             saveEnhanceApi.click();
                         }
@@ -1600,7 +1641,7 @@
                 }
 
                 if (summaryApiKey) {
-                    summaryApiKey.addEventListener('keypress', function(e) {
+                    summaryApiKey.addEventListener('keypress', function (e) {
                         if (e.key === 'Enter') {
                             saveSummaryApi.click();
                         }
@@ -1608,7 +1649,7 @@
                 }
             });
         </script>
-        
+
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 // הצגת/הסתרת מפתחות API
@@ -1623,9 +1664,9 @@
                 toggleKeys.forEach(({ checkbox, input }) => {
                     const checkboxElement = document.getElementById(checkbox);
                     const inputElement = document.getElementById(input);
-                    
+
                     if (checkboxElement && inputElement) {
-                        checkboxElement.addEventListener("change", function() {
+                        checkboxElement.addEventListener("change", function () {
                             inputElement.type = this.checked ? "text" : "password";
                         });
                     }

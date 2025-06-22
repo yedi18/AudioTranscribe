@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שירות תמלול קבצי אודיו | המרת קול לטקסט מדויק</title>
+    <meta name="description" content="המר קבצי אודיו לטקסט בעברית בקלות. שירות תמלול אודיו מהיר ומדויק.">
+
+    <!-- קבצי CSS -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/api-settings.css">
+    <link rel="stylesheet" href="css/upload.css">
+    <link rel="stylesheet" href="css/progress.css">
+    <link rel="stylesheet" href="css/tabs-nav.css">
+    <link rel="stylesheet" href="css/results.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/badges.css">
+    <link rel="stylesheet" href="css/utilities.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="icon.png" />
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>תמלול קבצי אודיו 🎙️</h1>
+            <p class="subtitle">העלה קובץ אודיו מכל סוג ותוך רגעים בודדים תקבל תמלול מדויק בעברית או בשפות נוספות</p>
+        </header>
+
+        <div class="card">
+            <!-- תמלולים אחרונים וכפתור הגדרות -->
+            <div class="top-controls-bar">
+                <button id="api-settings-btn" class="control-btn settings-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>הגדרות API</span>
+                </button>
+
+                <button id="view-recent-transcriptions-btn" class="control-btn recent-btn">
+                    <i class="fas fa-history"></i>
+                    <span>תמלולים אחרונים</span>
+                    <span id="recent-count" class="count-badge" style="display: none;"></span>
+                </button>
+            </div>
+
+            <!-- כל הקומפוננטים יוחלפו כאן אוטומטית -->
+            <!--#include components/popups.html-->
+            <!--#include components/uploadTabs.html-->
+            <!--#include components/results.html-->
+            <!--#include components/statistics.html-->
+        </div>
+
+        <!--#include components/modals.html-->
+        
+        <!-- כפתור עזרה צף -->
+        <button id="help-btn" title="עזרה"><i class="fas fa-question"></i></button>
+        
+        <!--#include components/help.html-->
+
+        <footer>
+            <p>© 2025 שירות תמלול אודיו - פשוט, מהיר ומדויק עם יכולות AI מתקדמות. <a href="#" id="show-tips">טיפים לשימוש</a></p>
+        </footer>
+
+        <!-- טעינת קבצי JavaScript בסדר הנכון -->
+        <script src="js/audioSplitter.js"></script>
+        <script src="js/transcription.js"></script>
+        <script src="js/enhancementHandler.js"></script>
+        <script src="js/recordingHandler.js"></script>
+        <script src="js/transcriptionHistory.js"></script>
+
+        <!-- מודולי ממשק משתמש -->
+        <script src="js/js-ui/UICore.js"></script>
+        <script src="js/js-ui/UIHandlers.js"></script>
+        <script src="js/js-ui/UIFileOperations.js"></script>
+        <script src="js/js-ui/UIAPIManagement.js"></script>
+        <script src="js/js-ui/UIProgressDisplay.js"></script>
+        <script src="js/js-ui/UIResultsDisplay.js"></script>
+        <script src="js/js-ui/UI.js"></script>
+        <script src="js/main.js"></script>
+    </div>
+</body>
+
+</html>

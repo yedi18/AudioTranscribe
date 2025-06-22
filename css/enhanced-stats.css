@@ -1,0 +1,243 @@
+/* css/enhanced-stats.css */
+/* סגנונות לסטטיסטיקות משופרות */
+
+.stats-summary {
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.stat-item {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #007bff;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.prediction-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.prediction-section h5 {
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 1rem;
+}
+
+.predictions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+}
+
+.prediction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    font-size: 0.9rem;
+}
+
+.prediction-item .size {
+    font-weight: 600;
+    color: #495057;
+}
+
+.prediction-item .arrow {
+    color: #6c757d;
+    margin: 0 0.5rem;
+}
+
+.prediction-item .time {
+    font-weight: 500;
+    color: #007bff;
+}
+
+.stats-table {
+    margin-top: 2rem;
+}
+
+.stats-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 0.75rem 1rem;
+    text-align: right;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.stats-table th {
+    background: #007bff;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.stats-table tr:hover {
+    background: #f8f9fa;
+}
+
+.stats-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* סגנונות יעילות */
+.efficiency-excellent {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.efficiency-good {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.efficiency-average {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.efficiency-poor {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* סגנונות לכרטיס סטטיסטיקות ראשי */
+.transcription-stats {
+    background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+    border: 1px solid #bbdefb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.transcription-stats h5 {
+    margin: 0 0 1rem 0;
+    color: #1976d2;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.transcription-stats .stats-content {
+    color: #424242;
+}
+
+.transcription-stats ul {
+    margin: 1rem 0;
+    padding-right: 1.5rem;
+}
+
+.transcription-stats li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.btn-link:hover {
+    color: #0056b3;
+}
+
+/* אנימציות */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-item,
+.prediction-item {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* רספונסיבי */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .predictions-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .stats-table {
+        overflow-x: auto;
+    }
+    
+    .stats-table table {
+        min-width: 500px;
+    }
+    
+    .stat-value {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .transcription-stats {
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+}
