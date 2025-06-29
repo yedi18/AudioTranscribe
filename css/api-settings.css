@@ -36,20 +36,22 @@
 }
 
 .control-btn.settings-btn {
-    background: linear-gradient(135deg, #6c757d, #495057);
-    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    /* צבע כחול-ירוק במקום אפור */
+    box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
 }
 
 .control-btn.settings-btn:hover {
-    background: linear-gradient(135deg, #495057, #343a40);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+    background: linear-gradient(135deg, #138496, #117a8b);
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
 }
 
 /* כפתור היסטוריה מעוצב בצבע סגול יוקרתי */
 .control-btn.recent-btn.enhanced-recent-btn {
     background: linear-gradient(135deg, #6f42c1, #5a32a3);
     box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
-    display: none; /* מוסתר בברירת מחדל */
+    display: none;
+    /* מוסתר בברירת מחדל */
     position: relative;
     overflow: hidden;
 }
@@ -571,92 +573,101 @@
     -webkit-box-orient: vertical;
 }
 
-/* כפתורי פעולה מסודרים מחדש */
+/* עיצוב משופר לכפתורי פעולה */
 .item-actions {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end; /* שמאלה */
+    margin-top: 10px;
+    direction: rtl; /* כיוון עברי */
 }
 
 .action-btn {
-    padding: 8px 12px;
+    padding: 8px 15px;
     border: none;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 5px;
-    justify-content: center;
-    min-width: 70px;
+    gap: 6px;
     white-space: nowrap;
 }
 
+/* צפה - כחול בהיר */
 .action-btn.view-btn {
-    background: #6f42c1;
+    background: #17a2b8; /* כחול בהיר */
     color: white;
+    min-width: 80px;
 }
 
 .action-btn.view-btn:hover {
-    background: #5a32a3;
+    background: #138496;
+    transform: translateY(-1px);
 }
 
+/* מחק - אדום */
 .action-btn.delete-btn {
-    background: #dc3545;
+    background: #dc3545; /* אדום */
     color: white;
+    min-width: 70px;
 }
 
 .action-btn.delete-btn:hover {
     background: #c82333;
+    transform: translateY(-1px);
 }
 
-/* כפתור אפשרויות נוספות מעוצב */
+/* אפשרויות נוספות - אפור נעים */
 .action-btn.more-options-btn {
-    background: #17a2b8;
+    background: #6c757d; /* אפור נעים */
     color: white;
-    position: relative;
+    min-width: 140px;
 }
 
 .action-btn.more-options-btn:hover {
-    background: #138496;
+    background: #5a6268;
+    transform: translateY(-1px);
 }
 
-/* תפריט אפשרויות נוספות */
+/* תפריט אפשרויות נוספות - נפתח למעלה וימינה */
 .more-options-dropdown {
     position: relative;
-    display: inline-block;
+    z-index: 1000; /* הוספת z-index לקונטיינר */
 }
 
 .more-options-menu {
     position: absolute;
-    top: 100%;
-    right: 0;
+    bottom: 100%; /* נפתח למעלה */
+    left: 0; /* הצד השמאלי של התפריט מיושר לצד השמאלי של הכפתור */
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    min-width: 180px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); /* צל יותר בולט */
+    z-index: 1100; /* z-index גבוה יותר */
+    min-width: 200px;
     padding: 8px 0;
-    margin-top: 4px;
-    display: none;
+    margin-bottom: 8px; /* רווח גדול יותר מהכפתור */
+    max-height: 300px;
+    overflow: visible; /* שינוי מ-auto ל-visible */
+    transform: translateY(-2px); /* הזיזי קצת למעלה */
 }
 
 .more-options-menu .dropdown-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
+    gap: 10px;
+    padding: 12px 16px;
     border: none;
     background: none;
     width: 100%;
     text-align: right;
     cursor: pointer;
     transition: background-color 0.2s;
-    font-size: 13px;
+    font-size: 14px;
     color: #343a40;
 }
 
@@ -666,37 +677,38 @@
 
 .more-options-menu .dropdown-item i {
     color: #6c757d;
+    min-width: 16px;
 }
 
+/* כפתור מחק הכל במרכז */
 .popup-actions {
     margin-top: 25px;
     padding-top: 20px;
     border-top: 1px solid #e9ecef;
     text-align: center;
+    display: flex;
+    justify-content: center;
 }
 
 .btn-danger {
     background: #dc3545;
     color: white;
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .btn-danger:hover {
     background: #c82333;
-}
-
-.no-transcriptions {
-    text-align: center;
-    color: #6c757d;
-    font-style: italic;
-    padding: 40px 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 2px dashed #dee2e6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
 }
 
 /* הודעת אישור עלות */
@@ -947,13 +959,16 @@
         opacity: 0;
         transform: scale(0.3);
     }
+
     50% {
         opacity: 1;
         transform: scale(1.05);
     }
+
     70% {
         transform: scale(0.9);
     }
+
     100% {
         opacity: 1;
         transform: scale(1);
@@ -965,6 +980,7 @@
         opacity: 0;
         transform: translateY(50px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -975,15 +991,19 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.05);
     }
@@ -994,6 +1014,7 @@
         opacity: 0;
         max-height: 0;
     }
+
     to {
         opacity: 1;
         max-height: 200px;
@@ -1002,62 +1023,65 @@
 
 /* רספונסיבי */
 @media (max-width: 768px) {
-    .settings-popup, .transcriptions-popup {
+
+    .settings-popup,
+    .transcriptions-popup {
         width: 95%;
         max-height: 90vh;
     }
-    
+
     .popup-header {
         padding: 15px 20px;
     }
-    
+
     .popup-content {
         padding: 20px;
     }
-    
+
     .top-controls-bar {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .control-btn {
         width: 100%;
         justify-content: center;
     }
-    
+
     .item-actions {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 6px;
     }
-    
+
     .action-btn {
         min-width: auto;
         padding: 6px 8px;
         font-size: 11px;
     }
-    
+
     .more-options-dropdown {
         grid-column: span 1;
     }
-    
+
     .cost-amounts {
         flex-direction: column;
         gap: 15px;
     }
-    
-    .cost-usd, .cost-ils {
+
+    .cost-usd,
+    .cost-ils {
         text-align: center;
     }
-    
+
     .cost-popup .popup-actions {
         flex-direction: column;
     }
-    
+
     .capability-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .tooltip-icon .tooltip-text {
         width: 250px;
         right: -50px;

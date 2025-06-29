@@ -1,25 +1,25 @@
 /**
- * מודול לניהול היסטוריית תמלולים - מעודכן עם popup מתקדם וכפתורים מסודרים מחדש
+ * מודול לניהול היסטוריית תמלולים - מעודכן עם כפתורים מסודרים מחדש
  */
 class TranscriptionHistory {
     constructor() {
         this.maxHistoryItems = 10;
         this.storageKey = 'transcription_history';
-        
+
         // אלמנטים ישנים (עדיין נדרשים לתמיכה לאחור)
         this.historyToggleBtn = document.getElementById('history-toggle-btn');
         this.historyContainer = document.getElementById('transcription-history');
         this.historyList = document.getElementById('history-list');
-        
+
         // אלמנטים חדשים של הpopup
         this.viewRecentBtn = document.getElementById('view-recent-transcriptions-btn');
         this.recentPopup = document.getElementById('recent-transcriptions-popup');
         this.closeRecentBtn = document.getElementById('close-transcriptions-popup');
         this.recentList = document.getElementById('recent-transcriptions-list');
         this.clearAllBtn = document.getElementById('clear-all-transcriptions');
-        
+
         this.isExpanded = false;
-        
+
         this.loadHistory();
         this.bindEvents();
         this.updateDisplay();
@@ -105,67 +105,63 @@ class TranscriptionHistory {
         this.recentList.innerHTML = this.history.map(item => this.createRecentTranscriptionItem(item)).join('');
     }
 
-    /**
-     * יצירת פריט תמלול בpopup החדש עם כפתורים מסודרים מחדש
-     */
-    createRecentTranscriptionItem(item) {
-        const date = new Date(item.timestamp);
-        const timeText = this.formatTime(date);
-        const preview = this.createPreview(item.transcription);
-        const sourceIcon = this.getSourceIcon(item.source);
-        const sizeText = this.formatFileSize(item.fileSize);
+createRecentTranscriptionItem(item) {
+    const date = new Date(item.timestamp);
+    const timeText = this.formatTime(date);
+    const preview = this.createPreview(item.transcription);
+    const sourceIcon = this.getSourceIcon(item.source);
+    const sizeText = this.formatFileSize(item.fileSize);
 
-        return `
-            <div class="transcription-list-item" data-id="${item.id}">
-                <div class="item-header">
-                    <span class="item-name">
-                        <i class="${sourceIcon}"></i> ${item.fileName}
-                    </span>
-                    <span class="item-time">${timeText} | ${sizeText}</span>
-                </div>
-                <div class="item-preview">${preview}</div>
-                <div class="item-actions">
-                    <button class="action-btn view-btn" onclick="window.transcriptionHistory.viewTranscription('${item.id}')">
-                        <i class="fas fa-eye"></i> צפה
+    return `
+        <div class="transcription-list-item" data-id="${item.id}">
+            <div class="item-header">
+                <span class="item-name">
+                    <i class="${sourceIcon}"></i> ${item.fileName}
+                </span>
+                <span class="item-time">${timeText} | ${sizeText}</span>
+            </div>
+            <div class="item-preview">${preview}</div>
+            <div class="item-actions">
+                <button class="action-btn view-btn" onclick="window.transcriptionHistory.viewTranscription('${item.id}')">
+                    <i class="fas fa-eye"></i> צפה
+                </button>
+                <button class="action-btn delete-btn" onclick="window.transcriptionHistory.deleteTranscription('${item.id}')">
+                    <i class="fas fa-trash"></i> מחק
+                </button>
+                <div class="more-options-dropdown">
+                    <button class="action-btn more-options-btn" onclick="window.transcriptionHistory.toggleMoreOptions('${item.id}')">
+                        <i class="fas fa-ellipsis-h"></i> אפשרויות נוספות
                     </button>
-                    <button class="action-btn delete-btn" onclick="window.transcriptionHistory.deleteTranscription('${item.id}')">
-                        <i class="fas fa-trash"></i> מחק
-                    </button>
-                    <div class="more-options-dropdown">
-                        <button class="action-btn more-options-btn" onclick="window.transcriptionHistory.toggleMoreOptions('${item.id}')">
-                            <i class="fas fa-ellipsis-h"></i> אפשרויות
+                    <div class="more-options-menu" id="more-options-menu-${item.id}" style="display: none;">
+                        <button class="dropdown-item" onclick="window.transcriptionHistory.copyTranscription('${item.id}')">
+                            <i class="fas fa-copy"></i> העתק טקסט
                         </button>
-                        <div class="more-options-menu" id="more-options-menu-${item.id}" style="display: none;">
-                            <button class="dropdown-item" onclick="window.transcriptionHistory.copyTranscription('${item.id}')">
-                                <i class="fas fa-copy"></i> העתק טקסט
+                        <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'txt')">
+                            <i class="fas fa-file-alt"></i> הורד טקסט (TXT)
+                        </button>
+                        <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'srt')">
+                            <i class="fas fa-closed-captioning"></i> הורד כתוביות (SRT)
+                        </button>
+                        <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'word')">
+                            <i class="fas fa-file-word"></i> הורד Word (DOC)
+                        </button>
+                        <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'pdf')">
+                            <i class="fas fa-file-pdf"></i> הורד PDF
+                        </button>
+                        ${item.audioBlob ? `
+                            <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'mp3')">
+                                <i class="fas fa-music"></i> הורד אודיו (MP3)
                             </button>
-                            <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'txt')">
-                                <i class="fas fa-file-alt"></i> הורד טקסט (TXT)
+                            <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'wav')">
+                                <i class="fas fa-volume-up"></i> הורד אודיו (WAV)
                             </button>
-                            <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'srt')">
-                                <i class="fas fa-closed-captioning"></i> הורד כתוביות (SRT)
-                            </button>
-                            <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'word')">
-                                <i class="fas fa-file-word"></i> הורד Word (DOC)
-                            </button>
-                            <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'pdf')">
-                                <i class="fas fa-file-pdf"></i> הורד PDF
-                            </button>
-                            ${item.audioBlob ? `
-                                <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'mp3')">
-                                    <i class="fas fa-music"></i> הורד אודיו (MP3)
-                                </button>
-                                <button class="dropdown-item" onclick="window.transcriptionHistory.downloadTranscriptionFormat('${item.id}', 'wav')">
-                                    <i class="fas fa-volume-up"></i> הורד אודיו (WAV)
-                                </button>
-                            ` : ''}
-                        </div>
+                        ` : ''}
                     </div>
                 </div>
             </div>
-        `;
-    }
-
+        </div>
+    `;
+}
     /**
      * הצגת/הסתרת תפריט אפשרויות נוספות
      */
@@ -173,12 +169,12 @@ class TranscriptionHistory {
         const menu = document.getElementById(`more-options-menu-${id}`);
         if (menu) {
             const isVisible = menu.style.display !== 'none';
-            
+
             // סגירת כל התפריטים האחרים
             document.querySelectorAll('.more-options-menu').forEach(m => {
                 if (m !== menu) m.style.display = 'none';
             });
-            
+
             menu.style.display = isVisible ? 'none' : 'block';
         }
     }
@@ -264,13 +260,13 @@ class TranscriptionHistory {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = fileName;
-        
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         this.showTemporaryMessage(`הקובץ ${fileName} הורד בהצלחה`, 'success');
-        
+
         // סגירת התפריט
         const menu = document.getElementById(`more-options-menu-${id}`);
         if (menu) menu.style.display = 'none';
@@ -331,18 +327,18 @@ class TranscriptionHistory {
     createSRTContent(text) {
         const lines = text.split('\n').filter(line => line.trim());
         let srtContent = '';
-        
+
         lines.forEach((line, index) => {
             if (line.trim()) {
                 const startTime = index * 3; // 3 שניות לכל שורה
                 const endTime = (index + 1) * 3;
-                
+
                 srtContent += `${index + 1}\n`;
                 srtContent += `${this.formatSRTTime(startTime)} --> ${this.formatSRTTime(endTime)}\n`;
                 srtContent += `${line}\n\n`;
             }
         });
-        
+
         return srtContent;
     }
 
@@ -352,11 +348,11 @@ class TranscriptionHistory {
     formatSRTTime(seconds) {
         const date = new Date(0);
         date.setSeconds(seconds);
-        
+
         const hours = date.getUTCHours().toString().padStart(2, '0');
         const minutes = date.getUTCMinutes().toString().padStart(2, '0');
         const secs = date.getUTCSeconds().toString().padStart(2, '0');
-        
+
         return `${hours}:${minutes}:${secs},000`;
     }
 
@@ -405,10 +401,10 @@ class TranscriptionHistory {
             </body>
             </html>
         `;
-        
+
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        
+
         this.showTemporaryMessage('חלון הדפסה נפתח - שמור כ-PDF', 'info');
     }
 
@@ -474,7 +470,7 @@ class TranscriptionHistory {
      */
     toggleHistory() {
         this.isExpanded = !this.isExpanded;
-        
+
         if (this.historyContainer) {
             if (this.isExpanded) {
                 this.historyContainer.classList.remove('collapsed');
@@ -593,7 +589,7 @@ class TranscriptionHistory {
             }
 
             this.historyToggleBtn.style.display = 'flex';
-            
+
             const countText = this.history.length === 1 ? 'תמלול אחד' : `${this.history.length} תמלולים`;
             const spanElement = this.historyToggleBtn.querySelector('span');
             if (spanElement) {
@@ -610,7 +606,7 @@ class TranscriptionHistory {
         // עדכון הכפתור החדש
         if (this.viewRecentBtn) {
             const badge = document.getElementById('recent-count');
-            
+
             if (this.history.length > 0) {
                 this.viewRecentBtn.style.display = 'flex';
                 if (badge) {
@@ -634,7 +630,7 @@ class TranscriptionHistory {
     createHistoryElement(item) {
         const div = document.createElement('div');
         div.className = 'history-item';
-        
+
         const date = new Date(item.timestamp);
         const timeText = this.formatTime(date);
         const preview = this.createPreview(item.transcription);
@@ -693,10 +689,10 @@ class TranscriptionHistory {
      */
     createPreview(text) {
         if (!text) return 'אין תמלול זמין';
-        
+
         const cleaned = text.replace(/\s+/g, ' ').trim();
         if (cleaned.length <= 150) return cleaned;
-        
+
         return cleaned.substring(0, 147) + '...';
     }
 
@@ -730,7 +726,7 @@ class TranscriptionHistory {
         if (minutes < 60) return `לפני ${minutes} דק'`;
         if (hours < 24) return `לפני ${hours} שע'`;
         if (days < 7) return `לפני ${days} ימים`;
-        
+
         return date.toLocaleDateString('he-IL', {
             day: 'numeric',
             month: 'short',
@@ -746,13 +742,13 @@ class TranscriptionHistory {
      */
     formatFileSize(bytes) {
         if (!bytes || bytes < 1024) return `${bytes || 0} B`;
-        
+
         const mb = bytes / (1024 * 1024);
         if (mb < 1) {
             const kb = bytes / 1024;
             return `${kb.toFixed(1)} KB`;
         }
-        
+
         return `${mb.toFixed(1)} MB`;
     }
 
@@ -776,7 +772,7 @@ class TranscriptionHistory {
 }
 
 // סגירת תפריטי אפשרויות בלחיצה מחוץ
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     if (!e.target.closest('.more-options-dropdown')) {
         document.querySelectorAll('.more-options-menu').forEach(menu => {
             menu.style.display = 'none';

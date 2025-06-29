@@ -925,7 +925,9 @@
                 </details>
             </div>
 
-            <button id="close-help-popup" class="close-btn">סגור</button>
+            <button id="close-help-popup" class="close-popup-btn">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
 
         <footer>
@@ -1060,78 +1062,7 @@
             });
 
             // פונקציה לטעינת תמלולים אחרונים
-            function loadRecentTranscriptions() {
-                if (window.ui && window.ui.transcriptionHistory) {
-                    const transcriptions = window.ui.transcriptionHistory.history || [];
-                    const listContainer = document.getElementById('recent-transcriptions-list');
 
-                    if (transcriptions.length === 0) {
-                        listContainer.innerHTML = '<div class="no-transcriptions">אין תמלולים שמורים</div>';
-                        return;
-                    }
-
-                    listContainer.innerHTML = transcriptions.map(item => createTranscriptionListItem(item)).join('');
-                }
-            }
-
-            // פונקציה ליצירת פריט ברשימה
-            function createTranscriptionListItem(item) {
-                const date = new Date(item.timestamp);
-                const timeText = formatTime(date);
-                const preview = item.transcription ?
-                    (item.transcription.length > 100 ?
-                        item.transcription.substring(0, 100) + '...' :
-                        item.transcription) :
-                    'אין תמלול זמין';
-
-                return `
-                    <div class="transcription-list-item" data-id="${item.id}">
-                        <div class="item-header">
-                            <span class="item-name">
-                                <i class="fas fa-${getSourceIcon(item.source)}"></i> ${item.fileName}
-                            </span>
-                            <span class="item-time">${timeText}</span>
-                        </div>
-                        <div class="item-preview">${preview}</div>
-                        <div class="item-actions">
-                            <button class="action-btn view-btn" onclick="viewTranscription('${item.id}')">
-                                <i class="fas fa-eye"></i> צפה
-                            </button>
-                            <button class="action-btn copy-btn" onclick="copyTranscription('${item.id}')">
-                                <i class="fas fa-copy"></i> העתק
-                            </button>
-                            <div class="dropdown download-dropdown">
-                                <button class="action-btn download-btn dropdown-toggle" onclick="toggleDownloadMenu('${item.id}')">
-                                    <i class="fas fa-download"></i> הורד <i class="fas fa-chevron-down"></i>
-                                </button>
-                                <div class="dropdown-menu download-menu" id="download-menu-${item.id}" style="display: none;">
-                                    <button class="dropdown-item" onclick="downloadTranscriptionFormat('${item.id}', 'txt')">
-                                        <i class="fas fa-file-alt"></i> טקסט (TXT)
-                                    </button>
-                                    <button class="dropdown-item" onclick="downloadTranscriptionFormat('${item.id}', 'srt')">
-                                        <i class="fas fa-closed-captioning"></i> כתוביות (SRT)
-                                    </button>
-                                    <button class="dropdown-item" onclick="downloadTranscriptionFormat('${item.id}', 'word')">
-                                        <i class="fas fa-file-word"></i> Word (DOC)
-                                    </button>
-                                    <button class="dropdown-item" onclick="downloadTranscriptionFormat('${item.id}', 'pdf')">
-                                        <i class="fas fa-file-pdf"></i> PDF
-                                    </button>
-                                    <button class="dropdown-item" onclick="downloadTranscriptionFormat('${item.id}', 'mp3')">
-                                        <i class="fas fa-music"></i> אודיו (MP3)
-                                    </button>
-                                    <button class="dropdown-item" onclick="downloadTranscriptionFormat('${item.id}', 'wav')">
-                                        <i class="fas fa-volume-up"></i> אודיו (WAV)
-                                    </button>
-                                </div>
-                            </div>
-                            <button class="action-btn delete-btn" onclick="deleteTranscription('${item.id}')">
-                                <i class="fas fa-trash"></i> מחק
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
 
             function getSourceIcon(source) {
                 const icons = {
