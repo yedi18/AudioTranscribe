@@ -144,7 +144,7 @@ class YouTubeHandler {
         }
 
         this.getVideoInfo(videoId)
-            .then(() => this.convertToAudio(videoId))
+            .then((videoInfo) => this.convertToAudio(videoId, videoInfo.title)) // השינוי כאן
             .then(() => {
                 this.processYoutubeBtn.disabled = false;
                 this.ui.loadingSpinner.style.display = 'none';
@@ -475,10 +475,12 @@ class YouTubeHandler {
     }
 
     /**
- * המרת סרטון YouTube לקובץ אודיו באמצעות שרת ה-Render (RapidAPI)
- * @param {string} videoId - מזהה הסרטון
- * @returns {Promise<Blob>} - קובץ האודיו כ-Blob
- */
+    * תיקון בפונקציה convertToAudio בקובץ youtubeHandler.js
+    * השינוי: שימוש בכותרת הסרטון במקום במזהה הסרטון לשם הקובץ
+    */
+
+    // במקום הקוד הנוכחי בפונקציה convertToAudio, החלף את החלק הזה:
+
     async convertToAudio(videoId, videoTitle) {
         try {
             this.updateYouTubeProgress({
@@ -546,13 +548,33 @@ class YouTubeHandler {
                 message: 'ההמרה הושלמה, טוען ללשונית העלאה...'
             });
 
-            const safeTitle = videoTitle?.replace(/[^\w\s-]/g, '').trim() || `youtube_${videoId}`;
-            const fileName = `${safeTitle}.mp3`;
+            // *** כאן השינוי החשוב - יצירת שם קובץ נקי מהכותרת ***
+
+            // ניקוי כותרת הסרטון ליצירת שם קובץ תקין
+            let cleanTitle = videoTitle ?
+                videoTitle
+                    .replace(/[^\u0590-\u05FF\w\s\-_.()]/g, '') // שמירה על עברית, אנגלית ותווים בסיסיים בלבד
+                    .replace(/\s+/g, ' ') // החלפת כמה רווחים ברווח אחד
+                    .trim() // הסרת רווחים מההתחלה והסוף
+                    .substring(0, 100) // הגבלת אורך לשם קובץ תקין
+                : `youtube_video_${videoId}`;
+
+            // אם הכותרת ריקה אחרי הניקוי, השתמש בברירת מחדל
+            if (!cleanTitle || cleanTitle.length === 0) {
+                cleanTitle = `youtube_video_${videoId}`;
+            }
+
+            const fileName = `${cleanTitle}.mp3`;
 
             const audioFile = new File([audioBlob], fileName, {
                 type: 'audio/mp3',
                 lastModified: Date.now()
             });
+
+            // הוספת מאפיין לזיהוי מקור
+            audioFile.source = 'youtube';
+            audioFile.originalTitle = videoTitle;
+            audioFile.videoId = videoId;
 
             this.handleYoutubeFile(audioFile);
 
@@ -562,6 +584,7 @@ class YouTubeHandler {
             throw new Error('שגיאה בהמרת הסרטון לאודיו: ' + error.message);
         }
     }
+
 
     // פונקציה חדשה שצריך להוסיף
     handleYoutubeFile(audioFile) {

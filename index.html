@@ -27,6 +27,8 @@
     <link rel="icon" type="image/png" href="icon.png" />
 
     <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
 
 <body>
@@ -1132,35 +1134,36 @@
                 if (window.ui && window.ui.transcriptionHistory) {
                     const item = window.ui.transcriptionHistory.getItem(id);
                     if (item && item.transcription) {
-                        let blob, fileName, mimeType;
+                        let blob, fileName;
                         const baseName = item.fileName.replace(/\.[^/.]+$/, '');
 
                         switch (format) {
                             case 'txt':
-                                blob = new Blob([item.transcription], { type: 'text/plain;charset=utf-8' });
+                                // BOM כפול
+                                blob = new Blob(['\ufeff\ufeff' + item.transcription], { type: 'text/plain;charset=utf-8' });
                                 fileName = `${baseName}_תמלול.txt`;
                                 break;
 
                             case 'word':
                                 const wordContent = createWordDocument(item.transcription, item.fileName);
-                                blob = new Blob([wordContent], { type: 'application/msword;charset=utf-8' });
-                                fileName = `${baseName}_תמלול.doc`;
+                                // RTF במקום HTML
+                                blob = new Blob([wordContent], { type: 'application/rtf;charset=utf-8' });
+                                fileName = `${baseName}_תמלול.rtf`;
                                 break;
 
                             case 'srt':
                                 const srtContent = createSRTContent(item.transcription);
-                                blob = new Blob([srtContent], { type: 'text/srt;charset=utf-8' });
+                                blob = new Blob(['\ufeff\ufeff' + srtContent], { type: 'text/plain;charset=utf-8' });
                                 fileName = `${baseName}_תמלול.srt`;
                                 break;
 
                             case 'pdf':
-                                // כאן תצטרך להשתמש בספרייה כמו jsPDF
-                                showTempMessage('הורדת PDF תתווסף בקרוב', 'info');
+                                // פתרון print-to-PDF
+                                createPrintablePDFFromHistory(item);
                                 return;
 
                             case 'mp3':
                             case 'wav':
-                                // אם יש קובץ אודיו מקורי שמור
                                 if (item.audioBlob) {
                                     blob = item.audioBlob;
                                     fileName = `${baseName}.${format}`;
@@ -1179,51 +1182,93 @@
                         link.download = fileName;
                         document.body.appendChild(link);
                         link.click();
-                        document.body.removeChild(link);
+                        setTimeout(() => {
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(link.href);
+                        }, 100);
 
                         showTempMessage(`הקובץ ${fileName} הורד בהצלחה`, 'success');
                     }
                 }
 
-                // סגירת התפריט
                 document.getElementById(`download-menu-${id}`).style.display = 'none';
             }
 
+            // פונקציה נוספת ל-PDF מהיסטוריה
+            function createPrintablePDFFromHistory(item) {
+                const printHTML = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>תמלול - ${item.fileName}</title>
+    <style>
+        @page { size: A4; margin: 2cm; }
+        body { font-family: Arial, serif; font-size: 14pt; direction: rtl; margin: 20px; }
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .content { white-space: pre-wrap; text-align: justify; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>תמלול - ${item.fileName}</h1></div>
+    <div class="content">${item.transcription.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m])}</div>
+</body>
+</html>`;
+
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(printHTML);
+                printWindow.document.close();
+                setTimeout(() => printWindow.focus(), 500);
+            }
+
             function createWordDocument(text, fileName) {
-                return `
-                    <html xmlns:o="urn:schemas-microsoft-com:office:office" 
-                          xmlns:w="urn:schemas-microsoft-com:office:word" 
-                          xmlns="http://www.w3.org/TR/REC-html40">
-                    <head>
-                        <meta charset="utf-8">
-                        <title>תמלול - ${fileName}</title>
-                        <style>
-                            body { 
-                                font-family: 'Arial', sans-serif; 
-                                direction: rtl; 
-                                line-height: 1.6;
-                                margin: 40px;
-                            }
-                            h1 { 
-                                color: #007bff; 
-                                border-bottom: 2px solid #007bff; 
-                                padding-bottom: 10px; 
-                            }
-                            p { 
-                                line-height: 1.8; 
-                                margin-bottom: 15px; 
-                                text-align: justify;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>תמלול - ${fileName}</h1>
-                        <div>
-                            ${text.split('\n').map(line => `<p>${line || '&nbsp;'}</p>`).join('')}
-                        </div>
-                    </body>
-                    </html>
-                `;
+                return `<!DOCTYPE html>
+                <html dir="rtl" lang="he">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="ProgId" content="Word.Document">
+                    <meta name="Generator" content="Microsoft Word">
+                    <meta name="Originator" content="Microsoft Word">
+                    <title>תמלול - ${fileName}</title>
+                    <style>
+                        @page {
+                            margin: 2.5cm;
+                            mso-page-orientation: portrait;
+                        }
+                        body {
+                            font-family: 'David', 'Times New Roman', serif;
+                            font-size: 12pt;
+                            line-height: 1.6;
+                            direction: rtl;
+                            text-align: right;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        h1 {
+                            color: #2c3e50;
+                            border-bottom: 2px solid #3498db;
+                            padding-bottom: 10px;
+                            margin-bottom: 20px;
+                            font-size: 18pt;
+                            text-align: center;
+                        }
+                        p {
+                            margin-bottom: 12pt;
+                            text-align: justify;
+                            text-indent: 1cm;
+                        }
+                        .content {
+                            white-space: pre-wrap;
+                            word-wrap: break-word;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>תמלול - ${fileName}</h1>
+                    <div class="content">${text.split('\n').map(line =>
+                    line.trim() ? `<p>${line.trim()}</p>` : '<p>&nbsp;</p>'
+                ).join('')}</div>
+                </body>
+                </html>`;
             }
 
             function createSRTContent(text) {
