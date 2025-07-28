@@ -50,12 +50,26 @@ document.addEventListener('DOMContentLoaded', function () {
      * פונקציה לביצוע התמלול בפועל (ללא בדיקת אישור עלות)
      */
     async function performActualTranscription() {
-        // קבלת מפתח API של OpenAI
-        const apiKey = localStorage.getItem('openai_api_key');
+        // קבלת ספק התמלול הנבחר
+        const provider = localStorage.getItem('transcription_provider') || 'openai';
 
-        // בדיקה שיש מפתח API
-        if (!apiKey) {
-            ui.showError('מפתח API של OpenAI חסר – נא להזין בהגדרות');
+        let apiKey, endpointId;
+
+        if (provider === 'openai') {
+            apiKey = localStorage.getItem('openai_api_key');
+            if (!apiKey) {
+                ui.showError('מפתח API של OpenAI חסר – נא להזין בהגדרות');
+                return;
+            }
+        } else if (provider === 'ivrit') {
+            apiKey = localStorage.getItem('ivrit_api_key');
+            endpointId = localStorage.getItem('ivrit_endpoint_id');
+            if (!apiKey || !endpointId) {
+                ui.showError('נדרשים מפתח API ו-Endpoint ID של RunPod לשימוש ב-Ivrit.ai – נא להזין בהגדרות');
+                return;
+            }
+        } else {
+            ui.showError('ספק תמלול לא נתמך');
             return;
         }
 
@@ -87,25 +101,36 @@ document.addEventListener('DOMContentLoaded', function () {
             ui.updateProgress({
                 status: 'transcribing',
                 progress: 20,
-                message: willNeedSplitting ? 'מתחיל חילוק ותמלול...' : 'שולח לOpenAI Whisper לתמלול...'
+                message: willNeedSplitting
+                    ? 'מתחיל חילוק ותמלול.'
+                    : (provider === 'ivrit' ? 'שולח ל‑Ivrit.ai דרך RunPod.' : 'שולח ל‑OpenAI Whisper לתמלול.')
             });
 
             // התחלת מדידת זמן התמלול
             transcriptionStartTime = Date.now();
 
             // שימוש בפונקציה החכמה שבוחרת אוטומטית בין תמלול רגיל לתמלול עם חילוק
-            const transcription = await Transcription.transcribe(ui.selectedFile, apiKey, (progressData) => {
-                // התאמת האחוזים לתקדמות הכוללת
-                const adjustedProgress = 20 + (progressData.progress * 80 / 100);
+            const transcription = await Transcription.transcribe(
+                ui.selectedFile,
+                provider,
+                apiKey,
+                (progressData) => {
+                    // progress handler code...
 
-                ui.updateProgress({
-                    status: progressData.status,
-                    progress: adjustedProgress,
-                    message: progressData.message,
-                    currentChunk: progressData.currentChunk,
-                    totalChunks: progressData.totalChunks
-                });
-            });
+                    // התאמת האחוזים לתקדמות הכוללת
+                    const adjustedProgress = 20 + (progressData.progress * 80 / 100);
+
+                    ui.updateProgress({
+                        status: progressData.status,
+                        progress: adjustedProgress,
+                        message: progressData.message,
+                        currentChunk: progressData.currentChunk,
+                        totalChunks: progressData.totalChunks
+                    });
+                },
+                endpointId
+
+            );
 
             // סיום מדידת זמן התמלול
             transcriptionEndTime = Date.now();
@@ -117,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ui.updateProgress({ status: 'complete', progress: 100 });
 
             // הצגת התוצאות
-            if (transcription) {
+            if (transcription && transcription.trim()) {
                 ui.showResults(transcription);
 
                 // קבלת משך האודיו למטרות סטטיסטיקה
@@ -156,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ui.displayTranscriptionTime(actualTranscriptionTime, fileSizeMB, willNeedSplitting);
 
             } else {
-                ui.showError('לא התקבל תמלול. נא לנסות שנית.');
+                ui.showError('לא התקבל טקסט תמלול מהספק. פתח את הקונסול כדי לראות את התשובה המלאה.');
             }
 
         } catch (error) {
@@ -167,13 +192,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    /**
-     * הפעלת תמלול כאשר לוחצים על כפתור "התחל תמלול"
-     */
     ui.onTranscribeClick = async function () {
         if (!this.selectedFile) {
             this.showError('נא לבחור קובץ אודיו תקין');
             return;
+        }
+
+        // ولידציה נוספת של הספק הנבחר
+        const provider = localStorage.getItem('transcription_provider') || 'openai';
+
+        // בדיקת תמיכה בגודל קובץ
+        if (window.Transcription && window.Transcription.supportsFileSize) {
+            if (!window.Transcription.supportsFileSize(provider, this.selectedFile.size)) {
+                const providerInfo = window.Transcription.getProviderInfo(provider);
+                const maxSizeMB = providerInfo ? (providerInfo.maxFileSize / (1024 * 1024)).toFixed(0) : 'לא מוגדר';
+                this.showError(`הקובץ גדול מדי עבור ${provider}. מקסימום: ${maxSizeMB}MB`);
+                return;
+            }
         }
 
         // בדיקה והצגת אישור עלות אם נדרש
@@ -760,6 +795,419 @@ document.addEventListener('DOMContentLoaded', function () {
     if (statsManager) {
         statsManager.updateStatsDisplay();
     }
+    // ========================================
+    // טיפול בבחירת ספק תמלול
+    // ========================================
+    const transcriptionModeSelect = document.getElementById('transcription-mode');
+    if (transcriptionModeSelect) {
+        transcriptionModeSelect.addEventListener('change', function () {
+            const selectedProvider = this.value;
+            localStorage.setItem('transcription_provider', selectedProvider);
+
+            // עדכון התצוגה לפי הספק הנבחר
+            updateProviderDisplay(selectedProvider);
+
+            // ולידציה של הספק
+            validateSelectedProvider(selectedProvider);
+        });
+
+        // טעינת הבחירה השמורה
+        const savedProvider = localStorage.getItem('transcription_provider') || 'openai';
+        transcriptionModeSelect.value = savedProvider;
+        updateProviderDisplay(savedProvider);
+        validateSelectedProvider(savedProvider);
+    }
+
+    // ========================================
+    // פונקציות עזר לניהול ספקים
+    // ========================================
+    function updateProviderDisplay(provider) {
+        // הסרת הודעות קודמות
+        const existingMessages = document.querySelectorAll('.provider-display-message');
+        existingMessages.forEach(msg => msg.remove());
+
+        // יצירת הודעת מידע
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'provider-display-message';
+        messageDiv.style.cssText = `
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #1565c0;
+        `;
+
+        let messageText = '';
+        switch (provider) {
+            case 'openai':
+                messageText = '🤖 OpenAI Whisper - תמלול מדויק באיכות גבוהה (עד 25MB)';
+                break;
+            case 'ivrit':
+                messageText = '🇮🇱 Ivrit.ai - תמלול מותאם במיוחד לעברית (עד 10MB)';
+                break;
+        }
+
+        messageDiv.textContent = messageText;
+
+        // הוספת ההודעה
+        const transcriptionSection = document.querySelector('.api-section.required') ||
+            document.getElementById('transcription-mode')?.parentNode;
+        if (transcriptionSection) {
+            transcriptionSection.appendChild(messageDiv);
+        }
+    }
+
+    function validateSelectedProvider(provider) {
+        // בדיקת זמינות מפתחות
+        let isValid = false;
+        let errorMessage = '';
+
+        switch (provider) {
+            case 'openai':
+                const openaiKey = localStorage.getItem('openai_api_key');
+                isValid = !!openaiKey;
+                errorMessage = 'נדרש מפתח API של OpenAI';
+                break;
+            case 'ivrit':
+                const ivritKey = localStorage.getItem('ivrit_api_key');
+                const ivritEndpoint = localStorage.getItem('ivrit_endpoint_id');
+                isValid = !!(ivritKey && ivritEndpoint);
+                errorMessage = 'נדרשים מפתח RunPod API ו-Endpoint ID';
+                break;
+        }
+
+        // הצגת/הסרת אזהרה
+        showProviderValidation(provider, isValid, errorMessage);
+    }
+
+    function showProviderValidation(provider, isValid, errorMessage) {
+        // הסרת הודעות ולידציה קודמות
+        const existingValidation = document.querySelectorAll('.provider-validation-message');
+        existingValidation.forEach(msg => msg.remove());
+
+        if (!isValid) {
+            const warningDiv = document.createElement('div');
+            warningDiv.className = 'provider-validation-message';
+            warningDiv.style.cssText = `
+                background: #fff3cd;
+                border: 1px solid #ffc107;
+                border-radius: 8px;
+                padding: 10px;
+                margin: 10px 0;
+                font-size: 13px;
+                color: #856404;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            `;
+
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = `⚠️ ${errorMessage}`;
+
+            const settingsBtn = document.createElement('button');
+            settingsBtn.textContent = 'הגדרות API';
+            settingsBtn.className = 'btn btn-sm';
+            settingsBtn.style.cssText = `
+                background: #ffc107;
+                border: none;
+                color: #212529;
+                padding: 5px 10px;
+                font-size: 11px;
+                border-radius: 4px;
+                cursor: pointer;
+            `;
+
+            settingsBtn.addEventListener('click', () => {
+                const apiSettingsBtn = document.getElementById('api-settings-btn');
+                if (apiSettingsBtn) {
+                    apiSettingsBtn.click();
+                }
+            });
+
+            warningDiv.appendChild(messageSpan);
+            warningDiv.appendChild(settingsBtn);
+
+            // הוספת האזהרה
+            const transcriptionSection = document.querySelector('.api-section.required') ||
+                document.getElementById('transcription-mode')?.parentNode;
+            if (transcriptionSection) {
+                transcriptionSection.appendChild(warningDiv);
+            }
+        }
+    }
+
+    // פונקציה לרענון מפתחות API כשהם משתנים
+    function refreshApiKeysOnChange() {
+        // מאזין לשינויים ב-localStorage
+        window.addEventListener('storage', function (e) {
+            if (e.key && (e.key.includes('_api_key') || e.key.includes('_endpoint_id') || e.key === 'transcription_provider')) {
+                // רענון הממשק אם מפתח השתנה
+                const currentProvider = localStorage.getItem('transcription_provider') || 'openai';
+                validateSelectedProvider(currentProvider);
+
+                // עדכון מנהל ההגהה אם קיים
+                if (ui.enhancementHandler && ui.enhancementHandler.refreshApiKeys) {
+                    ui.enhancementHandler.refreshApiKeys();
+                }
+            }
+        });
+    }
+
+    // הפעלת מעקב אחר שינויים
+    refreshApiKeysOnChange();
+    // ========================================
+    // פונקציית המלצה על ספק מתאים לקובץ
+    // ========================================
+    function recommendProviderForFile(file) {
+        if (!file || !window.Transcription) return 'openai';
+
+        const availableProviders = [];
+
+        // בדיקת זמינות ספקים
+        if (localStorage.getItem('openai_api_key')) {
+            availableProviders.push('openai');
+        }
+
+        if (localStorage.getItem('ivrit_api_key') && localStorage.getItem('ivrit_endpoint_id')) {
+            availableProviders.push('ivrit');
+        }
+
+        // שימוש בפונקציית ההמלצה של Transcription
+        return window.Transcription.recommendProvider(file, availableProviders);
+    }
+
+    // הוספת המלצה עם event listener במקום החלפת פונקציה
+    const fileInput = document.getElementById('file-input');
+    const uploadArea = document.getElementById('upload-area');
+
+    // פונקציה להצגת המלצה על ספק
+    function handleFileUploadRecommendation(files) {
+        if (files && files.length > 0) {
+            setTimeout(() => { // timeout קצר כדי לתת לקובץ להיטען
+                const recommendedProvider = recommendProviderForFile(files[0]);
+                const currentProvider = localStorage.getItem('transcription_provider') || 'openai';
+
+                if (recommendedProvider !== currentProvider) {
+                    showProviderRecommendation(recommendedProvider, files[0]);
+                }
+            }, 500);
+        }
+    }
+
+    // הוספת event listeners
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleFileUploadRecommendation(e.target.files);
+            }
+        });
+    }
+
+    if (uploadArea) {
+        uploadArea.addEventListener('drop', (e) => {
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFileUploadRecommendation(e.dataTransfer.files);
+            }
+        });
+    }
+
+    function showProviderRecommendation(recommendedProvider, file) {
+        // הסרת המלצות קודמות
+        const existingRecommendations = document.querySelectorAll('.provider-recommendation-message');
+        existingRecommendations.forEach(rec => rec.remove());
+
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        const providerNames = {
+            'openai': 'OpenAI Whisper',
+            'ivrit': 'Ivrit.ai'
+        };
+
+        const recommendationDiv = document.createElement('div');
+        recommendationDiv.className = 'provider-recommendation-message';
+        recommendationDiv.style.cssText = `
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #0c5460;
+        `;
+
+        const messageText = `💡 המלצה: לקובץ בגודל ${fileSizeMB}MB, מומלץ להשתמש ב-${providerNames[recommendedProvider]}`;
+
+        const switchBtn = document.createElement('button');
+        switchBtn.textContent = `עבור ל-${providerNames[recommendedProvider]}`;
+        switchBtn.className = 'btn btn-sm';
+        switchBtn.style.cssText = `
+            background: #17a2b8;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            margin-right: 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        `;
+
+        switchBtn.addEventListener('click', () => {
+            const transcriptionModeSelect = document.getElementById('transcription-mode');
+            if (transcriptionModeSelect) {
+                transcriptionModeSelect.value = recommendedProvider;
+                transcriptionModeSelect.dispatchEvent(new Event('change'));
+            }
+            recommendationDiv.remove();
+        });
+
+        const dismissBtn = document.createElement('button');
+        dismissBtn.textContent = '✕';
+        dismissBtn.style.cssText = `
+            background: none;
+            border: none;
+            color: #0c5460;
+            cursor: pointer;
+            float: left;
+            font-size: 16px;
+            padding: 0;
+            margin-right: 10px;
+        `;
+
+        dismissBtn.addEventListener('click', () => {
+            recommendationDiv.remove();
+        });
+
+        recommendationDiv.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span>${messageText}</span>
+                <div></div>
+            </div>
+        `;
+
+        const buttonContainer = recommendationDiv.querySelector('div > div');
+        buttonContainer.appendChild(dismissBtn);
+        buttonContainer.appendChild(switchBtn);
+
+        // הוספת ההמלצה
+        const fileInfo = document.getElementById('file-info');
+        if (fileInfo && fileInfo.parentNode) {
+            fileInfo.parentNode.insertBefore(recommendationDiv, fileInfo.nextSibling);
+
+            // הסרה אוטומטית אחרי 10 שניות
+            setTimeout(() => {
+                if (recommendationDiv.parentNode) {
+                    recommendationDiv.remove();
+                }
+            }, 10000);
+        }
+    }
+
+    // הוספת המלצה כשמעלים קובץ חדש
+    const originalHandleFileSelect = ui.handleFileSelect;
+    if (originalHandleFileSelect) {
+        ui.handleFileSelect = function (files) {
+            // קריאה לפונקציה המקורית
+            originalHandleFileSelect.call(this, files);
+
+            // הוספת המלצה על ספק
+            if (files && files.length > 0) {
+                const recommendedProvider = recommendProviderForFile(files[0]);
+                const currentProvider = localStorage.getItem('transcription_provider') || 'openai';
+
+                if (recommendedProvider !== currentProvider) {
+                    showProviderRecommendation(recommendedProvider, files[0]);
+                }
+            }
+        };
+    }
+
+    function showProviderRecommendation(recommendedProvider, file) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        const providerNames = {
+            'openai': 'OpenAI Whisper',
+            'ivrit': 'Ivrit.ai'
+        };
+
+        const recommendationDiv = document.createElement('div');
+        recommendationDiv.className = 'provider-recommendation-message';
+        recommendationDiv.style.cssText = `
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #0c5460;
+        `;
+
+        const messageText = `💡 המלצה: לקובץ בגודל ${fileSizeMB}MB, מומלץ להשתמש ב-${providerNames[recommendedProvider]}`;
+
+        const switchBtn = document.createElement('button');
+        switchBtn.textContent = `עבור ל-${providerNames[recommendedProvider]}`;
+        switchBtn.className = 'btn btn-sm';
+        switchBtn.style.cssText = `
+            background: #17a2b8;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            margin-right: 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        `;
+
+        switchBtn.addEventListener('click', () => {
+            const transcriptionModeSelect = document.getElementById('transcription-mode');
+            if (transcriptionModeSelect) {
+                transcriptionModeSelect.value = recommendedProvider;
+                transcriptionModeSelect.dispatchEvent(new Event('change'));
+            }
+            recommendationDiv.remove();
+        });
+
+        const dismissBtn = document.createElement('button');
+        dismissBtn.textContent = '✕';
+        dismissBtn.style.cssText = `
+            background: none;
+            border: none;
+            color: #0c5460;
+            cursor: pointer;
+            float: left;
+            font-size: 16px;
+            padding: 0;
+            margin-right: 10px;
+        `;
+
+        dismissBtn.addEventListener('click', () => {
+            recommendationDiv.remove();
+        });
+
+        recommendationDiv.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span>${messageText}</span>
+                <div></div>
+            </div>
+        `;
+
+        const buttonContainer = recommendationDiv.querySelector('div > div');
+        buttonContainer.appendChild(dismissBtn);
+        buttonContainer.appendChild(switchBtn);
+
+        // הוספת ההמלצה
+        const fileInfo = document.getElementById('file-info');
+        if (fileInfo && fileInfo.parentNode) {
+            fileInfo.parentNode.insertBefore(recommendationDiv, fileInfo.nextSibling);
+
+            // הסרה אוטומטית אחרי 10 שניות
+            setTimeout(() => {
+                if (recommendationDiv.parentNode) {
+                    recommendationDiv.remove();
+                }
+            }, 10000);
+        }
+    }
+
 });
 
 // עדכון הודעת אישור עלות לסנכרון עם הערכות זמן

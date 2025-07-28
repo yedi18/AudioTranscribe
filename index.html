@@ -402,7 +402,7 @@
                         </span>
                         <select id="transcription-mode" class="styled-select">
                             <option value="openai" selected>OpenAI Whisper – תמלול מדויק</option>
-                            <option value="huggingface">Hugging Face – תמלול חינמי</option>
+                            <option value="ivrit">Ivrit.ai – תמלול עברית מתקדם</option>
                             <option value="groq">Groq – תמלול מהיר</option>
                             <option value="gemini">Google Gemini – תמלול חכם</option>
                             <option value="claude">Anthropic Claude – תמלול מתקדם</option>
@@ -412,23 +412,17 @@
                             style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
                             <div class="capability-legend">
                                 <h5 style="margin: 0 0 12px 0; color: #495057; font-size: 15px;">יכולות כל ספק:</h5>
-                                <div class="capability-grid">
-                                    <div class="capability-item">
-                                        <div class="capability-header">🎙️ <strong>תמלול אודיו:</strong></div>
-                                        <div class="capability-list">OpenAI, Hugging Face, Groq, Gemini, Claude</div>
-                                    </div>
-                                    <div class="capability-item">
-                                        <div class="capability-header">✏️ <strong>הגהה וסיכום:</strong></div>
-                                        <div class="capability-list">OpenAI, Groq, Gemini, Claude</div>
-                                    </div>
-                                    <div class="capability-item">
-                                        <div class="capability-header">⚡ <strong>מהירות גבוהה:</strong></div>
-                                        <div class="capability-list">Groq (הכי מהיר)</div>
-                                    </div>
-                                    <div class="capability-item">
-                                        <div class="capability-header">🆓 <strong>חינמי:</strong></div>
-                                        <div class="capability-list">Hugging Face</div>
-                                    </div>
+                                <div class="capability-item">
+                                    <div class="capability-header">🎙️ <strong>תמלול אודיו:</strong></div>
+                                    <div class="capability-list">OpenAI, Ivrit.ai</div>
+                                </div>
+                                <div class="capability-item">
+                                    <div class="capability-header">✏️ <strong>הגהה וסיכום:</strong></div>
+                                    <div class="capability-list">OpenAI, Groq, Gemini, Claude</div>
+                                </div>
+                                <div class="capability-item">
+                                    <div class="capability-header">🇮🇱 <strong>עברית מותאמת:</strong></div>
+                                    <div class="capability-list">Ivrit.ai (מיוחד לעברית)</div>
                                 </div>
                             </div>
                         </div>
@@ -462,27 +456,36 @@
                             <span>הצג אפשרויות נוספות (אופציונלי)</span>
                             <i class="fas fa-chevron-down toggle-arrow"></i>
                         </button>
+
                     </div>
 
                     <!-- אפשרויות נוספות - מוסתרות בברירת מחדל -->
                     <div id="additional-options" class="additional-options" style="display: none;">
-                        <!-- Hugging Face -->
+                        <!-- Ivrit.ai -->
                         <div class="api-section optional">
-                            <h4>Hugging Face – תמלול חינמי <span class="optional-badge">אופציונלי</span></h4>
-                            <label for="huggingface-api-key">מפתח API של Hugging Face</label>
-                            <p class="api-description">עבור תמלול חינמי עם מודלי Hugging Face. ניתן לקבל מפתח באתר <a
-                                    href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co</a></p>
+                            <h4>Ivrit.ai – תמלול עברית מתקדם <span class="optional-badge">אופציונלי</span></h4>
+                            <label for="ivrit-api-key">מפתח RunPod API</label>
+                            <p class="api-description">עבור תמלול מותאם לעברית עם Ivrit.ai דרך RunPod. נדרש מפתח RunPod
+                                API ו-Endpoint ID. ניתן לקבל מפתח באתר <a href="https://runpod.io"
+                                    target="_blank">runpod.io</a></p>
+
                             <div class="api-input-group">
-                                <input type="password" id="huggingface-api-key"
-                                    placeholder="הדבק את מפתח ה-API של Hugging Face כאן">
-                                <button id="save-huggingface-key" class="btn"><i class="fas fa-save"></i> שמור</button>
+                                <input type="password" id="ivrit-api-key" placeholder="הדבק את מפתח ה-RunPod API כאן">
+                                <button id="save-ivrit-key" class="btn"><i class="fas fa-save"></i> שמור</button>
                             </div>
+
+                            <div class="api-input-group" style="margin-top: 10px;">
+                                <input type="text" id="ivrit-endpoint-id" placeholder="הזן את ה-Endpoint ID מ-RunPod">
+                                <button id="save-ivrit-endpoint" class="btn"><i class="fas fa-save"></i> שמור
+                                    Endpoint</button>
+                            </div>
+
                             <div style="margin-top: 10px;">
-                                <input type="checkbox" id="show-huggingface-key" style="margin-left: 8px;">
-                                <label for="show-huggingface-key">הצג/הסתר מפתח API</label>
+                                <input type="checkbox" id="show-ivrit-key" style="margin-left: 8px;">
+                                <label for="show-ivrit-key">הצג/הסתר מפתח API</label>
                             </div>
-                            <div id="huggingface-key-status" class="api-key-status"></div>
-                            <div class="api-help-icon" id="huggingface-help-icon">
+                            <div id="ivrit-key-status" class="api-key-status"></div>
+                            <div class="api-help-icon" id="ivrit-help-icon">
                                 <i class="fas fa-question-circle"></i>
                             </div>
                         </div>
@@ -648,59 +651,43 @@
             </div>
         </div>
 
-        <!-- מודל Hugging Face -->
-        <div id="huggingface-guide-modal" class="modal">
+        <!-- מודל Ivrit.ai -->
+        <div id="ivrit-guide-modal" class="modal">
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
-                <h3>איך להשיג מפתח API של Hugging Face</h3>
+                <h3>איך להגדיר Ivrit.ai עם RunPod</h3>
                 <div class="guide-steps">
                     <div class="step">
                         <div class="step-number">1</div>
                         <div class="step-content">
-                            <h4>היכנס לאתר Hugging Face</h4>
-                            <p>פתח את האתר <a href="https://huggingface.co/" target="_blank">huggingface.co</a></p>
+                            <h4>הירשם ל-RunPod</h4>
+                            <p>פתח את האתר <a href="https://runpod.io" target="_blank">runpod.io</a> והירשם לחשבון</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">2</div>
                         <div class="step-content">
-                            <h4>צור חשבון או התחבר</h4>
-                            <p>לחץ על "Sign Up" בפינה הימנית העליונה ליצירת חשבון חדש, או התחבר לחשבון קיים</p>
+                            <h4>יצור מפתח API</h4>
+                            <p>עבור להגדרות (Settings) ולחץ על "API Keys", אחר כך "Create API Key"</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">3</div>
                         <div class="step-content">
-                            <h4>פתח את הגדרות המשתמש</h4>
-                            <p>לאחר ההתחברות, לחץ על תמונת הפרופיל שלך בפינה הימנית העליונה ובחר ב-"Settings"</p>
+                            <h4>Deploy את Ivrit.ai Endpoint</h4>
+                            <p>עבור ל-RunPod Hub, חפש "ivrit.ai" ולחץ "Deploy" ליצירת endpoint</p>
                         </div>
                     </div>
                     <div class="step">
                         <div class="step-number">4</div>
                         <div class="step-content">
-                            <h4>צור מפתח API חדש</h4>
-                            <p>בתפריט הצדדי, בחר ב-"Access Tokens", ואז לחץ על כפתור "New token"</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">5</div>
-                        <div class="step-content">
-                            <h4>הגדר את המפתח</h4>
-                            <p>תן שם למפתח (לדוגמה "Audio Transcription"), בחר הרשאות "Read" ולחץ על "Generate token"
-                            </p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">6</div>
-                        <div class="step-content">
-                            <h4>העתק את המפתח</h4>
-                            <p>העתק את המפתח שנוצר והדבק אותו בשדה "מפתח API של Huggingface" בעמוד זה</p>
+                            <h4>העתק את פרטי החיבור</h4>
+                            <p>העתק את מפתח ה-API ואת ה-Endpoint ID שנוצר והדבק כאן</p>
                         </div>
                     </div>
                 </div>
                 <div class="guide-note">
-                    <p><strong>שים לב:</strong> מפתח ה-API נשמר רק על המכשיר שלך באופן מקומי ואינו נשלח לשום שרת אחר
-                        מלבד Huggingface.</p>
+                    <p><strong>שים לב:</strong> Ivrit.ai מותאם במיוחד לתמלול עברית ומשתמש במודלי Whisper משופרים</p>
                 </div>
             </div>
         </div>
@@ -931,6 +918,7 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
+
 
         <footer>
             <p>© 2025 שירות תמלול אודיו - פשוט, מהיר ומדויק עם יכולות AI מתקדמות. <a href="#" id="show-tips">טיפים
@@ -1649,6 +1637,7 @@
             });
         </script>
     </div>
+
 </body>
 
 </html>
