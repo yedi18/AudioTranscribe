@@ -290,11 +290,12 @@ class UIHandlers extends UICore {
                 break;
             case 'ivrit':
                 infoIcon = '🇮🇱';
-                infoText = 'Ivrit.ai - מותאם במיוחד לעברית. תומך בקבצים עד 10MB. נדרש מפתח RunPod API ו-Endpoint ID.';
+                infoText = 'Ivrit.ai - מותאם במיוחד לעברית. תומך בקבצים גדולים עם חילוק חכם אוטומטי.';
                 break;
             default:
-                return; // לא מציגים מידע לספקים אחרים
+                return;
         }
+
 
         infoMessage.innerHTML = `${infoIcon} ${infoText}`;
 
@@ -684,14 +685,7 @@ class UIHandlers extends UICore {
         }
 
         // בדיקת גודל קובץ לפי ספק
-        if (window.Transcription && window.Transcription.supportsFileSize) {
-            if (!window.Transcription.supportsFileSize(selectedProvider, this.selectedFile.size)) {
-                const providerInfo = window.Transcription.getProviderInfo(selectedProvider);
-                const maxSizeMB = providerInfo ? (providerInfo.maxFileSize / (1024 * 1024)).toFixed(0) : 'לא מוגדר';
-                this.showError(`הקובץ גדול מדי עבור ${selectedProvider}. מקסימום: ${maxSizeMB}MB`);
-                return false;
-            }
-        }
+       
 
         return true;
     }

@@ -202,14 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const provider = localStorage.getItem('transcription_provider') || 'openai';
 
         // בדיקת תמיכה בגודל קובץ
-        if (window.Transcription && window.Transcription.supportsFileSize) {
-            if (!window.Transcription.supportsFileSize(provider, this.selectedFile.size)) {
-                const providerInfo = window.Transcription.getProviderInfo(provider);
-                const maxSizeMB = providerInfo ? (providerInfo.maxFileSize / (1024 * 1024)).toFixed(0) : 'לא מוגדר';
-                this.showError(`הקובץ גדול מדי עבור ${provider}. מקסימום: ${maxSizeMB}MB`);
-                return;
-            }
-        }
+        
 
         // בדיקה והצגת אישור עלות אם נדרש
         const shouldShowConfirmation = fileOps.checkAndShowCostConfirmation(
