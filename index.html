@@ -43,9 +43,14 @@
             <div class="top-controls-bar">
                 <button id="api-settings-btn" class="control-btn settings-btn">
                     <i class="fas fa-cog"></i>
-                    <span>הגדרות API</span>
+                    <div class="api-button-content">
+                        <span>הגדרות API</span>
+                        <div id="provider-indicator" class="provider-indicator">
+                            <span id="provider-icon">🤖</span>
+                            <span id="provider-name">OpenAI</span>
+                        </div>
+                    </div>
                 </button>
-
                 <button id="view-recent-transcriptions-btn" class="control-btn recent-btn">
                     <i class="fas fa-history"></i>
                     <span>תמלולים אחרונים</span>
@@ -651,47 +656,141 @@
             </div>
         </div>
 
-        <!-- מודל Ivrit.ai -->
+        <!-- הוסף את זה לפני סגירת body בindex.html, אחרי המודלים הקיימים -->
+
+        <!-- מודל Ivrit.ai מעודכן -->
         <div id="ivrit-guide-modal" class="modal">
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
-                <h3>איך להגדיר Ivrit.ai עם RunPod</h3>
+                <h3>🇮🇱 איך להגדיר Ivrit.ai עם RunPod</h3>
+
+                <div class="guide-intro">
+                    <p><strong>Ivrit.ai</strong> הוא מודל תמלול מתקדם המותאם במיוחד לעברית, הפועל דרך פלטפורמת RunPod.
+                    </p>
+                </div>
+
                 <div class="guide-steps">
                     <div class="step">
                         <div class="step-number">1</div>
                         <div class="step-content">
-                            <h4>הירשם ל-RunPod</h4>
-                            <p>פתח את האתר <a href="https://runpod.io" target="_blank">runpod.io</a> והירשם לחשבון</p>
+                            <h4>🔗 הירשם ל-RunPod</h4>
+                            <p>פתח את האתר <a href="https://runpod.io" target="_blank">runpod.io</a> ולחץ על "Sign Up"
+                            </p>
+                            <p>השלם את תהליך הרישום והכנס לחשבון שלך</p>
                         </div>
                     </div>
+
                     <div class="step">
                         <div class="step-number">2</div>
                         <div class="step-content">
-                            <h4>יצור מפתח API</h4>
-                            <p>עבור להגדרות (Settings) ולחץ על "API Keys", אחר כך "Create API Key"</p>
+                            <h4>🔑 יצירת מפתח API</h4>
+                            <p>בדף הראשי של RunPod:</p>
+                            <ul>
+                                <li>לחץ על הפרופיל שלך (פינה ימנית עליונה)</li>
+                                <li>בחר "Settings" מהתפריט</li>
+                                <li>עבור לטאב "API Keys"</li>
+                                <li>לחץ "Create API Key"</li>
+                                <li>תן שם למפתח (למשל: "Ivrit-ai-key")</li>
+                                <li>העתק את המפתח ושמור אותו במקום בטוח</li>
+                            </ul>
                         </div>
                     </div>
+
                     <div class="step">
                         <div class="step-number">3</div>
                         <div class="step-content">
-                            <h4>Deploy את Ivrit.ai Endpoint</h4>
-                            <p>עבור ל-RunPod Hub, חפש "ivrit.ai" ולחץ "Deploy" ליצירת endpoint</p>
+                            <h4>🚀 פריסת Ivrit.ai Endpoint</h4>
+                            <p>חזור לדף הראשי ובצע את השלבים הבאים:</p>
+                            <ul>
+                                <li>לחץ על "Serverless" בתפריט הצדדי</li>
+                                <li>לחץ "Browse Public Models"</li>
+                                <li>חפש "ivrit" או "ivrit-ai" בשדה החיפוש</li>
+                                <li>מצא את המודל "ivrit-ai/whisper-large-v3-turbo-ct2"</li>
+                                <li>לחץ "Deploy" ליד המודל</li>
+                            </ul>
                         </div>
                     </div>
+
                     <div class="step">
                         <div class="step-number">4</div>
                         <div class="step-content">
-                            <h4>העתק את פרטי החיבור</h4>
-                            <p>העתק את מפתח ה-API ואת ה-Endpoint ID שנוצר והדבק כאן</p>
+                            <h4>⚙️ הגדרת Endpoint</h4>
+                            <p>בעמוד ההגדרה:</p>
+                            <ul>
+                                <li>תן שם ל-Endpoint (למשל: "my-ivrit-ai")</li>
+                                <li>בחר GPU מתאים (V100 או A100 מומלצים)</li>
+                                <li>השאר את שאר ההגדרות כברירת מחדל</li>
+                                <li>לחץ "Deploy"</li>
+                                <li>חכה שהסטטוס יהפוך ל-"Running" (כמה דקות)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>📋 העתקת Endpoint ID</h4>
+                            <p>לאחר שה-Endpoint פעיל:</p>
+                            <ul>
+                                <li>בעמוד הEndpoints שלך, תראה את הEndpoint החדש</li>
+                                <li>העתק את ה-"Endpoint ID" (מחרוזת של אותיות ומספרים)</li>
+                                <li>זה נראה בערך כך: <code>abc123def456</code></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h4>✅ הזנת הפרטים באתר</h4>
+                            <p>חזור לאתר התמלול:</p>
+                            <ul>
+                                <li>הדבק את <strong>מפתח ה-API</strong> בשדה הראשון</li>
+                                <li>הדבק את <strong>Endpoint ID</strong> בשדה השני</li>
+                                <li>לחץ "שמור" על שני השדות</li>
+                                <li>וודא שמופיעה הודעה "נשמר בהצלחה"</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
+
+                <div class="guide-tips">
+                    <h4>💡 טיפים חשובים:</h4>
+                    <div class="tip-item">
+                        <strong>💰 עלויות:</strong> RunPod גובה לפי זמן שימוש. זכור לכבות את ה-Endpoint כשלא משתמש
+                    </div>
+                    <div class="tip-item">
+                        <strong>⚡ ביצועים:</strong> Ivrit.ai מותאם במיוחד לעברית ויתן תוצאות טובות יותר מOpenAI לטקסטים
+                        בעברית
+                    </div>
+                    <div class="tip-item">
+                        <strong>📏 גבלות:</strong> קבצים גדולים מ-10MB יחולקו אוטומטית לחלקים קטנים יותר
+                    </div>
+                    <div class="tip-item">
+                        <strong>🔒 אבטחה:</strong> המפתחות נשמרים רק במכשיר שלך ולא נשלחים לשום מקום אחר
+                    </div>
+                </div>
+
+                <div class="guide-links">
+                    <h4>🔗 קישורים שימושיים:</h4>
+                    <div class="links-grid">
+                        <a href="https://runpod.io" target="_blank" class="guide-link">
+                            <i class="fas fa-external-link-alt"></i> אתר RunPod
+                        </a>
+                        <a href="https://docs.runpod.io" target="_blank" class="guide-link">
+                            <i class="fas fa-book"></i> תיעוד RunPod
+                        </a>
+                        <a href="https://github.com/ivrit-ai" target="_blank" class="guide-link">
+                            <i class="fab fa-github"></i> Ivrit.ai GitHub
+                        </a>
+                    </div>
+                </div>
+
                 <div class="guide-note">
-                    <p><strong>שים לב:</strong> Ivrit.ai מותאם במיוחד לתמלול עברית ומשתמש במודלי Whisper משופרים</p>
+                    <p><strong>זקוק לעזרה?</strong> אם נתקלת בבעיות, נסה לרענן את הדף או לבדוק שהמפתחות הוזנו נכון.</p>
                 </div>
             </div>
         </div>
-
         <!-- מודל Groq -->
         <div id="groq-guide-modal" class="modal">
             <div class="modal-content">

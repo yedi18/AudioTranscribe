@@ -1,5 +1,5 @@
 /**
- * מודול לתמלול קבצי אודיו באמצעות OpenAI Whisper ו-Ivrit.ai - עם תמיכה בחילוק קבצים גדולים משופרת
+ * מודול לתמלול קבצי אודיו באמצעות OpenAI Whisper ו-Ivrit.ai - תוקן
  */
 class Transcription {
     /**
@@ -62,12 +62,17 @@ class Transcription {
      */
     static async transcribeLargeFileOpenAI(audioFile, apiKey, onProgress = null) {
         try {
-            const chunks = await AudioSplitter.splitBySize(audioFile, 24 * 1024 * 1024, (splitProgress) => {
+            const chunkSize = 24 * 1024 * 1024; // 24MB
+            const expectedChunks = Math.ceil(audioFile.size / chunkSize);
+
+            const chunks = await AudioSplitter.splitBySize(audioFile, chunkSize, (splitProgress) => {
                 if (onProgress) {
                     onProgress({
                         status: 'splitting',
                         progress: splitProgress.progress * 0.2,
-                        message: splitProgress.message || 'מחלק קובץ...'
+                        message: `מחלק קובץ ל-${expectedChunks} חלקים...`,
+                        currentChunk: splitProgress.currentChunk,
+                        totalChunks: expectedChunks
                     });
                 }
             });
@@ -85,9 +90,10 @@ class Transcription {
                     onProgress({
                         status: 'transcribing',
                         progress: currentProgress,
-                        message: `מתמלל חלק ${i + 1} מתוך ${chunks.length}...`,
+                        message: `מעביר חלק ${i + 1} מתוך ${chunks.length} דרך OpenAI Whisper...`,
                         currentChunk: i + 1,
-                        totalChunks: chunks.length
+                        totalChunks: chunks.length,
+                        provider: 'OpenAI'
                     });
                 }
 
@@ -130,7 +136,8 @@ class Transcription {
                 onProgress({
                     status: 'transcribing',
                     progress: 10,
-                    message: 'שולח לOpenAI Whisper...'
+                    message: 'שולח ל-OpenAI Whisper...',
+                    provider: 'OpenAI'
                 });
             }
 
@@ -151,30 +158,28 @@ class Transcription {
     }
 
     /**
-     * תמלול עם Ivrit.ai דרך RunPod - עם תמיכה בחילוק קבצים משופרת
+     * תמלול עם Ivrit.ai דרך RunPod - חילוק ל-10MB
      */
     static async transcribeIvrit(audioFile, apiKey, endpointId, onProgress = null) {
         if (!apiKey || !endpointId) {
             throw new Error('נדרשים מפתח API ו-Endpoint ID של RunPod');
         }
 
-        // הגדרת גבולות מדויקים יותר לIvrit.ai
-        const IVRIT_SINGLE_FILE_LIMIT = 15 * 1024 * 1024; // 15MB - בטוח יותר
-        const IVRIT_CHUNK_SIZE = 8 * 1024 * 1024; // 8MB לחלקים - בטוח מאוד
-
-        console.log(`[Ivrit.ai] גודל קובץ: ${(audioFile.size / 1024 / 1024).toFixed(2)}MB`);
+        // מגבלות Ivrit.ai - חילוק ל-10MB
+        const IVRIT_SINGLE_FILE_LIMIT = 10 * 1024 * 1024; // 10MB
+        const IVRIT_CHUNK_SIZE = 10 * 1024 * 1024; // 10MB לחלקים גם כן
 
         if (audioFile.size <= IVRIT_SINGLE_FILE_LIMIT) {
             // קובץ קטן - ניסיון ישיר
             try {
-                console.log('[Ivrit.ai] מנסה תמלול ישיר (קובץ קטן)');
                 if (onProgress) {
                     onProgress({
                         status: 'transcribing',
                         progress: 20,
                         message: 'שולח ל-Ivrit.ai...',
                         currentChunk: 1,
-                        totalChunks: 1
+                        totalChunks: 1,
+                        provider: 'Ivrit.ai'
                     });
                 }
 
@@ -190,13 +195,11 @@ class Transcription {
 
                 return result;
             } catch (error) {
-                console.warn('[Ivrit.ai] תמלול ישיר נכשל, מנסה חילוק:', error.message);
-                // אם נכשל בגלל גודל או סיבה אחרת, ננסה חילוק
+                // אם נכשל, ננסה חילוק
                 return await this.transcribeLargeFileIvrit(audioFile, apiKey, endpointId, onProgress, IVRIT_CHUNK_SIZE);
             }
         } else {
             // קובץ גדול - חילוק ישיר
-            console.log('[Ivrit.ai] קובץ גדול - מתחיל חילוק');
             return await this.transcribeLargeFileIvrit(audioFile, apiKey, endpointId, onProgress, IVRIT_CHUNK_SIZE);
         }
     }
@@ -205,8 +208,6 @@ class Transcription {
      * תמלול קובץ יחיד עם Ivrit.ai
      */
     static async transcribeSingleIvrit(audioFile, apiKey, endpointId) {
-        console.log(`[Ivrit.ai] מתמלל קובץ יחיד: ${audioFile.name}, גודל: ${(audioFile.size / 1024 / 1024).toFixed(2)}MB`);
-
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -249,81 +250,66 @@ class Transcription {
         }
 
         const result = await response.json();
-        const transcription = this.extractTextFromIvritResponse(result);
-        
-        console.log(`[Ivrit.ai] תמלול הושלם בהצלחה: ${transcription.length} תווים`);
-        return transcription;
+        return this.extractTextFromIvritResponse(result);
     }
 
     /**
-     * תמלול קבצים גדולים עם חילוק - Ivrit.ai משופר
+     * תמלול קבצים גדולים עם חילוק - Ivrit.ai (10MB חלקים)
      */
-    static async transcribeLargeFileIvrit(audioFile, apiKey, endpointId, onProgress = null, chunkSize = 8 * 1024 * 1024) {
+    static async transcribeLargeFileIvrit(audioFile, apiKey, endpointId, onProgress = null, chunkSize = 10 * 1024 * 1024) {
         try {
-            console.log(`[Ivrit.ai] מתחיל חילוק קובץ גדול: ${(audioFile.size / 1024 / 1024).toFixed(2)}MB`);
-            console.log(`[Ivrit.ai] גודל חלק: ${(chunkSize / 1024 / 1024).toFixed(2)}MB`);
+            // חישוב מספר חלקים נכון
+            const expectedChunks = Math.ceil(audioFile.size / chunkSize);
 
             // חילוק הקובץ לחלקים
             const chunks = await AudioSplitter.splitBySize(audioFile, chunkSize, (splitProgress) => {
                 if (onProgress) {
                     onProgress({
                         status: 'splitting',
-                        progress: splitProgress.progress * 0.15, // 15% מהתהליך הכולל
-                        message: `מחלק קובץ לחלקים של ${(chunkSize / 1024 / 1024).toFixed(0)}MB...`,
+                        progress: splitProgress.progress * 0.15,
+                        message: `מחלק קובץ ל-${expectedChunks} חלקים של 10MB...`,
                         currentChunk: splitProgress.currentChunk || 0,
-                        totalChunks: splitProgress.totalChunks || Math.ceil(audioFile.size / chunkSize)
+                        totalChunks: expectedChunks
                     });
                 }
             });
 
-            console.log(`[Ivrit.ai] קובץ חולק ל-${chunks.length} חלקים`);
-
-            // תמלול כל חלק בנפרד
             const transcriptions = [];
             let successfulChunks = 0;
             let failedChunks = 0;
 
             for (let i = 0; i < chunks.length; i++) {
                 const chunk = chunks[i];
-                const chunkSizeMB = (chunk.size / 1024 / 1024).toFixed(2);
+                const chunkSizeMB = (chunk.size / 1024 / 1024).toFixed(1);
 
                 if (onProgress) {
-                    const progressBase = 15; // אחרי 15% של החילוק
-                    const progressPerChunk = 85 / chunks.length; // 85% נותרים לתמלול
+                    const progressBase = 15;
+                    const progressPerChunk = 85 / chunks.length;
                     const currentProgress = progressBase + (i * progressPerChunk);
 
                     onProgress({
                         status: 'transcribing',
                         progress: currentProgress,
-                        message: `מתמלל חלק ${i + 1} מתוך ${chunks.length} (${chunkSizeMB}MB)...`,
+                        message: `מעביר חלק ${i + 1} מתוך ${chunks.length} דרך Ivrit.ai ...`,
                         currentChunk: i + 1,
-                        totalChunks: chunks.length
+                        totalChunks: chunks.length,
+                        provider: 'Ivrit.ai'
                     });
                 }
 
                 try {
-                    console.log(`[Ivrit.ai] מתמלל חלק ${i + 1}/${chunks.length}: ${chunkSizeMB}MB`);
-                    
                     const transcription = await this.transcribeSingleIvrit(chunk, apiKey, endpointId);
                     transcriptions.push(transcription);
                     successfulChunks++;
-                    
-                    console.log(`[Ivrit.ai] חלק ${i + 1} הושלם: ${transcription.length} תווים`);
 
-                    // עיכוב בין בקשות כדי לא להעמיס על ה-API
+                    // עיכוב בין בקשות
                     if (i < chunks.length - 1) {
-                        console.log('[Ivrit.ai] מחכה 3 שניות לפני החלק הבא...');
-                        await new Promise(resolve => setTimeout(resolve, 3000)); // 3 שניות
+                        await new Promise(resolve => setTimeout(resolve, 3000));
                     }
 
                 } catch (chunkError) {
-                    console.error(`[Ivrit.ai] שגיאה בחלק ${i + 1}:`, chunkError.message);
                     failedChunks++;
-                    
-                    // הוספת הודעת שגיאה לתמלול
                     transcriptions.push(`[שגיאה בתמלול חלק ${i + 1}: ${chunkError.message}]`);
-                    
-                    // המשך גם עם שגיאות - לא נעצור את כל התהליך
                 }
             }
 
@@ -331,28 +317,19 @@ class Transcription {
                 onProgress({
                     status: 'complete',
                     progress: 100,
-                    message: `התמלול הושלם! (${successfulChunks} חלקים הצליחו, ${failedChunks} נכשלו)`
+                    message: `התמלול הושלם! (${successfulChunks} חלקים הצליחו${failedChunks > 0 ? `, ${failedChunks} נכשלו` : ''})`
                 });
             }
 
-            // סיכום התוצאות
-            console.log(`[Ivrit.ai] סיכום: ${successfulChunks} חלקים הצליחו, ${failedChunks} נכשלו`);
-            
-            // חיבור כל התמלולים לטקסט אחד
-            const fullTranscription = transcriptions.join(' ');
-            
-            console.log(`[Ivrit.ai] תמלול מלא הושלם: ${fullTranscription.length} תווים`);
-            
-            return fullTranscription;
+            return transcriptions.join(' ');
 
         } catch (error) {
-            console.error('[Ivrit.ai] שגיאה כללית בתמלול:', error);
             throw error;
         }
     }
 
     /**
-     * חילוץ טקסט מתגובת Ivrit.ai - משופר
+     * חילוץ טקסט מתגובת Ivrit.ai
      */
     static extractTextFromIvritResponse(result) {
         let text = '';
@@ -360,33 +337,27 @@ class Transcription {
         try {
             const output = result?.output || result;
 
-            // המבנה הספציפי של Ivrit.ai: output[0].result[].text
             if (Array.isArray(output) && output[0] && Array.isArray(output[0].result)) {
                 text = output[0].result
                     .map(segment => segment?.text || '')
                     .filter(t => t.trim())
                     .join(' ');
             }
-            // אפשרות חלופית: output.result[].text
             else if (output && Array.isArray(output.result)) {
                 text = output.result
                     .map(segment => segment?.text || '')
                     .filter(t => t.trim())
                     .join(' ');
             }
-            // חיפוש עמוק אחר טקסט בכל המבנה
             else {
                 text = this.findTextInResponse(output);
             }
 
         } catch (parseError) {
-            console.error('[Ivrit.ai] שגיאה בעיבוד תגובה:', parseError);
             throw new Error('שגיאה בעיבוד תגובת Ivrit.ai');
         }
 
-        // ולידציה סופית
         if (!text || text.trim().length === 0) {
-            console.error('[Ivrit.ai] תגובה ריקה מהשרת:', JSON.stringify(result, null, 2));
             throw new Error('Ivrit.ai החזיר תשובה ללא טקסט תמלול.');
         }
 
@@ -397,7 +368,7 @@ class Transcription {
      * פונקציה עזר לחיפוש טקסט בכל מבנה התגובה
      */
     static findTextInResponse(obj, depth = 0) {
-        if (depth > 5) return ''; // מניעת לולאה אינסופית
+        if (depth > 5) return '';
 
         if (typeof obj === 'string' && obj.trim().length > 10) {
             return obj;
@@ -411,7 +382,6 @@ class Transcription {
         }
 
         if (obj && typeof obj === 'object') {
-            // חיפוש בשדות נפוצים קודם
             const commonFields = ['text', 'transcription', 'content', 'transcript'];
             for (const field of commonFields) {
                 if (obj[field] && typeof obj[field] === 'string' && obj[field].trim().length > 0) {
@@ -419,7 +389,6 @@ class Transcription {
                 }
             }
 
-            // חיפוש בכל השדות
             for (const [key, value] of Object.entries(obj)) {
                 if (typeof value === 'string' && value.trim().length > 10) {
                     return value;
@@ -435,7 +404,7 @@ class Transcription {
     }
 
     /**
-     * פונקציה ראשית לתמלול - תומכת במספר ספקים
+     * פונקציה ראשית לתמלול
      */
     static async transcribe(audioFile, provider, apiKey, onProgress = null, endpointId = null) {
         if (!audioFile) {
@@ -508,13 +477,15 @@ class Transcription {
     }
 
     /**
-     * קבלת מידע על ספק התמלול - עדכון לIvrit.ai
+     * קבלת מידע על ספק התמלול - עודכן ל-10MB חלקים
      */
     static getProviderInfo(provider) {
         const providers = {
             openai: {
                 name: 'OpenAI Whisper',
+                displayName: 'OpenAI',
                 maxFileSize: 25 * 1024 * 1024, // 25MB
+                chunkSize: 24 * 1024 * 1024, // 24MB לחלקים
                 supportsLargeFiles: true,
                 description: 'תמלול מדויק באיכות גבוהה',
                 languages: ['he', 'en', 'ar', 'fr', 'es'],
@@ -522,10 +493,11 @@ class Transcription {
             },
             ivrit: {
                 name: 'Ivrit.ai',
-                maxFileSize: 15 * 1024 * 1024, // 15MB לקובץ יחיד
-                chunkSize: 8 * 1024 * 1024, // 8MB לחלקים
+                displayName: 'Ivrit.ai',
+                maxFileSize: 10 * 1024 * 1024, // 10MB לקובץ יחיד
+                chunkSize: 10 * 1024 * 1024, // 10MB לחלקים
                 supportsLargeFiles: true,
-                description: 'תמלול מותאם במיוחד לעברית עם חילוק חכם ל-8MB',
+                description: 'תמלול מותאם במיוחד לעברית עם חילוק ל-10MB',
                 languages: ['he'],
                 pricing: 'משתנה לפי RunPod'
             }
@@ -541,16 +513,12 @@ class Transcription {
         const providerInfo = this.getProviderInfo(provider);
         if (!providerInfo) return false;
 
-        // עבור Ivrit.ai - תמיד נתמוך בגלל החילוק החכם
-        if (provider === 'ivrit') {
-            return true; // תמיכה בכל גודל עם חילוק
-        }
-
-        return fileSize <= providerInfo.maxFileSize;
+        // שני הספקים תומכים בחילוק
+        return true;
     }
 
     /**
-     * המלצה על ספק מתאים לקובץ
+     * המלצה על ספק מתאים לקובץ - ללא הודעות קופצות
      */
     static recommendProvider(audioFile, availableProviders = ['openai', 'ivrit']) {
         if (!audioFile) return availableProviders[0];
@@ -558,12 +526,12 @@ class Transcription {
         const fileSize = audioFile.size;
         const fileSizeMB = fileSize / (1024 * 1024);
 
-        // עבור קבצים קטנים מ-10MB - Ivrit.ai יהיה טוב
-        if (fileSizeMB <= 10 && availableProviders.includes('ivrit')) {
+        // עבור קבצים קטנים מ-8MB - Ivrit.ai יהיה טוב
+        if (fileSizeMB <= 8 && availableProviders.includes('ivrit')) {
             return 'ivrit';
         }
 
-        // עבור קבצים בינוניים (10-25MB) - תלוי בזמינות
+        // עבור קבצים בינוניים (8-25MB) - תלוי בזמינות
         if (fileSizeMB <= 25) {
             if (availableProviders.includes('openai')) {
                 return 'openai';
@@ -573,7 +541,7 @@ class Transcription {
             }
         }
 
-        // עבור קבצים גדולים - שניהם תומכים בחילוק
+        // עבור קבצים גדולים - OpenAI עדיף
         if (availableProviders.includes('openai')) {
             return 'openai';
         }
