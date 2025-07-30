@@ -654,73 +654,58 @@
     font-size: 14px;
 }
 
-/* הוסף את זה לקובץ css/buttons.css או css/utilities.css */
-
-.active-provider-badge {
-    position: absolute;
-    top: -8px;
-    left: -5px;
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-    border: 2px solid white;
-    min-width: 50px;
-    text-align: center;
-    animation: pulse-glow 2s infinite;
-    z-index: 10;
-}
-
-.active-provider-badge.openai {
-    background: linear-gradient(135deg, #00a67e, #16c79a);
-}
-
-.active-provider-badge.ivrit {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-}
-
 /* החלף/עדכן את זה בקובץ css/utilities.css */
 
+/* כפתור הגדרות API החדש - תכלת עם אינדיקטור ירוק */
 .control-btn.settings-btn {
     position: relative;
     overflow: visible;
-    min-width: 200px; /* רחב יותר */
+    min-width: 260px;
+    /* רחב יותר מהכפתור הקודם */
     padding: 12px 20px;
     display: flex;
     align-items: center;
     gap: 12px;
-    background: linear-gradient(135deg, #007bff, #0056b3);
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    /* תכלת במקום כחול */
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: 600;
+    font-size: 14px;
 }
 
 .api-button-content {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 3px;
+    align-items: center;
+    /* שינוי מ-flex-direction: column ל-align-items: center */
+    gap: 8px;
+    /* רווח בין הטקסטים */
     flex: 1;
+    justify-content: space-between;
+    /* פריסה של הטקסטים */
 }
 
-.api-button-content > span {
+.api-button-main-text {
     font-size: 14px;
     font-weight: 600;
+    color: white;
 }
 
 .provider-indicator {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 11px;
-    opacity: 0.9;
+    font-size: 12px;
     font-weight: 500;
+    padding: 3px 8px;
+    background: rgba(40, 167, 69, 0.9);
+    /* רקע ירוק שקוף */
+    border-radius: 12px;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .provider-indicator #provider-icon {
@@ -734,20 +719,35 @@
     letter-spacing: 0.5px;
 }
 
-/* צבעים דינמיים לספקים */
-.control-btn.settings-btn.openai {
-    background: linear-gradient(135deg, #00a67e, #16c79a);
+/* צבעים דינמיים לספקים - עדכון לאינדיקטור */
+.control-btn.settings-btn.openai .provider-indicator {
+    background: rgba(0, 166, 126, 0.9);
+    /* ירוק OpenAI */
 }
 
-.control-btn.settings-btn.ivrit {
-    background: linear-gradient(135deg, #007bff, #0056b3);
+.control-btn.settings-btn.ivrit .provider-indicator {
+    background: rgba(40, 167, 69, 0.9);
+    /* ירוק Ivrit.ai */
 }
 
 .control-btn.settings-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
+    /* צל תכלת */
+    background: linear-gradient(135deg, #138496, #117a8b);
+    /* תכלת כהה יותר בהובר */
 }
 
 .control-btn.settings-btn:hover .provider-indicator {
-    opacity: 1;
+    background: rgba(40, 167, 69, 1);
+    /* ירוק מלא בהובר */
+    transform: scale(1.05);
+}
+
+/* וידוא שהכפתור באותו גובה כמו כפתור ההיסטוריה */
+.control-btn.recent-btn,
+.control-btn.settings-btn {
+    height: 48px;
+    /* גובה אחיד */
+    min-height: 48px;
 }
