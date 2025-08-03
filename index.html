@@ -399,76 +399,70 @@
                             <i class="fas fa-info-circle"></i>
                             <span class="tooltip-text">
                                 <strong>OpenAI Whisper:</strong> תמלול מדויק באיכות גבוהה<br>
-                                <strong>Hugging Face:</strong> תמלול חינמי בסיסי<br>
-                                <strong>Groq:</strong> תמלול מהיר עם Whisper<br>
-                                <strong>Google Gemini:</strong> תמלול וניתוח חכם<br>
-                                <strong>Anthropic Claude:</strong> תמלול עם הבנה מתקדמת
+                                <strong>Ivrit.ai:</strong> תמלול עברית מתקדם ומותאם
                             </span>
                         </span>
                         <select id="transcription-mode" class="styled-select">
-                            <option value="openai" selected>OpenAI Whisper – תמלול מדויק</option>
-                            <option value="ivrit">Ivrit.ai – תמלול עברית מתקדם</option>
-                            <option value="groq">Groq – תמלול מהיר</option>
-                            <option value="gemini">Google Gemini – תמלול חכם</option>
-                            <option value="claude">Anthropic Claude – תמלול מתקדם</option>
+                            <option value="openai" selected>OpenAI Whisper – תמלול מדויק באיכות גבוהה</option>
+                            <option value="ivrit">Ivrit.ai – תמלול עברית מתקדם ומותאם</option>
                         </select>
+
 
                         <div class="provider-capabilities"
                             style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
-                            <div class="capability-legend">
-                                <h5 style="margin: 0 0 12px 0; color: #495057; font-size: 15px;">יכולות כל ספק:</h5>
-                                <div class="capability-item">
-                                    <div class="capability-header">🎙️ <strong>תמלול אודיו:</strong></div>
-                                    <div class="capability-list">OpenAI, Ivrit.ai</div>
-                                </div>
-                                <div class="capability-item">
-                                    <div class="capability-header">✏️ <strong>הגהה וסיכום:</strong></div>
-                                    <div class="capability-list">OpenAI, Groq, Gemini, Claude</div>
-                                </div>
-                                <div class="capability-item">
-                                    <div class="capability-header">🇮🇱 <strong>עברית מותאמת:</strong></div>
-                                    <div class="capability-list">Ivrit.ai (מיוחד לעברית)</div>
+                            <div class="providers-comparison">
+                                <h5 style="margin: 0 0 12px 0; color: #495057; font-size: 15px;">השוואת ספקי התמלול:
+                                </h5>
+                                <div class="comparison-grid">
+                                    <div class="provider-comparison">
+                                        <div class="provider-name">🤖 <strong>OpenAI Whisper</strong></div>
+                                        <div class="provider-features">
+                                            • תמלול מדויק ברוב השפות<br>
+                                            • איכות גבוהה לאודיו באנגלית<br>
+                                            • מהיר ויציב
+                                        </div>
+                                    </div>
+                                    <div class="provider-comparison">
+                                        <div class="provider-name">🇮🇱 <strong>Ivrit.ai</strong></div>
+                                        <div class="provider-features">
+                                            • מותאם במיוחד לעברית<br>
+                                            • דיוק גבוה לטקסטים בעברית<br>
+                                            • מבין הקשר עברי טוב יותר
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- חלק חובה - OpenAI -->
-                    <div class="api-section required">
-                        <h4>OpenAI Whisper – תמלול מדויק בעזרת AI מתקדם <span class="recommended-badge">מומלץ</span>
-                        </h4>
-                        <label for="openai-api-key">מפתח API של OpenAI</label>
-                        <p class="api-description">נדרש לתמלול באיכות גבוהה עם Whisper API. ניתן לקבל מפתח באתר <a
-                                href="https://platform.openai.com" target="_blank">platform.openai.com</a></p>
-                        <div class="api-input-group">
-                            <input type="password" id="openai-api-key" placeholder="הדבק את מפתח ה-API של OpenAI כאן">
-                            <button id="save-openai-key" class="btn"><i class="fas fa-save"></i> שמור</button>
-                        </div>
-                        <div style="margin-top: 10px;">
-                            <input type="checkbox" id="show-openai-key" style="margin-left: 8px;">
-                            <label for="show-openai-key">הצג/הסתר מפתח API</label>
-                        </div>
-                        <div id="openai-key-status" class="api-key-status"></div>
-                        <div class="api-help-icon" id="openai-help-icon">
-                            <i class="fas fa-question-circle"></i>
-                        </div>
-                    </div>
+                    <!-- ספקי תמלול -->
+                    <div class="transcription-providers-section">
+                        <h3 style="margin-bottom: 1.5rem; color: #2c3e50;">ספקי תמלול</h3>
 
-                    <!-- Toggle לאפשרויות נוספות -->
-                    <div class="additional-options-toggle">
-                        <button id="toggle-additional-options" class="toggle-additional-btn">
-                            <i class="fas fa-plus"></i>
-                            <span>הצג אפשרויות נוספות (אופציונלי)</span>
-                            <i class="fas fa-chevron-down toggle-arrow"></i>
-                        </button>
-
-                    </div>
-
-                    <!-- אפשרויות נוספות - מוסתרות בברירת מחדל -->
-                    <div id="additional-options" class="additional-options" style="display: none;">
+                        <!-- OpenAI -->
+                        <div class="api-section primary">
+                            <h4>OpenAI Whisper – תמלול מדויק בעזרת AI מתקדם <span class="recommended-badge">מומלץ</span>
+                            </h4>
+                            <label for="openai-api-key">מפתח API של OpenAI</label>
+                            <p class="api-description">נדרש לתמלול באיכות גבוהה עם Whisper API. ניתן לקבל מפתח באתר <a
+                                    href="https://platform.openai.com" target="_blank">platform.openai.com</a></p>
+                            <div class="api-input-group">
+                                <input type="password" id="openai-api-key"
+                                    placeholder="הדבק את מפתח ה-API של OpenAI כאן">
+                                <button id="save-openai-key" class="btn"><i class="fas fa-save"></i> שמור</button>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <input type="checkbox" id="show-openai-key" style="margin-left: 8px;">
+                                <label for="show-openai-key">הצג/הסתר מפתח API</label>
+                            </div>
+                            <div id="openai-key-status" class="api-key-status"></div>
+                            <div class="api-help-icon" id="openai-help-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                        </div>
                         <!-- Ivrit.ai -->
-                        <div class="api-section optional">
-                            <h4>Ivrit.ai – תמלול עברית מתקדם <span class="optional-badge">אופציונלי</span></h4>
+                        <div class="api-section primary">
+                            <h4>Ivrit.ai – תמלול עברית מתקדם <span class="hebrew-badge">עברית</span></h4>
                             <label for="ivrit-api-key">מפתח RunPod API</label>
                             <p class="api-description">עבור תמלול מותאם לעברית עם Ivrit.ai דרך RunPod. נדרש מפתח RunPod
                                 API ו-Endpoint ID. ניתן לקבל מפתח באתר <a href="https://runpod.io"
@@ -494,10 +488,26 @@
                                 <i class="fas fa-question-circle"></i>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Toggle לאפשרויות נוספות -->
+                    <div class="additional-options-toggle">
+                        <button id="toggle-enhancement-providers" class="toggle-additional-btn">
+                            <i class="fas fa-plus"></i>
+                            <span>ספקי הגהה וסיכום (אופציונלי)</span>
+                            <i class="fas fa-chevron-down toggle-arrow"></i>
+                        </button>
+                    </div>
+
+                    <!-- אפשרויות נוספות - מוסתרות בברירת מחדל -->
+                    <div id="enhancement-providers" class="enhancement-providers" style="display: none;">
+                        <h4 style="margin-bottom: 1rem; color: #495057;">ספקי AI להגהה וסיכום</h4>
+                        <p style="margin-bottom: 1.5rem; color: #6c757d;">הספקים הבאים משמשים אך ורק להגהה וסיכום של
+                            הטקסט שכבר תומלל:</p>
 
                         <!-- Groq -->
                         <div class="api-section optional">
-                            <h4>Groq – תמלול והגהה מהירים <span class="optional-badge">אופציונלי</span></h4>
+                            <h4>Groq – הגהה וסיכום מהירים <span class="optional-badge">הגהה בלבד</span></h4>
                             <label for="groq-api-key">מפתח API של Groq</label>
                             <p class="api-description">לתמלול מהיר עם Whisper ויכולות הגהה וסיכום חכמה מבוססי AI. ניתן
                                 לקבל מפתח באתר <a href="https://groq.com" target="_blank">groq.com</a></p>
@@ -517,7 +527,7 @@
 
                         <!-- Gemini -->
                         <div class="api-section optional">
-                            <h4>Google Gemini – תמלול ועיבוד חכם <span class="optional-badge">אופציונלי</span></h4>
+                            <h4>Google Gemini – הגהה ועיבוד חכם <span class="optional-badge">הגהה בלבד</span></h4>
                             <label for="gemini-api-key">מפתח API של Google Gemini</label>
                             <p class="api-description">עבור תמלול מתקדם עם יכולות ניתוח, הגהה וסיכום. ניתן לקבל מפתח
                                 באתר <a href="https://ai.google.dev/" target="_blank">ai.google.dev</a></p>
@@ -617,7 +627,8 @@
                         <div class="step-content">
                             <h4>היכנס לאתר OpenAI</h4>
                             <p>פתח את האתר <a href="https://platform.openai.com/"
-                                    target="_blank">platform.openai.com</a></p>
+                                    target="_blank">platform.openai.com</a>
+                            </p>
                         </div>
                     </div>
                     <div class="step">
@@ -1052,29 +1063,30 @@
                     tipsCard.style.display = tipsCard.style.display === 'none' ? 'block' : 'none';
                 });
 
-                // טיפול ב-toggle של אפשרויות נוספות
-                const toggleBtn = document.getElementById('toggle-additional-options');
-                const additionalOptions = document.getElementById('additional-options');
-                const toggleArrow = toggleBtn.querySelector('.toggle-arrow');
+                // טיפול ב-toggle של ספקי הגהה וסיכום
+                // טיפול ב-toggle של ספקי הגהה וסיכום
+                const toggleBtn = document.getElementById('toggle-enhancement-providers');
+                const enhancementProviders = document.getElementById('enhancement-providers');
 
-                if (toggleBtn && additionalOptions) {
+                if (toggleBtn && enhancementProviders) {
+                    const toggleArrow = toggleBtn.querySelector('.toggle-arrow');
+
                     toggleBtn.addEventListener('click', function () {
-                        const isOpen = additionalOptions.style.display !== 'none';
+                        const isOpen = enhancementProviders.style.display !== 'none';
 
                         if (isOpen) {
-                            additionalOptions.style.display = 'none';
-                            toggleBtn.querySelector('span').textContent = 'הצג אפשרויות נוספות (אופציונלי)';
+                            enhancementProviders.style.display = 'none';
+                            toggleBtn.querySelector('span').textContent = 'ספקי הגהה וסיכום (אופציונלי)';
                             toggleBtn.querySelector('.fas:first-child').className = 'fas fa-plus';
-                            toggleArrow.style.transform = 'rotate(0deg)';
+                            if (toggleArrow) toggleArrow.style.transform = 'rotate(0deg)';
                         } else {
-                            additionalOptions.style.display = 'block';
-                            toggleBtn.querySelector('span').textContent = 'הסתר אפשרויות נוספות';
+                            enhancementProviders.style.display = 'block';
+                            toggleBtn.querySelector('span').textContent = 'הסתר ספקי הגהה וסיכום';
                             toggleBtn.querySelector('.fas:first-child').className = 'fas fa-minus';
-                            toggleArrow.style.transform = 'rotate(180deg)';
+                            if (toggleArrow) toggleArrow.style.transform = 'rotate(180deg)';
                         }
                     });
                 }
-
                 // טיפול ב-popup הגדרות API
                 const apiSettingsBtn = document.getElementById('api-settings-btn');
                 const apiSettingsPopup = document.getElementById('api-settings-popup');

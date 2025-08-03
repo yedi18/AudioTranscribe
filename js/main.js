@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // פונקציה לעדכון תצוגת הספק הפעיל
+    // פונקציה לעדכון תצוגת הספק הפעיל בכפתור
     function updateActiveProviderDisplay() {
         const apiButton = document.getElementById('api-settings-btn');
         const providerIcon = document.getElementById('provider-icon');
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const currentProvider = localStorage.getItem('transcription_provider') || 'openai';
 
-        // הסרת כל הקלאסים הקיימים
+        // הסרת כל הקלאסים הקיימים של ספקים
         apiButton.classList.remove('openai', 'ivrit');
 
         // עדכון לפי הספק
@@ -133,7 +133,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return `${hours} שעות${minutes > 0 ? ` ו-${minutes} דקות` : ''}`;
         }
     }
-
 
     // אתחול ממשק המשתמש
     const ui = new UI();
@@ -306,11 +305,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // ولידציה נוספת של הספק הנבחר
+        // ולידציה נוספת של הספק הנבחר
         const provider = localStorage.getItem('transcription_provider') || 'openai';
-
-        // בדיקת תמיכה בגודל קובץ
-
 
         // בדיקה והצגת אישור עלות אם נדרש
         const shouldShowConfirmation = fileOps.checkAndShowCostConfirmation(
@@ -896,8 +892,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (statsManager) {
         statsManager.updateStatsDisplay();
     }
+
     // ========================================
-    // טיפול בבחירת ספק תמלול
+    // טיפול בבחירת ספק תמלול - המבנה החדש הפשוט
     // ========================================
     const transcriptionModeSelect = document.getElementById('transcription-mode');
     if (transcriptionModeSelect) {
@@ -905,18 +902,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const selectedProvider = this.value;
             localStorage.setItem('transcription_provider', selectedProvider);
 
-            // עדכון התצוגה לפי הספק הנבחר
-            updateProviderDisplay(selectedProvider);
-
-            // ולידציה של הספק
-            validateSelectedProvider(selectedProvider);
+            // עדכון הכפתור הראשי
+            updateActiveProviderDisplay();
         });
 
         // טעינת הבחירה השמורה
         const savedProvider = localStorage.getItem('transcription_provider') || 'openai';
         transcriptionModeSelect.value = savedProvider;
-        updateProviderDisplay(savedProvider);
-        validateSelectedProvider(savedProvider);
 
         // עדכון תצוגת הספק הפעיל
         setTimeout(updateActiveProviderDisplay, 500);
@@ -925,163 +917,44 @@ document.addEventListener('DOMContentLoaded', function () {
         transcriptionModeSelect.addEventListener('change', function () {
             setTimeout(updateActiveProviderDisplay, 100);
         });
+    }
 
-        // ========================================
-        // פונקציות עזר לניהול ספקים
-        // ========================================
-        function updateProviderDisplay(provider) {
-            // הסרת הודעות קודמות
-            const existingMessages = document.querySelectorAll('.provider-display-message');
-            existingMessages.forEach(msg => msg.remove());
+    // טיפול בכפתור אפשרויות הגהה וסיכום החדש
+    const toggleEnhancementBtn = document.getElementById('toggle-enhancement-options');
+    const enhancementOptions = document.getElementById('enhancement-options');
 
-            // יצירת הודעת מידע
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'provider-display-message';
-            messageDiv.style.cssText = `
-            background: #e3f2fd;
-            border: 1px solid #2196f3;
-            border-radius: 8px;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 13px;
-            color: #1565c0;
-        `;
+    if (toggleEnhancementBtn && enhancementOptions) {
+        toggleEnhancementBtn.addEventListener('click', function () {
+            const isOpen = enhancementOptions.style.display !== 'none';
 
-            let messageText = '';
-            switch (provider) {
-                case 'openai':
-                    messageText = '🤖 OpenAI Whisper - תמלול מדויק באיכות גבוהה (עד 25MB)';
-                    break;
-                case 'ivrit':
-                    messageText = '🇮🇱 Ivrit.ai - תמלול מותאם במיוחד לעברית (עד 10MB)';
-                    break;
+            if (isOpen) {
+                enhancementOptions.style.display = 'none';
+                this.querySelector('span').textContent = 'אפשרויות סיכום והגהה (אופציונלי)';
+                this.querySelector('.fas:first-child').className = 'fas fa-plus';
+                this.classList.remove('expanded');
+            } else {
+                enhancementOptions.style.display = 'block';
+                this.querySelector('span').textContent = 'הסתר אפשרויות סיכום והגהה';
+                this.querySelector('.fas:first-child').className = 'fas fa-minus';
+                this.classList.add('expanded');
             }
+        });
+    }
 
-            messageDiv.textContent = messageText;
+    // עדכון הכפתור גם אחרי שמירת מפתח API
+    const saveButtons = document.querySelectorAll('[id^="save-"][id$="-key"], #save-ivrit-endpoint');
+    saveButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            setTimeout(updateActiveProviderDisplay, 100);
+        });
+    });
 
-            // הוספת ההודעה
-            const transcriptionSection = document.querySelector('.api-section.required') ||
-                document.getElementById('transcription-mode')?.parentNode;
-            if (transcriptionSection) {
-                transcriptionSection.appendChild(messageDiv);
-            }
+    // מאזין לשינויים ב-localStorage (עבור סנכרון בין טאבים)
+    window.addEventListener('storage', function (e) {
+        if (e.key === 'transcription_provider') {
+            updateActiveProviderDisplay();
         }
-
-        function validateSelectedProvider(provider) {
-            // בדיקת זמינות מפתחות
-            let isValid = false;
-            let errorMessage = '';
-
-            switch (provider) {
-                case 'openai':
-                    const openaiKey = localStorage.getItem('openai_api_key');
-                    isValid = !!openaiKey;
-                    errorMessage = 'נדרש מפתח API של OpenAI';
-                    break;
-                case 'ivrit':
-                    const ivritKey = localStorage.getItem('ivrit_api_key');
-                    const ivritEndpoint = localStorage.getItem('ivrit_endpoint_id');
-                    isValid = !!(ivritKey && ivritEndpoint);
-                    errorMessage = 'נדרשים מפתח RunPod API ו-Endpoint ID';
-                    break;
-            }
-
-            // הצגת/הסרת אזהרה
-            showProviderValidation(provider, isValid, errorMessage);
-        }
-
-        function showProviderValidation(provider, isValid, errorMessage) {
-            // הסרת הודעות ולידציה קודמות
-            const existingValidation = document.querySelectorAll('.provider-validation-message');
-            existingValidation.forEach(msg => msg.remove());
-
-            if (!isValid) {
-                const warningDiv = document.createElement('div');
-                warningDiv.className = 'provider-validation-message';
-                warningDiv.style.cssText = `
-                background: #fff3cd;
-                border: 1px solid #ffc107;
-                border-radius: 8px;
-                padding: 10px;
-                margin: 10px 0;
-                font-size: 13px;
-                color: #856404;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            `;
-
-                const messageSpan = document.createElement('span');
-                messageSpan.textContent = `⚠️ ${errorMessage}`;
-
-                const settingsBtn = document.createElement('button');
-                settingsBtn.textContent = 'הגדרות API';
-                settingsBtn.className = 'btn btn-sm';
-                settingsBtn.style.cssText = `
-                background: #ffc107;
-                border: none;
-                color: #212529;
-                padding: 5px 10px;
-                font-size: 11px;
-                border-radius: 4px;
-                cursor: pointer;
-            `;
-
-                settingsBtn.addEventListener('click', () => {
-                    const apiSettingsBtn = document.getElementById('api-settings-btn');
-                    if (apiSettingsBtn) {
-                        apiSettingsBtn.click();
-                    }
-                });
-
-                warningDiv.appendChild(messageSpan);
-                warningDiv.appendChild(settingsBtn);
-
-                // הוספת האזהרה
-                const transcriptionSection = document.querySelector('.api-section.required') ||
-                    document.getElementById('transcription-mode')?.parentNode;
-                if (transcriptionSection) {
-                    transcriptionSection.appendChild(warningDiv);
-                }
-            }
-        }
-
-        // פונקציה לרענון מפתחות API כשהם משתנים
-        function refreshApiKeysOnChange() {
-            // מאזין לשינויים ב-localStorage
-            window.addEventListener('storage', function (e) {
-                if (e.key && (e.key.includes('_api_key') || e.key.includes('_endpoint_id') || e.key === 'transcription_provider')) {
-                    // רענון הממשק אם מפתח השתנה
-                    const currentProvider = localStorage.getItem('transcription_provider') || 'openai';
-                    validateSelectedProvider(currentProvider);
-
-                    // עדכון מנהל ההגהה אם קיים
-                    if (ui.enhancementHandler && ui.enhancementHandler.refreshApiKeys) {
-                        ui.enhancementHandler.refreshApiKeys();
-                    }
-                }
-            });
-        }
-
-        // הפעלת מעקב אחר שינויים
-        refreshApiKeysOnChange();
-
-        // הוספת עדכון תצוגת ספק פעיל
-        setTimeout(updateActiveProviderDisplay, 500);
-
-        // הסרת הודעות המלצה
-        const style = document.createElement('style');
-        style.textContent = `
-        .provider-recommendation-message,
-        .provider-info-message {
-            display: none !important;
-        }
-    `;
-        document.head.appendChild(style);
-
-        // מאזין לטעינת הדף
-        window.addEventListener('load', updateActiveProviderDisplay);
-    };
+    });
 });
 
 // עדכון הודעת אישור עלות לסנכרון עם הערכות זמן
@@ -1162,9 +1035,39 @@ function updateCostConfirmationSync() {
 // הפעלת סנכרון העלות לאחר טעינת הדף
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(updateCostConfirmationSync, 1000);
-});/**
- * הקובץ הראשי של התמלול האודיו - עם שעון בזמן אמת ואישור עלות מסונכרן - תוקן
- */
+});
+
+// פונקציה גלובלית לעדכון האינדיקטור (לשימוש ממקומות אחרים)
+function updateProviderIndicator() {
+    const currentProvider = localStorage.getItem('transcription_provider') || 'openai';
+    const providerIcon = document.getElementById('provider-icon');
+    const providerName = document.getElementById('provider-name');
+    const apiButton = document.getElementById('api-settings-btn');
+
+    if (providerIcon && providerName && apiButton) {
+        // הסרת קלאסים קיימים
+        apiButton.classList.remove('openai', 'ivrit');
+
+        switch (currentProvider) {
+            case 'openai':
+                providerIcon.textContent = '🤖';
+                providerName.textContent = 'OpenAI';
+                apiButton.classList.add('openai');
+                break;
+            case 'ivrit':
+                providerIcon.textContent = '🇮🇱';
+                providerName.textContent = 'Ivrit.ai';
+                apiButton.classList.add('ivrit');
+                break;
+            default:
+                providerIcon.textContent = '⚙️';
+                providerName.textContent = 'לא נבחר';
+        }
+    }
+}
+
+// הפיכת הפונקציה לגלובלית
+window.updateProviderIndicator = updateProviderIndicator;
 
 /**
  * פונקציה לבדיקת אורך קובץ אודיו
